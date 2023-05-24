@@ -6,6 +6,7 @@ namespace CrucibleBugTracker.Models
     public class TicketAttachment
     {
         public int Id { get; set; }
+        [StringLength(50, ErrorMessage = "The {0} must be at max {1} characters long.")]
         public string? Description { get; set; }
         [DataType(DataType.DateTime)]
         public DateTime Created { get; set; }

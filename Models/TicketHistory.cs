@@ -5,7 +5,10 @@ namespace CrucibleBugTracker.Models
     public class TicketHistory
     {
         public int Id { get; set; }
+        [Display(Name = "Property Name")]
+        [StringLength(50, ErrorMessage = "The {0} must be at max {1} characters long.")]
         public string? PropertyName { get; set; }
+        [StringLength(50, ErrorMessage = "The {0} must be at max {1} characters long.")]
         public string? Description { get; set; }
         public string? OldValue { get; set; }
         public string? NewValue { get; set; }

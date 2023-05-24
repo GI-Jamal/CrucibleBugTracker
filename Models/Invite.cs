@@ -15,10 +15,13 @@ namespace CrucibleBugTracker.Models
         public string? InviteeEmail { get; set; }
         [Required]
         [Display(Name = "Invitee First Name")]
+        [StringLength(50, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 2)]
         public string? InviteeFirstName { get; set; }
         [Required]
         [Display(Name = "Invitee Last Name")]
+        [StringLength(50, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 2)]
         public string? InviteeLastName { get; set; }
+        [StringLength(50, ErrorMessage = "The {0} must be at max {1} characters long.")]
         public string? Message { get; set; }
         public bool IsValid { get; set; }
 
