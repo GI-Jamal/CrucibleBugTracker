@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CrucibleBugTracker.Models
 {
@@ -6,25 +7,29 @@ namespace CrucibleBugTracker.Models
     {
         public int Id { get; set; }
         [Required]
-        public string Name { get; set; }
-        public IFormFile ImageFormFile { get; set; }
-        public byte[] ImageFileData { get; set; }
-        public string ImageFileType { get; set; }
+        public string? Name { get; set; }
+        [NotMapped]
+        public IFormFile? ImageFormFile { get; set; }
+        public byte[]? ImageFileData { get; set; }
+        public string? ImageFileType { get; set; }
         [Required]
-        public string Description { get; set; }
-        public DateTime CreatedDate { get; set; }
+        public string? Description { get; set; }
+        [DataType(DataType.DateTime)]
+        public DateTime Created { get; set; }
+        [DataType(DataType.DateTime)]
         public DateTime StartDate { get; set; }
+        [DataType(DataType.DateTime)]
         public DateTime EndDate { get; set; }
-        public bool IsArchived { get; set; }
+        public bool Archived { get; set; }
 
         // Foreign Keys
         public int CompanyId { get; set; }
         public int ProjectPriorityId { get; set; }
 
         // Navigation Properties
-        public virtual Company Company { get; set; }
-        public virtual ProjectPriority ProjectPriority { get; set; }
-        public virtual ICollection<BTUser> Members { get; set; }
-        public virtual ICollection<Ticket> Tickets { get; set; }  
+        public virtual Company? Company { get; set; }
+        public virtual ProjectPriority? ProjectPriority { get; set; }
+        public virtual ICollection<BTUser> Members { get; set; } = new HashSet<BTUser>();
+        public virtual ICollection<Ticket> Tickets { get; set; } = new HashSet<Ticket>();
     }
 }

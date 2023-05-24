@@ -6,10 +6,11 @@ namespace CrucibleBugTracker.Models
     {
         public int Id { get; set; }
         [Required]
-        public string Title { get; set; }
+        public string? Title { get; set; }
         [Required]
-        public string Message { get; set; }
-        public DateTime CreatedDate { get; set; }
+        public string? Message { get; set; }
+        [DataType(DataType.DateTime)]
+        public DateTime Created { get; set; }
         public bool HasBeenViewed { get; set; }
 
         // Foreign Keys
@@ -22,10 +23,10 @@ namespace CrucibleBugTracker.Models
         public int NotificationTypeId { get; set; }
 
         // Navigation Properties
-        public virtual Project Project { get; set; }
-        public virtual BTUser Recipient { get; set; }
-        public virtual Ticket Ticket { get; set; }
-        public virtual BTUser Sender { get; set; }
+        public virtual Project? Project { get; set; }
+        public virtual BTUser? Recipient { get; set; }
+        public virtual Ticket? Ticket { get; set; }
+        public virtual BTUser? Sender { get; set; }
         public virtual NotificationType? NotificationType { get; set; }
 
     }
