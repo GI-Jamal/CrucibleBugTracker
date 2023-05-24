@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33717.318
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrucibleBugTracker", "CrucibleBugTracker.csproj", "{ED701D32-A61B-4D0E-A34C-1081F7E0CEAD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{ED701D32-A61B-4D0E-A34C-1081F7E0CEAD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED701D32-A61B-4D0E-A34C-1081F7E0CEAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED701D32-A61B-4D0E-A34C-1081F7E0CEAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED701D32-A61B-4D0E-A34C-1081F7E0CEAD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7F2AD7C5-94C9-4AA6-B46E-58812F9DDD40}
+	EndGlobalSection
+EndGlobal
