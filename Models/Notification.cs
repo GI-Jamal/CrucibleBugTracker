@@ -14,7 +14,6 @@ namespace CrucibleBugTracker.Models
         public string? Message { get; set; }
         
         [DataType(DataType.DateTime)]
-        
         public DateTime Created { get; set; }
         
         public bool HasBeenViewed { get; set; }
@@ -24,8 +23,7 @@ namespace CrucibleBugTracker.Models
         [Required]
         public int RecipientId { get; set; }
         
-        [Required]
-        
+        [Required]  
         public int SenderId { get; set;}
         
         public int ProjectId { get; set; }
@@ -45,6 +43,5 @@ namespace CrucibleBugTracker.Models
         public virtual BTUser? Sender { get; set; }
         
         public virtual NotificationType? NotificationType { get; set; }
-
     }
 }
