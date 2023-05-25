@@ -35,6 +35,6 @@ namespace CrucibleBugTracker.Models
         // Navigation Properties
         public virtual Company? Company { get; set; }
         
-        public ICollection<Project> Projects { get; set; } = new HashSet<Project>();
+        public virtual ICollection<Project> Projects { get; set; } = new HashSet<Project>();
     }
 }

@@ -53,7 +53,7 @@ namespace CrucibleBugTracker.Models
         
         public virtual BTUser? SubmitterUser { get; set; }
         
-        public virtual ICollection<TicketComment> TicketComments { get; set; } = new HashSet<TicketComment>();
+        public virtual ICollection<TicketComment> Comments { get; set; } = new HashSet<TicketComment>();
         
         public virtual ICollection<TicketAttachment> Attachments { get; set; } = new HashSet<TicketAttachment>();
         

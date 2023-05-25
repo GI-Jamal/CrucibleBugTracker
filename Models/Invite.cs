@@ -38,7 +38,7 @@ namespace CrucibleBugTracker.Models
         // Foreign Keys
         public int CompanyId { get; set; }
         
-        public int ProjectId { get; set; }
+        public int? ProjectId { get; set; }
         
         public string? InviteeId { get; set; }
         
