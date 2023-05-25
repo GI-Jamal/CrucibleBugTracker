@@ -10,7 +10,6 @@ namespace CrucibleBugTracker.Models
         [StringLength(50, ErrorMessage = "The {0} must be at max {1} characters long.")]
         public string? PropertyName { get; set; }
         
-        [StringLength(50, ErrorMessage = "The {0} must be at max {1} characters long.")]
         public string? Description { get; set; }
         
         public string? OldValue { get; set; }
