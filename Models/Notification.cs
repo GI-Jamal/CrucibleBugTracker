@@ -21,10 +21,10 @@ namespace CrucibleBugTracker.Models
 
         // Foreign Keys
         [Required]
-        public int RecipientId { get; set; }
+        public string? RecipientId { get; set; }
         
         [Required]  
-        public int SenderId { get; set;}
+        public string? SenderId { get; set;}
         
         public int ProjectId { get; set; }
         

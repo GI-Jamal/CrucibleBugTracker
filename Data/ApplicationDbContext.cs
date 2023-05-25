@@ -4,7 +4,7 @@ using CrucibleBugTracker.Models;
 
 namespace CrucibleBugTracker.Data
 {
-    public class ApplicationDbContext : IdentityDbContext
+    public class ApplicationDbContext : IdentityDbContext<BTUser>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
