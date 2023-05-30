@@ -21,6 +21,7 @@ namespace CrucibleBugTracker.Models
         public string FullName { get { return $"{FirstName} {LastName}"; } }
        
         [NotMapped]
+        [Display(Name = "User Image")]
         public IFormFile? ImageFormFile { get; set; }
         
         public byte[]? ImageFileData { get; set; }

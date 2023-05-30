@@ -7,9 +7,11 @@ namespace CrucibleBugTracker.Models
         public int Id { get; set; }
         
         [DataType(DataType.DateTime)]
+        [Display(Name = "Invite Date")]
         public DateTime InviteDate { get; set; }
         
         [DataType(DataType.DateTime)]
+        [Display(Name = "Join Date")]
         public DateTime? JoinDate { get; set; }
         
         public Guid CompanyToken { get; set; }

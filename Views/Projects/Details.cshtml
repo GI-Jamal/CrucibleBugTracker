@@ -61,13 +61,13 @@
             @Html.DisplayNameFor(model => model.Company)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Company.Name)
+            @Html.DisplayFor(model => model.Company!.Name)
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.ProjectPriority)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ProjectPriority.Id)
+            @Html.DisplayFor(model => model.ProjectPriority!.Name)
         </dd>
     </dl>
 </div>

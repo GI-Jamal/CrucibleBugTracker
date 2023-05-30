@@ -14,6 +14,7 @@ namespace CrucibleBugTracker.Models
         public string? Description { get; set; }
         
         [NotMapped]
+        [Display(Name = "Company Image")]
         public IFormFile? ImageFormFile { get; set; }
         
         public byte[]? ImageFileData { get; set; }

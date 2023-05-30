@@ -11,52 +11,53 @@ using Microsoft.AspNetCore.Authorization;
 using CrucibleBugTracker.Enums;
 using Microsoft.AspNetCore.Identity;
 using CrucibleBugTracker.Services.Interfaces;
+using CrucibleBugTracker.Extensions;
 
 namespace CrucibleBugTracker.Controllers
 {
     [Authorize]
     public class ProjectsController : Controller
     {
-        private readonly ApplicationDbContext _context;
         private readonly UserManager<BTUser> _userManager;
         private readonly IBTFileService _fileService;
+        private readonly IBTProjectService _projectService;
+        private readonly IBTTicketService _ticketService;
 
-        public ProjectsController(ApplicationDbContext context, UserManager<BTUser> userManager, IBTFileService fileService)
+        public ProjectsController(UserManager<BTUser> userManager, IBTFileService fileService, IBTProjectService projectService, IBTTicketService ticketService)
         {
-            _context = context;
             _userManager = userManager;
             _fileService = fileService;
+            _projectService = projectService;
+            _ticketService = ticketService;
         }
 
         // GET: Projects
         public async Task<IActionResult> Index()
         {
-            BTUser? user = await _userManager.GetUserAsync(User);
+            int companyId = User.Identity!.GetCompanyId();
 
-            var applicationDbContext = _context.Projects.Where(p => p.CompanyId == user!.CompanyId).Include(p => p.Company).Include(p => p.ProjectPriority);
-            return View(await applicationDbContext.ToListAsync());
+            List<Project> projects = await _projectService.GetAllProjectsByCompanyIdAsync(companyId);
+
+            return View(projects);
         }
 
         // GET: Projects/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.Projects == null)
+            if (id == null)
             {
                 return NotFound();
             }
 
-            var project = await _context.Projects
-                .Include(p => p.Company)
-                .Include(p => p.ProjectPriority)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            int companyId = User.Identity!.GetCompanyId();
+            Project? project = await _projectService.GetProjectByIdAsync((int)id, companyId);
+
             if (project == null)
             {
                 return NotFound();
             }
 
-            BTUser? user = await _userManager.GetUserAsync(User);
-
-            if (project.CompanyId != user!.CompanyId)
+            if (project.CompanyId != companyId)
             {
                 return NotFound();
             }
@@ -66,9 +67,9 @@ namespace CrucibleBugTracker.Controllers
 
         // GET: Projects/
         [Authorize(Roles = $"{nameof(BTRoles.Admin)}, {nameof(BTRoles.ProjectManager)}")]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Name");
+            ViewData["ProjectPriorityId"] = new SelectList(await _projectService.GetProjectPrioritiesAsync(), "Id", "Name");
             return View();
         }
 
@@ -103,12 +104,11 @@ namespace CrucibleBugTracker.Controllers
                     project.Members.Add(user);
                 }
 
-                _context.Add(project);
-                await _context.SaveChangesAsync();
+                await _projectService.AddProjectAsync(project);
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Name", project.ProjectPriorityId);
+            ViewData["ProjectPriorityId"] = new SelectList(await _projectService.GetProjectPrioritiesAsync(), "Id", "Name", project.ProjectPriorityId);
             return View(project);
         }
 
@@ -116,25 +116,25 @@ namespace CrucibleBugTracker.Controllers
         [Authorize(Roles = $"{nameof(BTRoles.Admin)}, {nameof(BTRoles.ProjectManager)}")]
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.Projects == null)
+            if (id == null)
             {
                 return NotFound();
             }
 
-            var project = await _context.Projects.FindAsync(id);
+            int companyId = User.Identity!.GetCompanyId();
+            Project? project = await _projectService.GetProjectByIdAsync((int)id, companyId);
+            
             if (project == null)
             {
                 return NotFound();
             }
 
-            BTUser? user = await _userManager.GetUserAsync(User);
-
-            if (project.CompanyId != user!.CompanyId)
+            if (project.CompanyId != companyId)
             {
                 return NotFound();
             }
 
-            ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Name", project.ProjectPriorityId);
+            ViewData["ProjectPriorityId"] = new SelectList(await _projectService.GetProjectPrioritiesAsync(), "Id", "Name", project.ProjectPriorityId);
             return View(project);
         }
 
@@ -151,9 +151,9 @@ namespace CrucibleBugTracker.Controllers
                 return NotFound();
             }
 
-            BTUser? user = await _userManager.GetUserAsync(User);
+            int companyId = User.Identity!.GetCompanyId();
 
-            if (project.CompanyId != user!.CompanyId)
+            if (project.CompanyId != companyId)
             {
                 return NotFound();
             }
@@ -172,17 +172,24 @@ namespace CrucibleBugTracker.Controllers
                         project.ImageFileType = project.ImageFormFile.ContentType;
                     }
 
-                    if (User.IsInRole(nameof(BTRoles.ProjectManager)) && !project.Members.Contains(user!))
+
+                    await _projectService.UpdateProjectAsync(project, companyId);
+
+                    project.Tickets = (await _ticketService.GetTicketsByCompanyIdAsync(companyId)).Where(t => t.ProjectId == project.Id).ToList();
+
+                    if (project.Archived == true)
                     {
-                        project.Members.Add(user!);
+                        await _projectService.ArchiveProjectAsync(project, companyId);
                     }
 
-                    _context.Update(project);
-                    await _context.SaveChangesAsync();
+                    else
+                    {
+                        await _projectService.RestoreProjectAsync(project, companyId);
+                    }
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ProjectExists(project.Id))
+                    if (!await ProjectExistsAsync(project.Id))
                     {
                         return NotFound();
                     }
@@ -194,31 +201,28 @@ namespace CrucibleBugTracker.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Name", project.ProjectPriorityId);
+            ViewData["ProjectPriorityId"] = new SelectList(await _projectService.GetProjectPrioritiesAsync(), "Id", "Name", project.ProjectPriorityId);
             return View(project);
         }
 
-        // GET: Projects/Delete/5
+        // GET: Projects/Archive/5
         [Authorize(Roles = $"{nameof(BTRoles.Admin)}, {nameof(BTRoles.ProjectManager)}")]
         public async Task<IActionResult> Archive(int? id)
         {
-            if (id == null || _context.Projects == null)
+            if (id == null)
             {
                 return NotFound();
             }
 
-            var project = await _context.Projects
-                .Include(p => p.Company)
-                .Include(p => p.ProjectPriority)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            int companyId = User.Identity!.GetCompanyId();
+            Project? project = await _projectService.GetProjectByIdAsync((int)id, companyId);
+
             if (project == null)
             {
                 return NotFound();
             }
 
-            BTUser? user = await _userManager.GetUserAsync(User);
-
-            if (project.CompanyId != user!.CompanyId)
+            if (project.CompanyId != companyId)
             {
                 return NotFound();
             }
@@ -226,37 +230,32 @@ namespace CrucibleBugTracker.Controllers
             return View(project);
         }
 
-        // POST: Projects/Delete/5
+        // POST: Projects/Archive/5
         [HttpPost, ActionName("Archive")]
         [Authorize(Roles = $"{nameof(BTRoles.Admin)}, {nameof(BTRoles.ProjectManager)}")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ArchiveConfirmed(int id)
         {
-            if (_context.Projects == null)
-            {
-                return Problem("Entity set 'ApplicationDbContext.Projects'  is null.");
-            }
-            var project = await _context.Projects.FindAsync(id);
+            int companyId = User.Identity!.GetCompanyId();
+            Project? project = await _projectService.GetProjectByIdAsync(id, companyId);
 
             if (project != null)
             {
-                BTUser? user = await _userManager.GetUserAsync(User);
-
-                if (project.CompanyId != user!.CompanyId)
+                if (project.CompanyId != companyId)
                 {
                     return NotFound();
                 }
 
-                project.Archived = true;
+                await _projectService.ArchiveProjectAsync(project, companyId);
             }
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool ProjectExists(int id)
+        private async Task<bool> ProjectExistsAsync(int id)
         {
-            return (_context.Projects?.Any(e => e.Id == id)).GetValueOrDefault();
+            int companyId = User.Identity!.GetCompanyId();
+            return await _projectService.GetProjectByIdAsync(id, companyId) != null;
         }
     }
 }

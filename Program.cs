@@ -1,4 +1,5 @@
 using CrucibleBugTracker.Data;
+using CrucibleBugTracker.Extensions;
 using CrucibleBugTracker.Models;
 using CrucibleBugTracker.Services;
 using CrucibleBugTracker.Services.Interfaces;
@@ -17,12 +18,15 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddIdentity<BTUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddClaimsPrincipalFactory<BTUserClaimsPrincipalFactory>()
     .AddDefaultUI()
     .AddDefaultTokenProviders();
 
 builder.Services.AddMvc();
 
 builder.Services.AddScoped<IBTFileService, BTFileService>();
+builder.Services.AddScoped<IBTProjectService, BTProjectService>();
+builder.Services.AddScoped<IBTTicketService, BTTicketService>();
 
 var app = builder.Build();
 

@@ -17,6 +17,7 @@ namespace CrucibleBugTracker.Models
         public string? NewValue { get; set; }
         
         [DataType(DataType.DateTime)]
+        [Display(Name = "Created Date")]
         public DateTime Created { get; set; }
 
 

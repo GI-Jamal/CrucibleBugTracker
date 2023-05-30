@@ -14,25 +14,33 @@ namespace CrucibleBugTracker.Models
         public string? Description { get; set;}
         
         [DataType(DataType.DateTime)]
+        [Display(Name = "Created Date")]
         public DateTime Created { get; set; }
         
         [DataType(DataType.DateTime)]
+        [Display(Name = "Updated Date")]
         public DateTime? UpdatedDate { get; set; }
         
         public bool Archived { get; set; }
-        
+
+        [Display(Name = "Archived By Project")]
         public bool ArchivedByProject { get; set; }
 
 
         // Foreign Keys
+        [Display(Name = "Project")]
         public int ProjectId { get; set; }
         
+        [Display(Name = "Ticket Priority")]
         public int TicketPriorityId { get; set; }
         
+        [Display(Name = "Ticket Status")]
         public int TicketStatusId { get; set; }
         
+        [Display(Name = "Ticket Type")]
         public int TicketTypeId { get; set; }
         
+        [Display(Name = "Developer User")]
         public string? DeveloperUserId { get; set; }
         
         [Required]

@@ -13,6 +13,7 @@ namespace CrucibleBugTracker.Models
         public string? Message { get; set; }
         
         [DataType(DataType.DateTime)]
+        [Display(Name = "Created Date")]
         public DateTime Created { get; set; }
         
         public bool HasBeenViewed { get; set; }

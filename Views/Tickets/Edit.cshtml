@@ -13,6 +13,10 @@
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="ProjectId" />
+            <input type="hidden" asp-for="Created" />
+            <input type="hidden" asp-for="SubmitterUserId" />
+            <input type="hidden" asp-for="ArchivedByProject" />
             <div class="form-group">
                 <label asp-for="Title" class="control-label"></label>
                 <input asp-for="Title" class="form-control" />
@@ -23,24 +27,9 @@
                 <input asp-for="Description" class="form-control" />
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Created" class="control-label"></label>
-                <input asp-for="Created" class="form-control" />
-                <span asp-validation-for="Created" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="UpdatedDate" class="control-label"></label>
-                <input asp-for="UpdatedDate" class="form-control" />
-                <span asp-validation-for="UpdatedDate" class="text-danger"></span>
-            </div>
             <div class="form-group form-check">
                 <label class="form-check-label">
                     <input class="form-check-input" asp-for="Archived" /> @Html.DisplayNameFor(model => model.Archived)
-                </label>
-            </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="ArchivedByProject" /> @Html.DisplayNameFor(model => model.ArchivedByProject)
                 </label>
             </div>
             <div class="form-group">
@@ -65,14 +54,16 @@
             </div>
             <div class="form-group">
                 <label asp-for="DeveloperUserId" class="control-label"></label>
-                <select asp-for="DeveloperUserId" class="form-control" asp-items="ViewBag.DeveloperUserId"></select>
+                <select asp-for="DeveloperUserId" class="form-control" asp-items="ViewBag.DeveloperUserId">
+                    <option></option>
+                </select>
                 <span asp-validation-for="DeveloperUserId" class="text-danger"></span>
             </div>
-            <div class="form-group">
+            @*<div class="form-group">
                 <label asp-for="SubmitterUserId" class="control-label"></label>
                 <select asp-for="SubmitterUserId" class="form-control" asp-items="ViewBag.SubmitterUserId"></select>
                 <span asp-validation-for="SubmitterUserId" class="text-danger"></span>
-            </div>
+            </div>*@
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>

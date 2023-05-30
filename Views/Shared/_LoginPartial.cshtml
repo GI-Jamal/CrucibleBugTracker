@@ -3,24 +3,65 @@
 @inject UserManager<BTUser> UserManager
 
 <ul class="navbar-nav">
-@if (SignInManager.IsSignedIn(User))
-{
-    <li class="nav-item">
-        <a  class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @User.Identity?.Name!</a>
-    </li>
-    <li class="nav-item">
-        <form  class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-            <button  type="submit" class="nav-link btn btn-link text-dark">Logout</button>
-        </form>
-    </li>
-}
-else
-{
-    <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">Register</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Login</a>
-    </li>
-}
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @User.Identity?.Name!</a>
+        </li>
+        <li class="nav-item">
+            <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                <button type="submit" class="nav-link btn btn-link text-dark">Logout</button>
+            </form>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">Register</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Login</a>
+        </li>
+    }
 </ul>
+
+@*<a href="#" class="nav-link dropdown-toggle" title="User menu" data-toggle="dropdown">
+    <figure class="avatar avatar-sm">
+        <img src="../../assets/media/image/user/man_avatar3.jpg"
+                class="rounded-circle"
+                alt="avatar">
+    </figure>
+    <span class="ml-2 d-sm-inline d-none">Bony Gidden</span>
+</a>
+<div class="dropdown-menu dropdown-menu-right dropdown-menu-big">
+    <div class="text-center py-4">
+        <figure class="avatar avatar-lg mb-3 border-0">
+            <img src="../../assets/media/image/user/man_avatar3.jpg"
+                    class="rounded-circle" alt="image">
+        </figure>
+        <h5 class="text-center">Bony Gidden</h5>
+        <div class="mb-3 small text-center text-muted">bonygidden</div>
+        <a href="#" class="btn btn-outline-light btn-rounded">Manage Your Account</a>
+    </div>
+    <div class="list-group">
+        <a href="profile.html" class="list-group-item">View Profile</a>
+        <a href="http://bifor.laborasyon.com/login" class="list-group-item text-danger"
+            data-sidebar-target="#settings">Sign Out!</a>
+    </div>
+    <div class="p-4">
+        <div class="mb-4">
+            <h6 class="d-flex justify-content-between">
+                Storage
+                <span>%25</span>
+            </h6>
+            <div class="progress" style="height: 5px;">
+                <div class="progress-bar bg-success-gradient" role="progressbar" style="width: 40%;"
+                        aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+        </div>
+        <hr class="mb-3">
+        <p class="small mb-0">
+            <a href="#">Privacy policy</a>
+        </p>
+    </div>
+</div>*@

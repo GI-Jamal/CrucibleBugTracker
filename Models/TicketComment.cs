@@ -10,6 +10,7 @@ namespace CrucibleBugTracker.Models
         public string? Comment { get; set; }
         
         [DataType(DataType.DateTime)]
+        [Display(Name = "Created Date")]
         public DateTime Created { get; set; }
 
 
