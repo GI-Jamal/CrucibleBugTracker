@@ -14,5 +14,12 @@ namespace CrucibleBugTracker.Services.Interfaces
         Task<List<TicketPriority>> GetTicketPriorities();
         Task RestoreTicketAsync(Ticket ticket, int companyId);
         Task UpdateTicketAsync(Ticket ticket, int companyId);
+        Task<List<Ticket>> GetUnassignedTicketsAsync(int companyId);
+        Task<List<Ticket>> GetTicketsByUserIdAsync(string userId);
+        Task<Ticket?> GetTicketAsNoTrackingAsync(int ticketId, int companyId);
+        Task AddTicketAttachmentAsync(TicketAttachment ticketAttachment);
+        Task<TicketAttachment?> GetTicketAttachmentByIdAsync(int ticketAttachmentId); 
+
+
     }
 }

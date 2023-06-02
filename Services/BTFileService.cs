@@ -5,6 +5,7 @@ namespace CrucibleBugTracker.Services
 {
     public class BTFileService : IBTFileService
     {
+        private readonly string[] suffixes = { "Bytes", "KB", "MB", "GB", "TB", "PB" };
         private readonly string _defaultImage = "/img/DefaultImage.jpg";
         private readonly string _defaultBTUserImageSrc = "/img/DefaultUserImage.png";
         private readonly string _defaultCompanyImageSrc = "/img/DefaultCompanyImage.jpg";
@@ -43,6 +44,24 @@ namespace CrucibleBugTracker.Services
             {
                 throw;
             }
+        }
+
+        public string FormatFileSize(long bytes)
+        {
+            int counter = 0;
+            decimal number = bytes;
+            while (Math.Round(number / 1024) >= 1)
+            {
+                number /= 1024;
+                counter++;
+            }
+            return string.Format("{0:n1}{1}", number, suffixes[counter]);
+        }
+
+        public string GetFileIcon(string file)
+        {
+            string ext = Path.GetExtension(file).Replace(".", "");
+            return $"/img/contenttype/{ext}.png";
         }
     }
 }

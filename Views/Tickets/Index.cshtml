@@ -1,101 +1,173 @@
 ﻿@model IEnumerable<CrucibleBugTracker.Models.Ticket>
 
+@using CrucibleBugTracker.Enums
+
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = ViewBag.Title;
 }
 
-<h1>Index</h1>
+<div class="page-header d-md-flex justify-content-between">
+    <div>
+        <h3>Tickets</h3>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a asp-controller="Home" asp-action="Index">Home</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <span>Tickets</span>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">@ViewBag.Title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="mt-2 mt-md-0">
+        <div class="dropdown">
+            <a href="#" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+                <i class="ti-settings mr-2"></i> Actions
+            </a>
+            <div class="dropdown-menu dropdown-menu-right">
+                <a class="dropdown-item" asp-controller="Tickets" asp-action="Create">Create Ticket</a>
+                <a class="dropdown-item" href="#">Another action</a>
+                <a class="dropdown-item" href="#">Something else here</a>
+            </div>
+        </div>
+    </div>
+</div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Title)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Description)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Created)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.UpdatedDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Archived)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ArchivedByProject)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Project)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.TicketPriority)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.TicketStatus)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.TicketType)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DeveloperUser)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.SubmitterUser)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Title)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Created)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.UpdatedDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Archived)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ArchivedByProject)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Project.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.TicketPriority.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.TicketStatus.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.TicketType.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DeveloperUser.FullName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.SubmitterUser.FullName)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Archive" asp-route-id="@item.Id">Archive</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="card-title">@ViewBag.Title</h6>
+                <div class="table-responsive">
+                    <table id="orders" class="table">
+                        <thead>
+                            <tr>
+                                <th>Ticket Title</th>
+                                <th>Last Updated Date</th>
+                                <th>Project</th>
+                                <th>Status</th>
+                                <th>Priority</th>
+                                <th>Type</th>
+                                <th>Developer</th>
+                                <th class="text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                foreach (Ticket ticket in Model)
+                                {
+                                    <tr>
+                                        <td>
+                                            <span>@ticket.Title</span>
+                                        </td>
+                                        @if (ticket.UpdatedDate == null)
+                                        {
+                                            <td>@ticket.Created.ToString("MMM dd, yyyy")</td>
+                                        }
+                                        else
+                                        {
+                                            <td>@ticket.UpdatedDate.Value.ToString("MMM dd, yyyy")</td>
+                                        }
+                                        <td>@ticket.Project?.Name</td>
+                                        <td>
+                                            @switch (ticket.TicketStatus?.Name)
+                                            {
+                                                case nameof(BTTicketStatuses.New):
+                                                    <span class="badge bg-primary-bright text-primary">@ticket.TicketStatus.Name</span>
+                                                    break;
+                                                case nameof(BTTicketStatuses.Development):
+                                                    <span class="badge bg-warning-bright text-warning">@ticket.TicketStatus.Name</span>
+                                                    break;
+                                                case nameof(BTTicketStatuses.Testing):
+                                                    <span class="badge bg-info-bright text-info">@ticket.TicketStatus.Name</span>
+                                                    break; ;
+                                                case nameof(BTTicketStatuses.Resolved):
+                                                    <span class="badge bg-sucess-bright text-success">@ticket.TicketStatus.Name</span>
+                                                    break;
+                                                default:
+                                                    break;
+                                            }
+                                        </td>
+                                        <td>
+                                            @switch (ticket.TicketPriority?.Name)
+                                            {
+                                                case nameof(BTTicketPriorities.Low):
+                                                    <span class="badge bg-success-bright text-success">@ticket.TicketPriority.Name</span>
+                                                    break;
+                                                case nameof(BTTicketPriorities.Medium):
+                                                    <span class="badge bg-primary-bright text-primary">@ticket.TicketPriority.Name</span>
+                                                    break;
+                                                case nameof(BTTicketPriorities.High):
+                                                    <span class="badge bg-warning-bright text-warning">@ticket.TicketPriority.Name</span>
+                                                    break;
+                                                case nameof(BTTicketPriorities.Urgent):
+                                                    <span class="badge bg-danger-bright text-danger">@ticket.TicketPriority.Name</span>
+                                                    break;
+                                                default:
+                                                    break;
+                                            }
+                                        </td>
+                                        <td>
+                                            @switch (ticket.TicketType?.Name)
+                                            {
+                                                case nameof(BTTicketTypes.NewDevelopment):
+                                                    <span class="badge bg-primary-bright text-primary">New Development</span>
+                                                    break;
+                                                case nameof(BTTicketTypes.GeneralTask):
+                                                    <span class="badge bg-secondary-bright text-secondary">General Task</span>
+                                                    break;
+                                                case nameof(BTTicketTypes.WorkTask):
+                                                    <span class="badge bg-info-bright text-info">Work Task</span>
+                                                    break;
+                                                case nameof(BTTicketTypes.Enhancement):
+                                                    <span class="badge bg-success-bright text-success">Enhancement</span>
+                                                    break;
+                                                case nameof(BTTicketTypes.ChangeRequest):
+                                                    <span class="badge bg-warning-bright text-warning">Change Request</span>
+                                                    break;
+                                                case nameof(BTTicketTypes.Defect):
+                                                    <span class="badge bg-danger-bright text-danger">Defect</span>
+                                                    break;
+                                                default:
+                                                    break;
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (ticket.DeveloperUser != null)
+                                            {
+                                                <figure class="avatar avatar-sm mr-3">
+                                                    <span class="avatar-title bg-info-bright text-info rounded-circle"
+                                                          data-bs-toggle="tooltip"
+                                                          data-bs-placement="top"
+                                                          data-bs-title="@ticket.DeveloperUser.FullName">
+                                                        @ticket.DeveloperUser?.FirstName?[0]
+                                                    </span>
+                                                </figure>
+                                            }
+                                        </td>
+                                        <td class="text-right">
+                                            <div class="dropdown">
+                                                <a href="#" data-toggle="dropdown"
+                                                   class="btn btn-floating"
+                                                   aria-haspopup="true" aria-expanded="false">
+                                                    <i class="ti-more-alt"></i>
+                                                </a>
+                                                <div class="dropdown-menu dropdown-menu-right">
+                                                    <a asp-controller="Tickets" asp-action="Details" asp-route-id="@ticket.Id" class="dropdown-item">View Detail</a>
+                                                    <a asp-controller="Tickets" asp-action="Edit" asp-route-id="@ticket.Id" class="dropdown-item">Edit</a>
+                                                    <a asp-controller="Tickets" asp-action="Archive" asp-route-id="@ticket.Id" class="dropdown-item text-danger">Archive</a>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

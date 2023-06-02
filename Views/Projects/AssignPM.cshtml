@@ -1,0 +1,29 @@
+﻿@model CrucibleBugTracker.Models.ViewModels.AssignPMViewModel
+
+@{
+    ViewData["Title"] = "Assign Project Manager";
+}
+<div class="d-flex justify-content-center mt-5 flex-column align-items-center">
+    <h3 class="my-5">Assign Project Manager</h3>
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">@Model.Project!.Name</div>
+        </div>
+        <div class="card-body">
+            <form asp-action="AssignPM" method="post" class="d-flex flex-column">
+                <input type="hidden" asp-for="Project!.Id" />
+                <select asp-items="Model.PMList" asp-for="PMId">
+                    <option value="@null">Unassigned</option>
+                </select>
+                <button type="submit" class="btn btn-primary my-3">Save</button>
+                <a asp-action="Details" asp-route-id="@Model.Project!.Id" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

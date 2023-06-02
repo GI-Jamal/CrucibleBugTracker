@@ -17,6 +17,7 @@
             <input type="hidden" asp-for="Created" />
             <input type="hidden" asp-for="SubmitterUserId" />
             <input type="hidden" asp-for="ArchivedByProject" />
+            <input type="hidden" asp-for="ProjectId" />
             <div class="form-group">
                 <label asp-for="Title" class="control-label"></label>
                 <input asp-for="Title" class="form-control" />
@@ -31,11 +32,6 @@
                 <label class="form-check-label">
                     <input class="form-check-input" asp-for="Archived" /> @Html.DisplayNameFor(model => model.Archived)
                 </label>
-            </div>
-            <div class="form-group">
-                <label asp-for="ProjectId" class="control-label"></label>
-                <select asp-for="ProjectId" class="form-control" asp-items="ViewBag.ProjectId"></select>
-                <span asp-validation-for="ProjectId" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="TicketPriorityId" class="control-label"></label>
@@ -55,15 +51,10 @@
             <div class="form-group">
                 <label asp-for="DeveloperUserId" class="control-label"></label>
                 <select asp-for="DeveloperUserId" class="form-control" asp-items="ViewBag.DeveloperUserId">
-                    <option></option>
+                    <option value="@null">Unassigned</option>
                 </select>
                 <span asp-validation-for="DeveloperUserId" class="text-danger"></span>
             </div>
-            @*<div class="form-group">
-                <label asp-for="SubmitterUserId" class="control-label"></label>
-                <select asp-for="SubmitterUserId" class="form-control" asp-items="ViewBag.SubmitterUserId"></select>
-                <span asp-validation-for="SubmitterUserId" class="text-danger"></span>
-            </div>*@
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>

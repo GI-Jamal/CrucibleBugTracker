@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <Folder Include="Views\Home\Gogi\" />
+    <Folder Include="wwwroot\img\contenttype\" />
   </ItemGroup>
 
 </Project>

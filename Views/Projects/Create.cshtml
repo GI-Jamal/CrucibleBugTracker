@@ -1,5 +1,6 @@
 ﻿@model CrucibleBugTracker.Models.Project
 
+@using CrucibleBugTracker.Enums;
 @using CrucibleBugTracker.Services.Interfaces
 
 @inject IBTFileService _FileService
@@ -48,6 +49,26 @@
                 <select asp-for="ProjectPriorityId" class="form-control" asp-items="ViewBag.ProjectPriorityId"></select>
             </div>
             <div class="form-group">
+                <label class="control-label">Developers</label>
+                <select class="form-control" asp-items="@ViewBag.ProjectDevelopers" name="developerIds" multiple></select>
+            </div>
+            <div class="form-group">
+                <label class="control-label">Submitters</label>
+                <select class="form-control" asp-items="@ViewBag.ProjectSubmitters" name="submitterIds" multiple></select>
+            </div>
+            @{
+                if (User.IsInRole(nameof(BTRoles.Admin)))
+                {
+                    <div class="form-group">
+                        <label class="control-label">Project Manager</label>
+                        <select class="form-control" asp-items="@ViewBag.ProjectManagers" name="projectManagerId">
+                            <option value="@null">Unassigned</option>
+                        </select>
+                    </div>
+                }
+
+            }
+            <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
         </form>
@@ -62,4 +83,9 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script>
+        $(document).ready(function () {
+            $('.layout-wrapper .content-wrapper .content-body .content').getNiceScroll().resize();
+        });
+    </script>
 }
