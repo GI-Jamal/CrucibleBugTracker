@@ -18,8 +18,8 @@ namespace CrucibleBugTracker.Services.Interfaces
         Task<List<Ticket>> GetTicketsByUserIdAsync(string userId);
         Task<Ticket?> GetTicketAsNoTrackingAsync(int ticketId, int companyId);
         Task AddTicketAttachmentAsync(TicketAttachment ticketAttachment);
-        Task<TicketAttachment?> GetTicketAttachmentByIdAsync(int ticketAttachmentId); 
-
-
+        Task<TicketAttachment?> GetTicketAttachmentByIdAsync(int ticketAttachmentId);
+        Task AddTicketCommentAsync(TicketComment comment);
+        Task<bool> IsUserDeveloperInCompany(string userId, int companyId);
     }
 }

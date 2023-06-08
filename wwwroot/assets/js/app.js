@@ -434,35 +434,35 @@ Author URL:   https://themeforest.net/user/laborasyon/portfolio
     return false;
   });
 
-  //if (wind_.width() >= 1200) {
-  //  $('.layout-wrapper .content-wrapper .content-body .content').niceScroll();
-  //  setTimeout(function () {
-  //    $('.card-scroll').niceScroll({
-  //      overflowx: false
-  //    });
-  //    $('.dropdown-scroll').niceScroll({
-  //      overflowx: false
-  //    });
-  //    $('.table-responsive').niceScroll();
-  //    $('.app-block .app-content .app-lists').niceScroll({
-  //      overflowx: false
-  //    });
-  //    $('.app-block .app-sidebar').niceScroll({
-  //      overflowx: false
-  //    });
-  //    $('.chat-block .chat-sidebar .chat-sidebar-content').niceScroll({
-  //      overflowx: false
-  //    });
-  //    var chat_messages = $('.chat-block .chat-content .messages');
+  if (wind_.width() >= 1200) {
+    $('.layout-wrapper .content-wrapper .content-body .content').niceScroll();
+    setTimeout(function () {
+      $('.card-scroll').niceScroll({
+        overflowx: false
+      });
+      $('.dropdown-scroll').niceScroll({
+        overflowx: false
+      });
+      $('.table-responsive').niceScroll();
+      $('.app-block .app-content .app-lists').niceScroll({
+        overflowx: false
+      });
+      $('.app-block .app-sidebar').niceScroll({
+        overflowx: false
+      });
+      $('.chat-block .chat-sidebar .chat-sidebar-content').niceScroll({
+        overflowx: false
+      });
+      var chat_messages = $('.chat-block .chat-content .messages');
 
-  //    if (chat_messages.length) {
-  //      chat_messages.niceScroll({
-  //        overflowx: false
-  //      });
-  //      chat_messages.getNiceScroll(0).doScrollTop(chat_messages.get(0).scrollHeight, -1);
-  //    }
-  //  }, 200);
-  //}
+      if (chat_messages.length) {
+        chat_messages.niceScroll({
+          overflowx: false
+        });
+        chat_messages.getNiceScroll(0).doScrollTop(chat_messages.get(0).scrollHeight, -1);
+      }
+    }, 200);
+  }
 
   $(document).on('mouseenter', 'body.small-navigation:not(.scrollable-layout) .navigation', function (e) {
     $(this).find('.navigation-menu-body').niceScroll();

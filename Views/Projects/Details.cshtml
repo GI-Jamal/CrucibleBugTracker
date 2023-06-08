@@ -53,11 +53,29 @@
                     }
                 </div>
                 <div class="card-body">
-                    <h5 class="card-title">@Model.Name</h5>
+                    <h5 class="card-title">
+                        @Model.Name&nbsp;
+                        @switch (Model.ProjectPriority?.Name)
+                        {
+                            case nameof(BTProjectPriorities.Low):
+                                <span class="badge bg-info">Low Priority</span>
+                                break;
+                            case nameof(BTProjectPriorities.Medium):
+                                <span class="badge bg-secondary">Medium Priority</span>
+                                break;
+                            case nameof(BTProjectPriorities.High):
+                                <span class="badge bg-secondary">High Priority</span>
+                                break;
+                            case nameof(BTProjectPriorities.Urgent):
+                                <span class="badge bg-danger">Urgent Priority </span>
+                                break;
+                        }
+                    </h5>
+                    <h6 class="card-subtitle mb-4 text-muted">Created Date: @Model.Created.ToString("MMMM dd, yyyy")</h6>
                     <h6 class="card-subtitle mb-4 text-muted">Start Date: @Model.StartDate.ToString("MMMM dd, yyyy")</h6>
                     <h6 class="card-subtitle mb-4 text-muted">End Date: @Model.EndDate.ToString("MMMM dd, yyyy")</h6>
                     <p class="card-text">
-                        @Model.Description
+                        @Html.Raw(Model.Description)
                     </p>
                 </div>
                 <div class="card-footer fw-bold lead">
@@ -134,46 +152,111 @@
             </div>
         }
     </div>
-    <div class="table-responsive mt-4">
-        <table class="table table-hover table-bordered text-center no-wrap" id="ticketTable">
-            @* TICKETS TABLE *@
-            <tr>
-                <td>
-                    Project Tickets Go Here
-                </td>
-            </tr>
-        </table>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="ticketsTable" class="table">
+                            <thead>
+                                <tr>
+                                    <th>Ticket Title</th>
+                                    <th>Priority</th>
+                                    <th>Developer</th>
+                                    <th>Archived</th>
+                                    <th class="text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (Ticket ticket in Model.Tickets)
+                                {
+
+                                    <tr>
+                                        <td>
+                                            <a asp-controller="Tickets" asp-action="Details" asp-route-id="@ticket.Id">@ticket.Title</a>
+                                        </td>
+                                        <td>
+                                            @switch (ticket.TicketPriority?.Name)
+                                            {
+                                                case nameof(BTTicketPriorities.Low):
+                                                    <span class="badge bg-success-bright text-success">@ticket.TicketPriority.Name</span>
+                                                    break;
+                                                case nameof(BTTicketPriorities.Medium):
+                                                    <span class="badge bg-primary-bright text-primary">@ticket.TicketPriority.Name</span>
+                                                    break;
+                                                case nameof(BTTicketPriorities.High):
+                                                    <span class="badge bg-warning-bright text-warning">@ticket.TicketPriority.Name</span>
+                                                    break;
+                                                case nameof(BTTicketPriorities.Urgent):
+                                                    <span class="badge bg-danger-bright text-danger">@ticket.TicketPriority.Name</span>
+                                                    break;
+                                                default:
+                                                    break;
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (ticket.DeveloperUserId != null)
+                                            {
+                                                <figure class="avatar avatar-sm mr-3">
+                                                    <span class="avatar-title bg-info-bright text-info rounded-circle"
+                                                          data-bs-toggle="tooltip"
+                                                          data-bs-placement="top"
+                                                          data-bs-title="@ticket.DeveloperUser?.FullName">
+                                                        @ticket.DeveloperUser?.FirstName?[0]
+                                                    </span>
+                                                </figure>
+                                            }
+                                            else
+                                            {
+                                                <span>Unassigned</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (ticket.Archived)
+                                            {
+                                                <span class="badge bg-danger-bright text-danger">Yes</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-success-bright text-success">No</span>
+                                            }
+                                        </td>
+                                        <td class="text-right">
+                                            <div class="dropdown">
+                                                <a href="#" data-toggle="dropdown"
+                                                   class="btn btn-floating"
+                                                   aria-haspopup="true" aria-expanded="false">
+                                                    <i class="ti-more-alt"></i>
+                                                </a>
+                                                <div class="dropdown-menu dropdown-menu-right">
+                                                    <a asp-controller="Tickets" asp-action="Details" asp-route-id="@ticket.Id" class="dropdown-item">View Detail</a>
+                                                    <a asp-controller="Tickets" asp-action="AssignDev" asp-route-id="@ticket.Id" class="dropdown-item">Assign Dev</a>
+                                                    <a asp-controller="Tickets" asp-action="Edit" asp-route-id="@ticket.Id" class="dropdown-item">Edit</a>
+                                                    <a asp-controller="Tickets" asp-action="Archive" asp-route-id="@ticket.Id" class="dropdown-item text-danger">Archive</a>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="mt-5 ms-auto">
-        <a asp-controller="Projects" asp-action="Index" class="btn btn-dark">Back to List</a>
-    </div>
+</div>
+<div class="mt-4 ms-auto">
+    <a asp-controller="Projects" asp-action="Index" class="btn btn-dark">Back to List</a>
 </div>
 
 <div>
     <dl class="row">
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Created)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Created)
-        </dd>
-        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.ImageFormFile)
         </dt>
         <dd class="col-sm-10">
             <img src="@_FileService.ConvertByteArrayToFile(Model.ImageFileData, Model.ImageFileType, DefaultImage.ProjectImage)" class="img-fluid" id="projectImage" />
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Company)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Company!.Name)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.ProjectPriority)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.ProjectPriority!.Name)
         </dd>
     </dl>
 </div>

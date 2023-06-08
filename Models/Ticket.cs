@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace CrucibleBugTracker.Models
 {
@@ -48,26 +49,35 @@ namespace CrucibleBugTracker.Models
 
 
         // Navigation Properties
+        
         public virtual Project? Project { get; set; }
         
         [Display(Name = "Ticket Priority")]
+        
         public virtual TicketPriority? TicketPriority { get; set; }
         
         [Display(Name = "Ticket Status")]
+        
         public virtual TicketStatus? TicketStatus { get; set; }
         
         [Display(Name = "Ticket Type")]
+        
         public virtual TicketType? TicketType { get; set; }
         
         [Display(Name = "Developer")]
+        
         public virtual BTUser? DeveloperUser { get; set; }
         
         [Display(Name = "Submitter")]
+        
         public virtual BTUser? SubmitterUser { get; set; }
+        
         
         public virtual ICollection<TicketComment> Comments { get; set; } = new HashSet<TicketComment>();
         
+        
         public virtual ICollection<TicketAttachment> Attachments { get; set; } = new HashSet<TicketAttachment>();
+        
         
         public virtual ICollection<TicketHistory> History { get; set; } = new HashSet<TicketHistory>();
     }

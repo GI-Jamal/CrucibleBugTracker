@@ -4,40 +4,69 @@
     ViewData["Title"] = "Create";
 }
 
-<h1>Create</h1>
-
-<h4>Ticket</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Title" class="control-label"></label>
-                <input asp-for="Title" class="form-control" />
-                <span asp-validation-for="Title" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Description" class="control-label"></label>
-                <input asp-for="Description" class="form-control" />
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ProjectId" class="control-label"></label>
-                <select asp-for="ProjectId" class ="form-control" asp-items="ViewBag.ProjectId"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="TicketPriorityId" class="control-label"></label>
-                <select asp-for="TicketPriorityId" class ="form-control" asp-items="ViewBag.TicketPriorityId"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="TicketTypeId" class="control-label"></label>
-                <select asp-for="TicketTypeId" class ="form-control" asp-items="ViewBag.TicketTypeId"></select>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+<div id="mainContent">
+    <div class="page-header">
+        <div>
+            <h3>Create New Ticket</h3>
+            <nav aria-label="breadcrumb" class="d-flex align-items-start">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a asp-controller="Home" asp-action="Index">Home</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a asp-controller="Tickets" asp-action="Index">Tickets</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Create</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <form asp-action="Create" asp-controller="Tickets" enctype="multipart/form-data" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title">Ticket Details</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="Title" class="control-label">Ticket Title</label>
+                                    <input asp-for="Title" class="form-control" />
+                                    <span asp-validation-for="Title" class="text-danger"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="ProjectId" class="control-label"></label>
+                                    <select asp-for="ProjectId" class="form-control" asp-items="ViewBag.ProjectId"></select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="TicketPriorityId" class="control-label"></label>
+                                    <select asp-for="TicketPriorityId" class="form-control" asp-items="ViewBag.TicketPriorityId"></select>
+                                </div>
+                                <div class="form-group">
+                                    <div class="form-group">
+                                        <label asp-for="TicketTypeId" class="control-label"></label>
+                                        <select asp-for="TicketTypeId" class="form-control" asp-items="ViewBag.TicketTypeId"></select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label asp-for="Description" class="control-label"></label>
+                                    <textarea id="editor" asp-for="Description" class="form-control"></textarea>
+                                    <span asp-validation-for="Description" class="text-danger"></span>
+                                </div>
+                                <div class="form-group">
+                                    <input type="submit" value="Create" class="btn btn-primary" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 

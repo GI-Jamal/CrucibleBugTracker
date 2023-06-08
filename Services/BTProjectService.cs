@@ -122,7 +122,7 @@ namespace CrucibleBugTracker.Services
         {
             try
             {
-                return await _context.Projects.Where(p => p.CompanyId == companyId).Include(p => p.Company).Include(p => p.ProjectPriority).ToListAsync();
+                return await _context.Projects.Where(p => p.CompanyId == companyId).Include(p => p.Tickets).Include(p => p.Company).Include(p => p.ProjectPriority).ToListAsync();
 
             }
             catch (Exception)
@@ -157,7 +157,7 @@ namespace CrucibleBugTracker.Services
                     }
                 }
 
-                return await _context.Projects.Include(p => p.Members).Where(p => p.Members.Any(m => m.Id == userId)).ToListAsync();
+                return await _context.Projects.Include(p => p.Members).Include(p => p.ProjectPriority).Include(p => p.Company).Where(p => p.Members.Any(m => m.Id == userId)).ToListAsync();
 
             }
             catch (Exception)
@@ -170,7 +170,7 @@ namespace CrucibleBugTracker.Services
         {
             try
             {
-                return await _context.Projects.Where(p => p.CompanyId == companyId && p.Archived == true).Include(p => p.Company).Include(p => p.ProjectPriority).ToListAsync();
+                return await _context.Projects.Where(p => p.CompanyId == companyId && p.Archived == true).Include(p => p.Tickets).Include(p => p.Company).Include(p => p.ProjectPriority).ToListAsync();
 
             }
             catch (Exception)
@@ -186,7 +186,10 @@ namespace CrucibleBugTracker.Services
                 Project? project = await _context.Projects.Include(p => p.Company)
                                                       .Include(p => p.ProjectPriority)
                                                       .Include(p => p.Members)
-                                                      .Include(p => p.Tickets).AsNoTracking().FirstOrDefaultAsync(p => p.Id == projectId && p.CompanyId == companyId);
+                                                      .Include(p => p.Tickets)
+                                                        .ThenInclude(t => t.DeveloperUser)
+                                                       .Include(p => p.Tickets)
+                                                        .ThenInclude(t => t.TicketPriority).FirstOrDefaultAsync(p => p.Id == projectId && p.CompanyId == companyId);
                 if (project != null)
                 {
                     return project;
@@ -207,7 +210,7 @@ namespace CrucibleBugTracker.Services
         {
             try
             {
-                Project? project = await _context.Projects.AsNoTracking().Include(p => p.Members).FirstOrDefaultAsync(p => p.Id == projectId && p.CompanyId == companyId);
+                Project? project = await _context.Projects.Include(p => p.Members).AsNoTracking().FirstOrDefaultAsync(p => p.Id == projectId && p.CompanyId == companyId);
 
                 if (project != null)
                 {
@@ -221,6 +224,19 @@ namespace CrucibleBugTracker.Services
                 }
 
                 return null;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task<string?> GetProjectManagerIdAsync(int projectId, int companyId)
+        {
+            try
+            {
+                string? currentPMId = (await GetProjectManagerAsync(projectId, companyId))?.Id;
+                return currentPMId;
             }
             catch (Exception)
             {
@@ -270,17 +286,25 @@ namespace CrucibleBugTracker.Services
 
         public async Task<List<Project>> GetUnassignedProjectsByCompanyIdAsync(int companyId)
         {
-            List<Project> allProjects = await GetAllProjectsByCompanyIdAsync(companyId);
-            List<Project> unassignedProjects = new();
-
-            foreach (Project project in allProjects)
+            try
             {
-                if (await GetProjectManagerAsync(project.Id, project.CompanyId) == null)
+
+                List<Project> allProjects = await GetAllProjectsByCompanyIdAsync(companyId);
+                List<Project> unassignedProjects = new();
+
+                foreach (Project project in allProjects)
                 {
-                    unassignedProjects.Add(project);
+                    if (await GetProjectManagerAsync(project.Id, project.CompanyId) == null)
+                    {
+                        unassignedProjects.Add(project);
+                    }
                 }
+                return unassignedProjects;
             }
-            return unassignedProjects;
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
         public async Task<bool> RemoveMemberFromProjectAsync(BTUser member, int projectId, int companyId)

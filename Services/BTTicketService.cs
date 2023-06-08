@@ -46,6 +46,22 @@ namespace CrucibleBugTracker.Services
             }
         }
 
+        public async Task AddTicketCommentAsync(TicketComment comment)
+        {
+            try
+            {
+                Ticket? ticket = await _context.Tickets.Include(t => t.Comments).FirstOrDefaultAsync(t => t.Id == comment.TicketId);
+                
+                ticket?.Comments.Add(comment);
+
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
         public async Task ArchiveTicketAsync(Ticket ticket, int companyId)
         {
             try
@@ -129,7 +145,11 @@ namespace CrucibleBugTracker.Services
                                                    .Include(t => t.TicketPriority)
                                                    .Include(t => t.TicketStatus)
                                                    .Include(t => t.TicketType)
+                                                   .Include(t => t.History)
+                                                    .ThenInclude(h => h.User)
                                                    .Include(t => t.Attachments)
+                                                   .Include(t => t.Comments)
+                                                    .ThenInclude(c => c.User)
                                                    .FirstOrDefaultAsync(t => t.Project!.CompanyId == companyId && t.Id == ticketId);
                 return ticket;
             }
@@ -156,6 +176,7 @@ namespace CrucibleBugTracker.Services
             try
             {
                 return await _context.Tickets.Include(t => t.Project)
+                                                .ThenInclude(p => p!.Members)
                                              .Include(t => t.DeveloperUser)
                                              .Include(t => t.SubmitterUser)
                                              .Include(t => t.TicketType)
@@ -254,6 +275,26 @@ namespace CrucibleBugTracker.Services
                 throw;
             }
         }
+
+        public async Task<bool> IsUserDeveloperInCompany(string userId, int companyId)
+        {
+            BTUser? user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user is not null)
+            {
+                if (user.CompanyId == companyId && await _roleService.IsUserInRole(user, nameof(BTRoles.Developer)))
+                {
+                    return true;
+                }
+
+                else
+                {
+                    return false;
+                }
+            }
+
+            return false;
+        }            
 
         public async Task RestoreTicketAsync(Ticket ticket, int companyId)
         {

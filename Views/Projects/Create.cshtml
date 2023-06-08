@@ -8,70 +8,198 @@
 @{
     ViewData["Title"] = "Create";
 }
-
-<h1>Create</h1>
-
-<h4>Project</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create" asp-controller="Projects" enctype="multipart/form-data" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Name" class="control-label">Project Name</label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Description" class="control-label"></label>
-                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="StartDate" class="control-label"></label>
-                <input asp-for="StartDate" class="form-control" />
-                <span asp-validation-for="StartDate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="EndDate" class="control-label"></label>
-                <input asp-for="EndDate" class="form-control" />
-                <span asp-validation-for="EndDate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <img src="~/img/DefaultProjectImage.jpg" class="img-fluid" id="projectImage" />
-                <label asp-for="ImageFormFile" class="control-label">Project Image</label>
-                <input asp-for="ImageFormFile" class="form-control" accept=".png, .jpeg, .jpg, .gif, .svg"
-                       onchange="document.getElementById('projectImage').src = window.URL.createObjectURL(this.files[0])" />
-                <span asp-validation-for="ImageFormFile" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ProjectPriorityId" class="control-label"></label>
-                <select asp-for="ProjectPriorityId" class="form-control" asp-items="ViewBag.ProjectPriorityId"></select>
-            </div>
-            <div class="form-group">
-                <label class="control-label">Developers</label>
-                <select class="form-control" asp-items="@ViewBag.ProjectDevelopers" name="developerIds" multiple></select>
-            </div>
-            <div class="form-group">
-                <label class="control-label">Submitters</label>
-                <select class="form-control" asp-items="@ViewBag.ProjectSubmitters" name="submitterIds" multiple></select>
-            </div>
-            @{
-                if (User.IsInRole(nameof(BTRoles.Admin)))
-                {
-                    <div class="form-group">
-                        <label class="control-label">Project Manager</label>
-                        <select class="form-control" asp-items="@ViewBag.ProjectManagers" name="projectManagerId">
-                            <option value="@null">Unassigned</option>
-                        </select>
+<div id="mainContent">
+    <div class="page-header">
+        <div>
+            <h3>Create New Project</h3>
+            <nav aria-label="breadcrumb" class="d-flex align-items-start">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a asp-controller="Home" asp-action="Index">Home</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a asp-controller="Projects" asp-action="Index">Projects</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Create</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <form asp-action="Create" asp-controller="Projects" enctype="multipart/form-data" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title">Project Details</h6>
+                        <div class="d-flex mb-3">
+                            <figure class="mr-3">
+                                <a class="image-popup" id="lightBoxImg" href="~/img/DefaultProjectImage.jpg">
+                                    <img width="100" src="~/img/DefaultProjectImage.jpg" class="img-fluid" id="projectImage" onchange="document.getElementById('lightBoxImg').setAttribute('href', )" />
+                                </a>
+                            </figure>
+                            <div>
+                                <label asp-for="ImageFormFile" class="control-label">Project Image</label>
+                                <input asp-for="ImageFormFile" class="form-control" accept=".png, .jpeg, .jpg, .gif, .svg"
+                                       onchange="document.getElementById('projectImage').src = window.URL.createObjectURL(this.files[0])" />
+                                <span asp-validation-for="ImageFormFile" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="Name" class="control-label">Project Name</label>
+                                    <input asp-for="Name" class="form-control" />
+                                    <span asp-validation-for="Name" class="text-danger"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="StartDate" class="control-label"></label>
+                                    <input asp-for="StartDate" class="form-control" />
+                                    <span asp-validation-for="StartDate" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="ProjectPriorityId" class="control-label"></label>
+                                    <select asp-for="ProjectPriorityId" class="form-control" asp-items="ViewBag.ProjectPriorityId"></select>
+                                </div>
+                                <div class="form-group">
+                                    <div class="form-group">
+                                        <label asp-for="EndDate" class="control-label"></label>
+                                        <input asp-for="EndDate" class="form-control" />
+                                        <span asp-validation-for="EndDate" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label asp-for="Description" class="control-label"></label>
+                                    <textarea id="editor" asp-for="Description" class="form-control"></textarea>
+                                    <span asp-validation-for="Description" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                }
-
-            }
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title">Project Members</h6>
+                        <div class="row">
+                            @{
+                                if (User.IsInRole(nameof(BTRoles.Admin)))
+                                {
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <label class="control-label">Project Manager</label>
+                                            <select class="form-control" asp-items="@ViewBag.ProjectManagers" name="projectManagerId">
+                                                <option value="@null">Unassigned</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="control-label">All Active Developers</label>
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Full Name</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (BTUser user in ViewBag.ProjectDevelopers)
+                                                {
+                                                    <tr data-id="@user.Id" id="developer" role="button" onclick="addDeveloper(this)">
+                                                        <td>
+                                                            <figure class="avatar avatar-sm mr-3">
+                                                                <span class="avatar-title bg-info-bright text-info rounded-circle">
+                                                                    @user.FirstName?[0]
+                                                                </span>
+                                                            </figure>
+                                                            <span>@user.FullName</span>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="control-label">Selected Developers</label>
+                                    <input type="hidden" id="developerIds" name="developerIds" />
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Full Name</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="projectDevelopers" name="projectDevelopers">
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="control-label">All Active Submitters</label>
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Full Name</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (BTUser user in ViewBag.ProjectSubmitters)
+                                                {
+                                                    <tr role="button" data-id="@user.Id" id="submitter" onclick="addSubmitter(this)">
+                                                        <td>
+                                                            <figure class="avatar avatar-sm mr-3">
+                                                                <span class="avatar-title bg-info-bright text-info rounded-circle">
+                                                                    @user.FirstName?[0]
+                                                                </span>
+                                                            </figure>
+                                                            <span>@user.FullName</span>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="control-label">Selected Submitters</label>
+                                    <input type="hidden" id="submitterIds" name="submitterIds" />
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Full Name</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="projectSubmitters" name="projectSubmitters">
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <input type="submit" value="Create" class="btn btn-primary" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -79,13 +207,85 @@
     <a asp-action="Index">Back to List</a>
 </div>
 
-@section Scripts {
+@section scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
     <script>
         $(document).ready(function () {
-            $('.layout-wrapper .content-wrapper .content-body .content').getNiceScroll().resize();
-        });
+            $('.image-popup').magnificPopup({
+                type: 'image',
+                zoom: {
+                    enabled: true,
+                    duration: 300,
+                    easing: 'ease-in-out',
+                    opener: function (openerElement) {
+                        return openerElement.is('img') ? openerElement : openerElement.find('img');
+                    }
+                }
+            });
+        });        
+    </script>
+    <script>
+        function addDeveloper(developer) {
+            var developerIds = document.getElementById("developerIds")
+            var developerId = developer.getAttribute("data-id")
+            var projectDevelopers = document.getElementById("projectDevelopers")
+            var splitDevelopers = developerIds.value.split(',');
+            if (!splitDevelopers.includes(developerId)) {
+                developer.style.display = "none";
+                developerIds.value = developerIds.value + developerId + ',';
+                row = projectDevelopers.insertRow();
+                row.setAttribute("onclick", "removeDeveloper(this)");
+                row.setAttribute("data-userId", developerId);
+                cell1 = row.insertCell(0);
+                cell1.innerHTML = developer.cells[0].innerHTML;
+
+            }
+        }
+
+        function removeDeveloper(projectDeveloper) {
+            var developerId = projectDeveloper.getAttribute("data-userId");
+            projectDeveloper.remove();
+            var developerIds = document.getElementById("developerIds");
+            var developers = developerIds.value.split(',');
+            var index = developers.indexOf(developerId);
+            if (index > -1) {
+                developers.splice(index, 1);
+            }
+            developerIds.value = developers.join(',');
+            var developer = document.querySelector(`[data-id="${developerId}"]`);
+            developer.style.display = "table-row";
+        }
+
+        function addSubmitter(submitter) {
+            var submitterIds = document.getElementById("submitterIds")
+            var submitterId = submitter.getAttribute("data-id")
+            var projectSubmitters = document.getElementById("projectSubmitters")
+            var splitSubmitters = submitterIds.value.split(',');
+            if (!splitSubmitters.includes(submitterId)) {
+                submitter.style.display = "none";
+                submitterIds.value = submitterIds.value + submitterId + ',';
+                row = projectSubmitters.insertRow();
+                row.setAttribute("onclick", "removeSubmitter(this)");
+                row.setAttribute("data-userId", submitterId);
+                cell1 = row.insertCell(0);
+                cell1.innerHTML = submitter.cells[0].innerHTML;
+            }
+        }
+
+        function removeSubmitter(projectSubmitter) {
+            var submitterId = projectSubmitter.getAttribute("data-userId");
+            projectSubmitter.remove();
+            var submitterIds = document.getElementById("submitterIds");
+            var submitters = submitterIds.value.split(',');
+            var index = submitters.indexOf(submitterId);
+            if (index > -1) {
+                submitters.splice(index, 1);
+            }
+            submitterIds.value = submitters.join(',');
+            var submitter = document.querySelector(`[data-id="${submitterId}"]`);
+            submitter.style.display = "table-row";
+        }
     </script>
 }

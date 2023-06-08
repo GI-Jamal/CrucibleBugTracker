@@ -1,5 +1,5 @@
 ﻿@page
-@model RegisterModel
+@model RegisterByInviteModel
 @{
     ViewData["Title"] = "Register";
     Layout = null;
@@ -43,6 +43,9 @@
 
         <!-- form -->
         <form id ="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+            <input type="hidden" asp-for="Input.CompanyId" />
+            <input type="hidden" asp-for="Input.Token" />
+            <input type="hidden" asp-for="Input.Email" />
             <div class="form-group">
                 <input asp-for="Input.FirstName" class="form-control" aria-required="true" placeholder="First name" required autofocus>               
                 <span asp-validation-for="Input.FirstName" class="text-danger"></span>
@@ -52,9 +55,13 @@
                 <span asp-validation-for="Input.LastName" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" required />                
+                <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" disabled required />                
                 <span asp-validation-for="Input.Email" class="text-danger"></span>
             </div>
+            <div class="form-group">
+                <input asp-for="Input.CompanyName" class="form-control" aria-required="true" placeholder="Company name" disabled />         
+                <span asp-validation-for="Input.CompanyName" class="text-danger"></span>
+            </div>          
             <div class="form-group">
                 <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" required />              
                 <span asp-validation-for="Input.Password" class="text-danger"></span>
@@ -81,11 +88,14 @@
 </body>
 </html>
 
-@*
 
+@*
 <div class="row">
     <div class="col-md-4">
         <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+            <input type="hidden" asp-for="Input.CompanyId" />
+            <input type="hidden" asp-for="Input.Token" />
+            <input type="hidden" asp-for="Input.Email" />
             <h2>Create a new account.</h2>
             <hr />
             <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
@@ -100,17 +110,12 @@
                 <span asp-validation-for="Input.LastName" class="text-danger"></span>
             </div>
             <div class="form-floating mb-3">
-                <input asp-for="Input.CompanyName" class="form-control" aria-required="true" placeholder="Company name" />
+                <input asp-for="Input.CompanyName" class="form-control" aria-required="true" placeholder="Company name" disabled />
                 <label asp-for="Input.CompanyName">Company Name</label>
                 <span asp-validation-for="Input.CompanyName" class="text-danger"></span>
-            </div>
+            </div>            
             <div class="form-floating mb-3">
-                <input asp-for="Input.CompanyDescription" class="form-control" aria-required="true" placeholder="Company description" />
-                <label asp-for="Input.CompanyDescription">Company Description</label>
-                <span asp-validation-for="Input.CompanyDescription" class="text-danger"></span>
-            </div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" disabled />
                 <label asp-for="Input.Email">Email</label>
                 <span asp-validation-for="Input.Email" class="text-danger"></span>
             </div>

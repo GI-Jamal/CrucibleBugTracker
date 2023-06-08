@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace CrucibleBugTracker.Models
 {
@@ -32,10 +33,14 @@ namespace CrucibleBugTracker.Models
         // Foreign Keys
         public int CompanyId { get; set; }
 
+        //public int? DepartmentId { get; set; }
+
 
         // Navigation Properties
+        //public virtual Department? Department { get; set; }
+        [JsonIgnore]
         public virtual Company? Company { get; set; }
-        
+        [JsonIgnore]
         public virtual ICollection<Project> Projects { get; set; } = new HashSet<Project>();
     }
 }

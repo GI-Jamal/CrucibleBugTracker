@@ -15,6 +15,7 @@ namespace CrucibleBugTracker.Services.Interfaces
         Task RestoreProjectAsync(Project project, int companyId);
         Task UpdateProjectAsync(Project project, int companyId);
         Task<BTUser?> GetProjectManagerAsync(int projectId, int companyId);
+        Task<string?> GetProjectManagerIdAsync(int projectId, int companyId);
         Task<bool> AddProjectManagerAsync(string userId, int projectId, int companyId);
         Task RemoveProjectManagerAsync(int projectId, int companyId);
         Task<List<BTUser>> GetProjectMembersByRoleAsync(int projectId, string roleName, int companyId);

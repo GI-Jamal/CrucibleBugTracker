@@ -47,56 +47,30 @@ namespace CrucibleBugTracker.Controllers
 
             return View(projects);
         }
-        [HttpGet]
-        [Authorize(Roles = nameof(BTRoles.Admin))]
-        public async Task<IActionResult> AssignPM(int? id)
-        {
-            if (id is null or 0)
-            {
-                return NotFound();
-            }
-
-            int companyId = User.Identity!.GetCompanyId();
-            Project? project = await _projectService.GetProjectByIdAsync((int)id, companyId);
-
-            if (project is null)
-            {
-                return NotFound();
-            }
-
-            List<BTUser> projectManagers = await _roleService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId);
-            BTUser? currentPM = await _projectService.GetProjectManagerAsync(id.Value, companyId);
-
-            AssignPMViewModel viewModel = new()
-            {
-                Project = project,
-                PMId = currentPM?.Id,
-                PMList = new SelectList(projectManagers, nameof(BTUser.Id), nameof(BTUser.FullName), currentPM?.Id)
-            };
-
-            return View(viewModel);
-        }
 
         [HttpPost]
         [Authorize(Roles = nameof(BTRoles.Admin))]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AssignPM(AssignPMViewModel viewModel)
+        public async Task<IActionResult> AssignPM(int projectId, string projectManagerId)
         {
-            if (viewModel.Project?.Id != null)
-            {
-                int companyId = User.Identity!.GetCompanyId();
+            int companyId = User.Identity!.GetCompanyId();
+            Project? project = await _projectService.GetProjectByIdAsync(projectId, companyId);
 
-                if (string.IsNullOrEmpty(viewModel.PMId))
-                {
-                    await _projectService.RemoveProjectManagerAsync(viewModel.Project.Id, companyId);
-                }
-                else
-                {
-                    await _projectService.AddProjectManagerAsync(viewModel.PMId, viewModel.Project.Id, companyId);
-                }
-                return RedirectToAction(nameof(Details), new { id = viewModel.Project.Id });
+            if (project == null) return NotFound();
+
+            BTUser? newProjectManager = await _userManager.FindByIdAsync(projectManagerId);
+            if (newProjectManager != null)
+            {
+                await _projectService.AddProjectManagerAsync(projectManagerId,project.Id, companyId);
+                return RedirectToAction(nameof(Details), new { id = projectId });
             }
-            return BadRequest();
+            else if (string.IsNullOrEmpty(projectManagerId))
+            {
+                await _projectService.RemoveProjectManagerAsync(projectId, companyId);
+                return RedirectToAction(nameof(Details), new { id = projectId });
+            }
+
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Projects/Details/5
@@ -130,8 +104,8 @@ namespace CrucibleBugTracker.Controllers
             int companyId = User.Identity!.GetCompanyId();
 
             ViewData["ProjectPriorityId"] = new SelectList(await _projectService.GetProjectPrioritiesAsync(), nameof(ProjectPriority.Id), nameof(ProjectPriority.Name));
-            ViewData["ProjectDevelopers"] = new MultiSelectList(await _roleService.GetUsersInRoleAsync(nameof(BTRoles.Developer), companyId), nameof(BTUser.Id), nameof(BTUser.FullName));
-            ViewData["ProjectSubmitters"] = new MultiSelectList(await _roleService.GetUsersInRoleAsync(nameof(BTRoles.Submitter), companyId), nameof(BTUser.Id), nameof(BTUser.FullName));
+            ViewData["ProjectDevelopers"] = new List<BTUser>(await _roleService.GetUsersInRoleAsync(nameof(BTRoles.Developer), companyId));
+            ViewData["ProjectSubmitters"] = new List<BTUser>(await _roleService.GetUsersInRoleAsync(nameof(BTRoles.Submitter), companyId));
             ViewData["ProjectManagers"] = new SelectList(await _roleService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId), nameof(BTUser.Id), nameof(BTUser.FullName));
 
             return View();
@@ -143,7 +117,7 @@ namespace CrucibleBugTracker.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = $"{nameof(BTRoles.Admin)}, {nameof(BTRoles.ProjectManager)}")]
-        public async Task<IActionResult> Create([Bind("Name,ImageFormFile,Description,StartDate,EndDate,ProjectPriorityId")] Project project, List<string> developerIds, List<string> submitterIds, string? projectManagerId)
+        public async Task<IActionResult> Create([Bind("Name,ImageFormFile,Description,StartDate,EndDate,ProjectPriorityId")] Project project, string? developerIds, string? submitterIds, string? projectManagerId)
         {
             ModelState.Remove(nameof(Project.CompanyId));
 
@@ -168,21 +142,32 @@ namespace CrucibleBugTracker.Controllers
                     project.Members.Add(user);
                 }
 
-                foreach (string developerId in developerIds)
+                string[]? developers = developerIds?.Remove(developerIds.Length - 1, 1).Split(',');
+                string[]? submitters = submitterIds?.Remove(submitterIds.Length - 1, 1).Split(',');
+
+
+
+                if (developers != null)
                 {
-                    BTUser? developer = (await _roleService.GetUsersInRoleAsync(nameof(BTRoles.Developer), user.CompanyId)).FirstOrDefault(u => u.Id == developerId);
-                    if (developer != null)
+                    foreach (string developerId in developers)
                     {
-                        project.Members.Add(developer);
+                        BTUser? developer = (await _roleService.GetUsersInRoleAsync(nameof(BTRoles.Developer), user.CompanyId)).FirstOrDefault(u => u.Id == developerId);
+                        if (developer != null)
+                        {
+                            project.Members.Add(developer);
+                        }
                     }
                 }
 
-                foreach (string submitterId in submitterIds)
+                if (submitters != null)
                 {
-                    BTUser? submitter = (await _roleService.GetUsersInRoleAsync(nameof(BTRoles.Submitter), user.CompanyId)).FirstOrDefault(u => u.Id == submitterId);
-                    if (submitter != null)
+                    foreach (string submitterId in submitters)
                     {
-                        project.Members.Add(submitter);
+                        BTUser? submitter = (await _roleService.GetUsersInRoleAsync(nameof(BTRoles.Submitter), user.CompanyId)).FirstOrDefault(u => u.Id == submitterId);
+                        if (submitter != null)
+                        {
+                            project.Members.Add(submitter);
+                        }
                     }
                 }
 
@@ -241,8 +226,8 @@ namespace CrucibleBugTracker.Controllers
             List<string> submitterIds = (await _projectService.GetProjectMembersByRoleAsync(project.Id, nameof(BTRoles.Submitter), companyId)).Select(u => u.Id).ToList();
 
             ViewData["ProjectPriorityId"] = new SelectList(await _projectService.GetProjectPrioritiesAsync(), nameof(ProjectPriority.Id), nameof(ProjectPriority.Name), project.ProjectPriorityId);
-            ViewData["ProjectDevelopers"] = new MultiSelectList(await _roleService.GetUsersInRoleAsync(nameof(BTRoles.Developer), companyId), nameof(BTUser.Id), nameof(BTUser.FullName), developerIds);
-            ViewData["ProjectSubmitters"] = new MultiSelectList(await _roleService.GetUsersInRoleAsync(nameof(BTRoles.Submitter), companyId), nameof(BTUser.Id), nameof(BTUser.FullName), submitterIds);
+            ViewData["ProjectDevelopers"] = new List<BTUser>(await _roleService.GetUsersInRoleAsync(nameof(BTRoles.Developer), companyId));
+            ViewData["ProjectSubmitters"] = new List<BTUser>(await _roleService.GetUsersInRoleAsync(nameof(BTRoles.Submitter), companyId));
             ViewData["ProjectManagers"] = new SelectList(await _roleService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId), nameof(BTUser.Id), nameof(BTUser.FullName), projectManagerId);
             return View(project);
         }
@@ -375,50 +360,42 @@ namespace CrucibleBugTracker.Controllers
             return View(project);
         }
 
-        // GET: Projects/Archive/5
-        [Authorize(Roles = $"{nameof(BTRoles.Admin)}, {nameof(BTRoles.ProjectManager)}")]
-        public async Task<IActionResult> Archive(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            int companyId = User.Identity!.GetCompanyId();
-            Project? project = await _projectService.GetProjectByIdAsync((int)id, companyId);
-
-            if (project == null)
-            {
-                return NotFound();
-            }
-
-            if (project.CompanyId != companyId)
-            {
-                return NotFound();
-            }
-
-            return View(project);
-        }
-
         // POST: Projects/Archive/5
-        [HttpPost, ActionName("Archive")]
+        [HttpPost]
         [Authorize(Roles = $"{nameof(BTRoles.Admin)}, {nameof(BTRoles.ProjectManager)}")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ArchiveConfirmed(int id)
+        public async Task<IActionResult> Archive(int archiveProjectId)
         {
             int companyId = User.Identity!.GetCompanyId();
-            Project? project = await _projectService.GetProjectByIdAsync(id, companyId);
+            string? userId = _userManager.GetUserId(User);
+            string? currentPMId = (await _projectService.GetProjectManagerAsync(archiveProjectId, companyId))?.Id;
+            Project? project = await _projectService.GetProjectByIdAsync(archiveProjectId, companyId);
 
-            if (project != null)
+            if (project == null || (currentPMId is not null && userId != currentPMId && !User.IsInRole(nameof(BTRoles.Admin))))
             {
-                if (project.CompanyId != companyId)
-                {
-                    return NotFound();
-                }
-
-                await _projectService.ArchiveProjectAsync(project, companyId);
+                return NotFound();
             }
 
+            await _projectService.ArchiveProjectAsync(project, companyId);
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [Authorize(Roles = $"{nameof(BTRoles.Admin)}, {nameof(BTRoles.ProjectManager)}")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Restore(int restoreProjectId)
+        {
+            int companyId = User.Identity!.GetCompanyId();
+            string? userId = _userManager.GetUserId(User);
+            string? currentPMId = (await _projectService.GetProjectManagerAsync(restoreProjectId, companyId))?.Id;
+            Project? project = await _projectService.GetProjectByIdAsync(restoreProjectId, companyId);
+
+            if (project == null || (currentPMId is not null && userId != currentPMId && !User.IsInRole(nameof(BTRoles.Admin))))
+            {
+                return NotFound();
+            }
+
+            await _projectService.RestoreProjectAsync(project, companyId);
             return RedirectToAction(nameof(Index));
         }
 

@@ -1,0 +1,103 @@
+﻿@model CrucibleBugTracker.Models.Invite
+
+@{
+    ViewData["Title"] = "Process Invite";
+    Layout = null;
+}
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Gogi - Admin and Dashboard Template</title>
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="../../assets/media/image/favicon.png" />
+
+    <!-- Plugin styles -->
+    <link rel="stylesheet" href="../../vendors/bundle.css" type="text/css">
+
+    <!-- App styles -->
+    <link rel="stylesheet" href="../../assets/css/app.min.css" type="text/css">
+</head>
+<body class="form-membership">
+
+    <!-- begin::preloader-->
+    <div class="preloader">
+        <div class="preloader-icon"></div>
+    </div>
+    <!-- end::preloader -->
+
+    <div class="form-wrapper">
+
+        <!-- logo -->
+        <div id="logo">
+            <img src="../../assets/media/image/dark-logo.png" alt="image">
+        </div>
+        <!-- ./ logo -->
+
+        <!-- form -->
+        <div class="panel card-sign">
+            <div class="card-title mt-3 text-center">
+                <h3>
+                    <span class="clearfix title">
+                        <span class="number">Welcome</span><br />
+                        <span>@Model.InviteeFirstName @Model.InviteeLastName</span> <br>
+                    </span>
+                </h3>
+                <h5 class="mb-1">to</h5>
+                <h4 class="mb-0"><span>@Model.Company!.Name </span></h4>
+            </div>            
+            <div class="card-body">
+                <p>
+                    @Model.Invitor!.FullName has invited you to collaborate on the <strong>@Model.Project!.Name</strong> project.
+                    <br /><br /> Click the "JOIN" button below to register with the company and begin entering tickets.
+                </p>
+                <a class="btn btn-primary btn-lg btn-block" asp-area="Identity" asp-page="/Account/RegisterByInvite" asp-route-token="@Model.CompanyToken.ToString()" asp-route-companyId="@Model.CompanyId" asp-route-id="@Model.Id"><i class="bi bi-box-arrow-in-right"></i> <span>JOIN</span></a>
+            </div>
+        </div>
+        <!-- ./ form -->
+
+
+    </div>
+
+    <!-- Plugin scripts -->
+    <script src="../../vendors/bundle.js"></script>
+
+    <!-- App scripts -->
+    <script src="../../assets/js/app.min.js"></script>
+</body>
+</html>
+
+
+
+@*
+<h2> Process Invite</h2>
+<div class="panel card-sign">
+    <div class="card-title mt-3 text-center">
+        <h2 class="title text-uppercase font-weight-bold m-0"> Invite</h2>
+    </div>
+    <div class="header">
+        <h3>
+            <span class="clearfix title">
+                <span class="number">Welcome</span><br />
+                <span>@Model.InviteeFirstName @Model.InviteeLastName</span> <br>
+            </span>
+        </h3>
+        <h5><span>Company Name: @Model.Company!.Name </span></h5>
+    </div>
+    <div class="card-body">
+        <p>
+            @Model.Invitor!.FullName has invited you to collaborate on the @Model.Project!.Name project.
+            <br /><br /> Click the "JOIN" button below to register with the company and begin entering tickets.
+        </p>
+        <a class="btn btn-primary btn-lg btn-block" asp-area="Identity" asp-page="/Account/RegisterByInvite" asp-route-token="@Model.CompanyToken.ToString()" asp-route-companyId="@Model.CompanyId" asp-route-id="@Model.Id"><i class="bi bi-box-arrow-in-right"></i> <span>JOIN</span></a>
+    </div>
+</div>*@
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+

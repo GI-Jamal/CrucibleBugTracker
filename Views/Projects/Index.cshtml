@@ -1,89 +1,293 @@
 ﻿@model IEnumerable<CrucibleBugTracker.Models.Project>
 
-@using CrucibleBugTracker.Enums;
+@using CrucibleBugTracker.Enums
+@using CrucibleBugTracker.Extensions;
 @using CrucibleBugTracker.Services.Interfaces
+@using Microsoft.AspNetCore.Identity;
 
 @inject IBTFileService _FileService
+@inject IBTProjectService _ProjectService
+@inject IBTRoleService _RoleService
+@inject UserManager<BTUser> _UserManager
 
 @{
     ViewData["Title"] = ViewBag.Title;
+    int companyId = User.Identity!.GetCompanyId();
+    bool isUserAdmin = User.IsInRole(nameof(BTRoles.Admin));
+    ViewData["ProjectManagers"] = new SelectList(await _RoleService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId), nameof(BTUser.Id), nameof(BTUser.FullName));
 }
 
-<h1>@ViewBag.Title</h1>
+<div class="page-header d-md-flex justify-content-between">
+    <div>
+        <h3>Projects</h3>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a asp-controller="Home" asp-action="Index">Home</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a asp-controller="Projects" asp-action="Index">Projects</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">@ViewBag.Title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="mt-2 mt-md-0">
+        <div class="dropdown">
+            <a href="#" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+                <i class="ti-settings mr-2"></i> Actions
+            </a>
+            <div class="dropdown-menu dropdown-menu-right">
+                <a class="dropdown-item" asp-controller="Projects" asp-action="Create">Create a project</a>
+                <a class="dropdown-item" href="#">Another action</a>
+                <a class="dropdown-item" href="#">Something else here</a>
+            </div>
+        </div>
+    </div>
+</div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Description)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Created)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.StartDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.EndDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ImageFormFile)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Archived)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Company)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ProjectPriority)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Created)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.StartDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.EndDate)
-            </td>
-            <td>
-                <img src="@_FileService.ConvertByteArrayToFile(item.ImageFileData, item.ImageFileType, DefaultImage.ProjectImage)" class="img-fluid">
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Archived)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Company!.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ProjectPriority!.Name)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Archive" asp-route-id="@item.Id">Archive</a> |
-                <a asp-action="AssignPM" asp-route-id="@item.Id">Assign PM</a>
-            </td>
-        </tr>
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="card-title">@ViewBag.Title</h6>
+                <div class="table-responsive">
+                    <table id="projectsTable" class="table">
+                        <thead>
+                            <tr>
+                                <th>Project Name</th>
+                                <th>Created Date</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Priority</th>
+                                <th>Project Manager</th>
+                                <th>Status</th>
+                                <th class="text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                foreach (Project project in Model)
+                                {
+                                    <tr>
+                                        <td>
+                                            <a asp-controller="Projects" asp-action="Details" asp-route-id="@project.Id" class="d-flex align-items-center">
+                                                <img width="40" src="@_FileService.ConvertByteArrayToFile(project.ImageFileData, project.ImageFileType, DefaultImage.ProjectImage)"
+                                                     class="rounded mr-3" alt="Project Image">
+                                                <span>@project.Name</span>
+                                            </a>
+                                        </td>
+                                        <td>@project.Created.ToString("MMM dd, yyyy")</td>
+                                        <td>@project.StartDate.ToString("MMM dd, yyyy")</td>
+                                        <td>@project.EndDate.ToString("MMM dd, yyyy")</td>
+                                        <td>
+                                            <span class="badge bg-secondary-bright text-secondary">@project.ProjectPriority?.Name</span>
+                                        </td>
+                                        <td>
+                                            @{
+                                                BTUser? projectManager = await _ProjectService.GetProjectManagerAsync(project.Id, project.CompanyId);
+
+                                                if (projectManager != null)
+                                                {
+                                                    <figure class="avatar avatar-sm mr-3">
+                                                        <span class="avatar-title bg-info-bright text-info rounded-circle"
+                                                              data-bs-toggle="tooltip"
+                                                              data-bs-placement="top"
+                                                              title="@projectManager.FullName"
+                                                              data-bs-title="@projectManager.FullName">
+                                                            @projectManager.FirstName?[0]
+                                                        </span>
+                                                    </figure>
+                                                }
+                                                else
+                                                {
+                                                    <span>Unassigned</span>
+                                                }
+                                            }
+                                        </td>
+                                        <td>
+                                            @{
+                                                if (project.Archived)
+                                                {
+                                                    <span class="badge bg-info">Archived</span>
+                                                }
+                                                else if (project.StartDate > DateTime.UtcNow)
+                                                {
+                                                    <span class="badge bg-primary">Not Started</span>
+                                                }
+                                                else if (project.EndDate < DateTime.UtcNow)
+                                                {
+                                                    <span class="badge bg-danger">Past Due</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-success">In Progress</span>
+                                                }
+                                            }
+                                        </td>
+                                        <td class="text-right">
+                                            <div class="dropdown">
+                                                <a href="#" data-toggle="dropdown"
+                                                   class="btn btn-floating"
+                                                   aria-haspopup="true" aria-expanded="false">
+                                                    <i class="ti-more-alt"></i>
+                                                </a>
+                                                <div class="dropdown-menu dropdown-menu-right">
+                                                    <a asp-controller="Projects" asp-action="Details" asp-route-id="@project.Id" class="dropdown-item">View Details</a>
+                                                    @{
+                                                        if (isUserAdmin || (await _ProjectService.GetProjectManagerAsync(project.Id, project.CompanyId))?.Id == _UserManager.GetUserId(User))
+                                                        {
+                                                            if (isUserAdmin)
+                                                            {
+                                                                <a role="button" data-toggle="modal" data-target="#assignPMModal" class="dropdown-item" onclick="populatePMModal(@project.Id, `@await _ProjectService.GetProjectManagerIdAsync(project.Id, companyId)`, '@project.Name')">Assign PM</a>
+                                                            }
+                                                            <a asp-controller="Projects" asp-action="Edit" asp-route-id="@project.Id" class="dropdown-item">Edit</a>
+                                                            @if (project.Archived)
+                                                            {
+                                                                <a role="button" data-toggle="modal" data-target="#restoreProjectModal" class="dropdown-item text-success" onclick="populateRestoreModal(@project.Id, @project.Tickets.Count(t => t.ArchivedByProject == true), '@project.Name')">Restore</a>
+                                                            }
+                                                            else
+                                                            {
+                                                                <a role="button" data-toggle="modal" data-target="#archiveProjectModal" class="dropdown-item text-danger" onclick="populateArchiveModal(@project.Id, @project.Tickets.Count(t => t.ArchivedByProject == false && t.Archived == false), '@project.Name')">Archive</a>
+                                                            }
+                                                        }
+                                                    }
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="assignPMModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalCenterTitle">Assign Project Manager</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i class="ti-close"></i>
+                </button>
+            </div>
+            <form asp-action="AssignPM" method="post" class="d-flex flex-column">
+                <div class="modal-body pt-1">
+                    <input type="hidden" id="modalTicketId" name="projectId" value="" />
+                    <h5 id="modalProjectName"></h5>
+                    <select class="form-control" asp-items="@ViewBag.ProjectManagers" name="projectManagerId" id="projectManagers">
+                        <option value="@null">Unassigned</option>
+                    </select>
+                </div>
+                <div class="modal-footer" style="height:inherit">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        Close
+                    </button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="restoreProjectModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalCenterTitle">Restore Project</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i class="ti-close"></i>
+                </button>
+            </div>
+            <form asp-action="Restore" asp-route-id="" method="post" class="d-flex flex-column">
+                <div class="modal-body pt-0">
+                    <input type="hidden" id="restoreProject" name="restoreProjectId" value="" />
+                    <h5 id="restoreProjectName">Project Name</h5>
+                    <span>Are you sure you want to restore this project? This will also restore <span id="ticketsToRestore"></span> ticket(s) that were archived by this project.</span>
+                </div>
+                <div class="modal-footer" style="height:inherit">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        No/Close
+                    </button>
+                    <button type="submit" class="btn btn-primary">Yes/Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="archiveProjectModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalCenterTitle">Archive Project</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i class="ti-close"></i>
+                </button>
+            </div>
+            <form asp-action="Archive" method="post" class="d-flex flex-column">
+                <div class="modal-body pt-0">
+                    <input type="hidden" id="archiveProject" name="archiveProjectId" value="" />
+                    <h5 id="archiveProjectName">Project Name</h5>
+                    <span>Are you sure you want to archive this Project? This will also archive <span id="ticketsToArchive"></span> ticket(s) not already archived in this project.</span>
+                </div>
+                <div class="modal-footer" style="height:inherit">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        No/Close
+                    </button>
+                    <button type="submit" class="btn btn-primary">Yes/Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            $('#projectsTable').DataTable();
+        });
+    </script>
+    <script>
+        function populatePMModal(projectId, projectManagerId, projectName) {
+            var ticketId = document.getElementById("modalTicketId");
+            ticketId.value = projectId;
+
+            var modalProjectName = document.getElementById("modalProjectName");
+            modalProjectName.innerHTML = projectName;
+
+            var projectManagers = document.getElementById("projectManagers");
+
+            for (var i = 0; i < projectManagers.options.length; i++) {
+                if (projectManagers.options[i].value == projectManagerId) {
+                    projectManagers.options[i].selected = true;
+                    break;
+                }
+            }
+        }
+
+        function populateArchiveModal(archiveId, numberOfTickets, projectName) {
+            var ticketId = document.getElementById("archiveProject");
+            ticketId.value = archiveId
+
+            var ticketsToArchive = document.getElementById("ticketsToArchive");
+            ticketsToArchive.innerHTML = numberOfTickets;
+
+            var archiveProjectName = document.getElementById("archiveProjectName");
+            archiveProjectName.innerHTML = projectName;
+        }
+
+        function populateRestoreModal(restoreId, numberOfTickets, projectName) {
+            var ticketId = document.getElementById("restoreProject");
+            ticketId.value = restoreId;
+
+            var ticketsToRestore = document.getElementById("ticketsToRestore");
+            ticketsToRestore.innerHTML = numberOfTickets;
+
+            var restoreProjectName = document.getElementById("restoreProjectName");
+            restoreProjectName.innerHTML = projectName;
+        }
+    </script>
 }
-    </tbody>
-</table>

@@ -15,6 +15,7 @@ using CrucibleBugTracker.Extensions;
 using CrucibleBugTracker.Enums;
 using CrucibleBugTracker.Services;
 using System.ComponentModel.Design;
+using Org.BouncyCastle.Bcpg;
 
 namespace CrucibleBugTracker.Controllers
 {
@@ -26,14 +27,16 @@ namespace CrucibleBugTracker.Controllers
         private readonly IBTProjectService _projectService;
         private readonly IBTRoleService _roleService;
         private readonly IBTFileService _fileService;
+        private readonly IBTTicketHistoryService _ticketHistoryService;
 
-        public TicketsController(UserManager<BTUser> userManager, IBTTicketService ticketService, IBTProjectService projectService, IBTRoleService roleService, IBTFileService fileService)
+        public TicketsController(UserManager<BTUser> userManager, IBTTicketService ticketService, IBTProjectService projectService, IBTRoleService roleService, IBTFileService fileService, IBTTicketHistoryService historyService)
         {
             _userManager = userManager;
             _ticketService = ticketService;
             _projectService = projectService;
             _roleService = roleService;
             _fileService = fileService;
+            _ticketHistoryService = historyService;
         }
 
         // GET: Tickets
@@ -45,7 +48,7 @@ namespace CrucibleBugTracker.Controllers
 
             ViewData["Title"] = "All Tickets";
 
-            return View("AllTickets", tickets);
+            return View(tickets);
         }
 
         // GET: Tickets/Details/5
@@ -71,8 +74,17 @@ namespace CrucibleBugTracker.Controllers
         public async Task<IActionResult> Create()
         {
             int companyId = User.Identity!.GetCompanyId();
+            string? userId = _userManager.GetUserId(User);
 
-            ViewData["ProjectId"] = new SelectList(await _projectService.GetAllProjectsByCompanyIdAsync(companyId), nameof(Project.Id), nameof(Project.Name));
+            if (User.IsInRole(nameof(BTRoles.Admin)))
+            {
+                ViewData["ProjectId"] = new SelectList(await _projectService.GetAllProjectsByCompanyIdAsync(companyId), nameof(Project.Id), nameof(Project.Name));
+            }
+            else
+            {
+                ViewData["ProjectId"] = new SelectList(await _projectService.GetAllUserProjectsAsync(userId!), nameof(Project.Id), nameof(Project.Name));
+
+            }
             ViewData["TicketPriorityId"] = new SelectList(await _ticketService.GetTicketPriorities(), nameof(TicketPriority.Id), nameof(TicketPriority.Name));
             ViewData["TicketTypeId"] = new SelectList(await _ticketService.GetTicketTypes(), nameof(TicketType.Id), nameof(TicketType.Name));
             return View();
@@ -95,14 +107,9 @@ namespace CrucibleBugTracker.Controllers
                 ticket.Created = DateTime.UtcNow;
                 ticket.SubmitterUserId = userId;
 
-                BTUser? submitter = await _userManager.GetUserAsync(User);
-
-                if (submitter != null)
-                {
-                    await _projectService.AddMemberToProjectAsync(submitter, ticket.ProjectId, companyId);
-                }
-
                 await _ticketService.AddTicketAsync(ticket);
+
+                await _ticketHistoryService.AddHistoryAsync(null, ticket, userId!);
                 return RedirectToAction(nameof(Index));
             }
 
@@ -184,7 +191,13 @@ namespace CrucibleBugTracker.Controllers
                         ticket.ArchivedByProject = false;
                     }
 
+                    Ticket? oldTicket = await _ticketService.GetTicketAsNoTrackingAsync(ticket.Id, companyId);
+
                     await _ticketService.UpdateTicketAsync(ticket, companyId);
+
+                    ticket = (await _ticketService.GetTicketByIdAsync(ticket.Id, companyId))!;
+
+                    await _ticketHistoryService.AddHistoryAsync(oldTicket, ticket, userId!);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -207,48 +220,45 @@ namespace CrucibleBugTracker.Controllers
             return View(ticket);
         }
 
-        // GET: Tickets/Archive/5
-        public async Task<IActionResult> Archive(int? id)
+        // POST: Tickets/Archive/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Archive(int archiveTicketId)
         {
-            if (id == null)
+            int companyId = User.Identity!.GetCompanyId();            
+            string? userId = _userManager.GetUserId(User);
+
+            Ticket? oldTicket = await _ticketService.GetTicketAsNoTrackingAsync(archiveTicketId, companyId);
+            Ticket? ticket = await _ticketService.GetTicketByIdAsync(archiveTicketId, companyId);
+
+            if (ticket == null || oldTicket == null)
             {
                 return NotFound();
             }
 
-            int companyId = User.Identity!.GetCompanyId();
+            await _ticketService.ArchiveTicketAsync(ticket, companyId);
 
-            Ticket? ticket = await _ticketService.GetTicketByIdAsync((int)id, companyId);
+            await _ticketHistoryService.AddHistoryAsync(oldTicket, ticket, userId!);
 
-            if (ticket == null)
-            {
-                return NotFound();
-            }
-
-            if (ticket.Project?.CompanyId != companyId)
-            {
-                return NotFound();
-            }
-
-            return View(ticket);
+            return RedirectToAction(nameof(Index));
         }
 
-        // POST: Tickets/Archive/5
-        [HttpPost, ActionName("Archive")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ArchiveConfirmed(int id)
+        public async Task<IActionResult> Restore(int restoreTicketId)
         {
             int companyId = User.Identity!.GetCompanyId();
-            Ticket? ticket = await _ticketService.GetTicketByIdAsync(id, companyId);
+            string? userId = _userManager.GetUserId(User);
 
-            if (ticket?.Project?.CompanyId != companyId)
-            {
-                return NotFound();
-            }
+            Ticket? oldTicket = await _ticketService.GetTicketAsNoTrackingAsync(restoreTicketId, companyId);
 
-            if (ticket != null)
-            {
-                await _ticketService.ArchiveTicketAsync(ticket, companyId);
-            }
+            Ticket? ticket = await _ticketService.GetTicketByIdAsync(restoreTicketId, companyId);
+
+            if (ticket == null || oldTicket == null) return NotFound();
+
+            await _ticketService.RestoreTicketAsync(ticket, companyId);
+
+            await _ticketHistoryService.AddHistoryAsync(oldTicket, ticket, userId!);
 
             return RedirectToAction(nameof(Index));
         }
@@ -285,72 +295,44 @@ namespace CrucibleBugTracker.Controllers
             return View(nameof(Index), tickets);
         }
 
-        [HttpGet]
-        [Authorize(Roles = nameof(BTRoles.Admin) + "," + nameof(BTRoles.ProjectManager))]
-        public async Task<IActionResult> AssignDev(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            int companyId = User.Identity!.GetCompanyId();
-
-            Ticket? ticket = await _ticketService.GetTicketByIdAsync(id.Value, companyId);
-
-            if (ticket == null)
-            {
-                return NotFound();
-            }
-
-            string? projectManagerId = (await _projectService.GetProjectManagerAsync(ticket.ProjectId, companyId))?.Id;
-            string? userId = _userManager.GetUserId(User);
-
-            if (!User.IsInRole(nameof(BTRoles.Admin)) && projectManagerId != userId)
-            {
-                return NotFound();
-            }
-
-            ViewData["DeveloperUserId"] = new SelectList(await _projectService.GetProjectMembersByRoleAsync(ticket.ProjectId, nameof(BTRoles.Developer), companyId), nameof(BTUser.Id), nameof(BTUser.FullName), ticket.DeveloperUserId);
-            return View(ticket);
-        }
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = nameof(BTRoles.Admin) + "," + nameof(BTRoles.ProjectManager))]
-        public async Task<IActionResult> AssignDev(int? id, Ticket ticket)
+        public async Task<IActionResult> AssignDev(string developerId, int ticketId)
         {
-            if (id != ticket.Id)
-            {
-                return NotFound();
-            }
-
             int companyId = User.Identity!.GetCompanyId();
-
-            string? projectManagerId = (await _projectService.GetProjectManagerAsync(ticket.ProjectId, companyId))?.Id;
+            Ticket? oldTicket = await _ticketService.GetTicketAsNoTrackingAsync(ticketId, companyId);
+            Ticket? ticket = await _ticketService.GetTicketByIdAsync(ticketId, companyId);
             string? userId = _userManager.GetUserId(User);
 
-            if (!User.IsInRole(nameof(BTRoles.Admin)) && projectManagerId != userId)
+            ViewData["Title"] = "All Tickets";
+
+            if (oldTicket == null || ticket == null)
             {
-                return NotFound();
+                return RedirectToAction(nameof(Index));
             }
 
-            BTUser? member = (await _roleService.GetUsersInRoleAsync(nameof(BTRoles.Developer), companyId)).FirstOrDefault(u => u.Id == ticket.DeveloperUserId);
-            Ticket? dBTicket = await _ticketService.GetTicketByIdAsync(id.Value, companyId);
+            string? projectManagerId = (await _projectService.GetProjectManagerAsync(ticket.ProjectId, companyId))?.Id;
 
-            if (member != null && dBTicket != null)
+            if (projectManagerId != userId && !User.IsInRole(nameof(BTRoles.Admin)))
             {
-                dBTicket.DeveloperUserId = ticket.DeveloperUserId;
-
-                await _projectService.AddMemberToProjectAsync(member, ticket.ProjectId, companyId);
-
-                await _ticketService.UpdateTicketAsync(dBTicket, companyId);
-
-                return RedirectToAction(nameof(Details), new { id = ticket.Id });
+                return RedirectToAction(nameof(Index));
             }
 
-            ViewData["DeveloperUserId"] = new SelectList(await _projectService.GetProjectMembersByRoleAsync(ticket.ProjectId, nameof(BTRoles.Developer), companyId), nameof(BTUser.Id), nameof(BTUser.FullName), ticket.DeveloperUserId);
-            return View();
+            if (string.IsNullOrEmpty(developerId) || await _ticketService.IsUserDeveloperInCompany(developerId, companyId))
+            {
+                ticket.DeveloperUserId = developerId;
+
+                await _ticketService.UpdateTicketAsync(ticket, companyId);
+
+                ticket = await _ticketService.GetTicketByIdAsync(ticketId, companyId);
+
+                await _ticketHistoryService.AddHistoryAsync(oldTicket, ticket!, userId!);
+
+                return RedirectToAction(nameof(Details), new { id = ticket!.Id });
+            }
+
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
@@ -370,6 +352,8 @@ namespace CrucibleBugTracker.Controllers
 
                 await _ticketService.AddTicketAttachmentAsync(ticketAttachment);
                 statusMessage = "Success: New attachment added to Ticket.";
+
+                await _ticketHistoryService.AddHistoryAsync(ticketAttachment.TicketId, nameof(TicketAttachment), ticketAttachment.BTUserId!);
             }
             else
             {

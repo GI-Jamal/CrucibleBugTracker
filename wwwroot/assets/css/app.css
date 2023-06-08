@@ -4608,10 +4608,6 @@ body.modal-open .modal.show .modal-dialog {
   padding: 1.5rem;
 }
 
-.modal .modal-dialog .modal-content .modal-footer {
-  height: 60px;
-}
-
 .wickedpicker {
   border: none;
   box-shadow: 0 2px 15px 0 rgba(69, 65, 78, 0.18);

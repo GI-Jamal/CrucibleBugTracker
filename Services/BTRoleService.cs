@@ -1,4 +1,5 @@
 ﻿using CrucibleBugTracker.Data;
+using CrucibleBugTracker.Enums;
 using CrucibleBugTracker.Models;
 using CrucibleBugTracker.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
@@ -33,7 +34,7 @@ namespace CrucibleBugTracker.Services
         {
             try
             {
-                return await _context.Roles.ToListAsync();
+                return await _context.Roles.Where(r => r.Name != nameof(BTRoles.DemoUser)).ToListAsync();
             }
             catch (Exception)
             {

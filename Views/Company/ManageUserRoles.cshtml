@@ -1,0 +1,41 @@
+﻿@using CrucibleBugTracker.Models.ViewModels
+
+@model IEnumerable<ManageUserRolesViewModel>
+
+@{
+    ViewData["Title"] = "Manage Users";
+}
+
+<div class="row">
+    <h2 class="m-t-0 h3"><b>Manage Member Roles </b></h2>
+    <div class="row">
+        @foreach (ManageUserRolesViewModel viewModel in Model)
+        {
+            <div class="col-xxl-4 col-lg-6">
+                <div class="card m-2">
+                    <div class="card-header">
+                        <h5>@viewModel.User?.FullName</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted font-13 m-b-30">
+                            Use the dropdown to select the roles this user should be assigned.
+                        </p>
+                        <hr />
+                        <form asp-action="ManageUserRoles" asp-controller="Company" method=post>
+                            <input type="hidden" asp-for="@viewModel.User.Id" />
+                            <div class="form-group">
+                                <label asp-for="@viewModel.Roles" class="custom-label"> Roles for @viewModel.User?.FullName </label>
+                                <select asp-for="@viewModel.SelectedRole" class="form-control tom-select" asp-items="@viewModel.Roles">
+                                </select>
+                                <hr />
+                            </div>
+                            <div class="form-group">
+                                <input type="submit" value="Assign Role" class="btn btn-secondary" />
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

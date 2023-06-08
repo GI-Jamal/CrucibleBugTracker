@@ -4,6 +4,7 @@ using CrucibleBugTracker.Models;
 using CrucibleBugTracker.Services;
 using CrucibleBugTracker.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,6 +29,13 @@ builder.Services.AddScoped<IBTFileService, BTFileService>();
 builder.Services.AddScoped<IBTProjectService, BTProjectService>();
 builder.Services.AddScoped<IBTTicketService, BTTicketService>();
 builder.Services.AddScoped<IBTRoleService, BTRoleService>();
+builder.Services.AddScoped<IBTTicketHistoryService, BTTicketHistoryService>();
+builder.Services.AddScoped<IEmailSender, EmailService>();
+builder.Services.AddScoped<IBTCompanyService, BTCompanyService>();
+builder.Services.AddScoped<IBTInviteService, BTInviteService>();
+
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+
 
 var app = builder.Build();
 

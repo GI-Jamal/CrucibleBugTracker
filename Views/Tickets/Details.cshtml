@@ -5,12 +5,20 @@
 
 @inject IBTFileService _FileService
 @inject UserManager<BTUser> _UserManager
+@inject IBTProjectService _ProjectService
+
 
 @{
     ViewData["Title"] = "Details";
-    string? userId = _UserManager.GetUserId(User);
+    BTUser? user = await _UserManager.GetUserAsync(User);
 }
 
+
+<style>
+    .ck-editor__editable_inline {
+        min-height: 150px;
+    }
+</style>
 <h1>Ticket Details</h1>
 <div>
     <div class="container-fluid">
@@ -22,9 +30,11 @@
                             @*Title of Ticket*@
                             <h5>@Model.Title</h5>
                             @*Description of Ticket*@
-                            <p>@Model.Description</p>
+                            <p>@Html.Raw(Model.Description)</p>
                             <div class="my-3">
-                                <span style="font-size:small">Project: @Model.Project?.Name</span>
+                                <a asp-controller="Projects" asp-action="Details" asp-route-id="@Model.ProjectId">
+                                    <span style="font-size:small">Project: @Model.Project?.Name</span>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -33,6 +43,11 @@
                             <ul class="list-unstyled">
                                 @*Ticket date*@
                                 <li><strong>Date Entered:</strong> <span class="">@Model.Created.ToString("MMMM dd, yyyy")</</span></li>
+                                @*Ticket Last Updated date*@
+                                @if (Model.UpdatedDate != null)
+                                {
+                                    <li><strong>Last Updated Date:</strong> <span class="">@Model.UpdatedDate.Value.ToString("MMMM dd, yyyy")</span></li>
+                                }                                
                                 @*Project end date*@
                                 <li><strong>Deadline:</strong> <span class="">@Model.Project?.EndDate.ToString("MMMM dd, yyyy")</</span></li>
                                 @*Ticket type*@
@@ -47,20 +62,62 @@
                 </div>
             </div>
             <div class="col-md-8 col col-cols-2 mt-5 ">
-                <div class="col">
+                <div class="col my-3">
                     <div class="bg-secondary">
                         <div class="card m-1 p-2">
                             <div class="card-header">
                                 <h2>Comments</h2>
                             </div>
                             <div class="card-body" style="overflow-y:auto;height:600px;">
-
                                 @*Form and Logic for authorized users to add comments*@
-                                <hr />
-                                <h6>Comments</h6>
-                                <ul class="right_chat list-unstyled mb-0">
-                                    @*Loop to show comments made for the Ticket*@
+                                <ul class="list-group list-group-flush">
+                                    @foreach (TicketComment comment in Model.Comments)
+                                    {
+                                        <li class="list-group-item d-flex px-0 py-4">
+                                            <a href="#" class="flex-shrink-0">
+                                                <figure class="avatar avatar-sm mr-3">
+                                                    <span class="avatar-title bg-info-bright text-info rounded-circle">
+                                                        @comment.User?.FirstName?[0]
+                                                    </span>
+                                                </figure>
+                                            </a>
+                                            <div class="flex-grow-1">
+                                                <div class="d-flex">
+                                                    <a href="#">
+                                                        <h6>
+                                                            @comment.User?.FullName
+                                                        </h6>
+                                                    </a>
+                                                    <h6>
+                                                        &nbsp;• @comment.Created.ToString("MMM dd, yyyy")
+                                                    </h6>
+                                                </div>
+                                                <p class="mb-0 mt-2">
+                                                    @Html.Raw(comment.Comment)
+                                                </p>
+                                            </div>
+                                        </li>
+                                    }
                                 </ul>
+                                @if (User.IsInRole("Admin") ||
+                                (await _ProjectService.GetProjectManagerAsync(Model.ProjectId, (int)user?.CompanyId!))?.Id == user.Id ||
+                                Model.DeveloperUserId == user.Id ||
+                                Model.SubmitterUserId == user.Id)
+                                {
+                                    <hr style="margin-top:0px;" />
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <form class="mt-4" asp-controller="TicketComments" asp-action="Create" method="post">
+                                                <input type="hidden" asp-for="@Model.Id" name="TicketId" />
+                                                <div class="form-group">
+                                                    <textarea id="editor" class="form-control"
+                                                              placeholder="Add a comment" name="Comment"></textarea>
+                                                </div>
+                                                <button class="btn btn-primary" type="Submit">Submit</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                }
                             </div>
                             <div class="card-footer">
                             </div>
@@ -82,14 +139,14 @@
                                         <form asp-action="AddTicketAttachment" asp-controller="Tickets" enctype="multipart/form-data" method="post">
                                             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                                             <input type="hidden" asp-for="@Model.Id" name="TicketId">
-                                            <input type="hidden" value="userId" name="BTUserId">
+                                            <input type="hidden" value="@user?.Id" name="BTUserId">
                                             <div class="media-body ml-3">
                                                 <label>
                                                     Description
                                                     <input asp-for="@Model.Attachments.FirstOrDefault().Description" type="text" class="form-control" />
                                                 </label><br />
                                                 <label class="btn btn-outline-primary btn-sm">
-                                                    <input asp-for="@Model.Attachments.FirstOrDefault().FormFile" type="file" class="form-control-file" />
+                                                    <input asp-for="@Model.Attachments.FirstOrDefault().FormFile" name="FormFile" type="file" class="form-control-file" />
                                                 </label>
                                                 <button type="submit" class="btn btn-outline-secondary btn-sm md-btn-flat">Submit</button>
                                             </div>
@@ -107,7 +164,7 @@
                                             <div class="col col-sm-2">
                                                 <a asp-action="ShowFile" asp-controller="Tickets" asp-route-Id="@item.Id">
                                                     <div class="icon">
-                                                        <img src="@_FileService.GetFileIcon(item.FileName)" style="height:50px;width:50px" data-bs-toggle="tooltip" data-bs-placement="top" title="" data-bs-original-title="@item.FileName" />
+                                                        <img src="@_FileService.GetFileIcon(item.FileName)" style="height:50px;width:50px" data-bs-toggle="tooltip" title="@item.FileName" />
                                                     </div>
                                                 </a>
                                                 <div style="font-size:x-small">
@@ -136,7 +193,13 @@
                             <hr />
                         </div>
                         <div class="card-body" style="overflow-y:auto;height:1000px;background-color:antiquewhite">
-                            @*Loop to show the history entries for the Ticket*@
+                            @foreach(TicketHistory ticketHistory in Model.History.OrderByDescending(h => h.Created))
+                            {
+                                <p style="color:black">@ticketHistory.Description?.Replace("<p>","").Replace("</p>", "")</p>
+                                <p style="color:black">@ticketHistory.User?.FullName</p>
+                                <p style="color:black">@ticketHistory.Created.ToString("MMM dd, yyyy")</p>
+                                <hr />
+                            }
                         </div>
                     </div>
                 </div>
@@ -146,13 +209,7 @@
 </div>
 
 <div>
-    <dl class="row">
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.UpdatedDate)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.UpdatedDate)
-        </dd>
+    <dl class="row">        
         <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Archived)
         </dt>
@@ -164,12 +221,6 @@
         </dt>
         <dd class="col-sm-10">
             @Html.DisplayFor(model => model.ArchivedByProject)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Project)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Project.Name)
         </dd>
         <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.DeveloperUser)
@@ -189,3 +240,7 @@
     <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
     <a asp-action="Index">Back to List</a>
 </div>
+
+@section scripts {
+    
+}

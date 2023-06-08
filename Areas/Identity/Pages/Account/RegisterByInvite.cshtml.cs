@@ -21,10 +21,11 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using CrucibleBugTracker.Data;
 using CrucibleBugTracker.Enums;
+using CrucibleBugTracker.Services.Interfaces;
 
 namespace CrucibleBugTracker.Areas.Identity.Pages.Account
 {
-    public class RegisterModel : PageModel
+    public class RegisterByInviteModel : PageModel
     {
         private readonly SignInManager<BTUser> _signInManager;
         private readonly UserManager<BTUser> _userManager;
@@ -32,15 +33,19 @@ namespace CrucibleBugTracker.Areas.Identity.Pages.Account
         private readonly IUserEmailStore<BTUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
-        private readonly ApplicationDbContext _context;
+        private readonly IBTInviteService _inviteService;
+        private readonly IBTProjectService _projectService;
 
-        public RegisterModel(
+
+        public RegisterByInviteModel(
             UserManager<BTUser> userManager,
             IUserStore<BTUser> userStore,
             SignInManager<BTUser> signInManager,
             ILogger<RegisterModel> logger,
             IEmailSender emailSender,
-            ApplicationDbContext context)
+            ApplicationDbContext context,
+            IBTInviteService inviteService,
+            IBTProjectService projectService)
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -48,7 +53,8 @@ namespace CrucibleBugTracker.Areas.Identity.Pages.Account
             _signInManager = signInManager;
             _logger = logger;
             _emailSender = emailSender;
-            _context = context;
+            _inviteService = inviteService;
+            _projectService = projectService;
         }
 
         /// <summary>
@@ -56,7 +62,7 @@ namespace CrucibleBugTracker.Areas.Identity.Pages.Account
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         [BindProperty]
-        public InputModel Input { get; set; }
+        public InputModel Input { get; set; } = new();
 
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -82,18 +88,17 @@ namespace CrucibleBugTracker.Areas.Identity.Pages.Account
             [Required]
             [Display(Name = "First Name")]
             public string FirstName { get; set; }
-            
+
             /// <summary>
             /// 
             /// </summary>
             [Required]
             [Display(Name = "Last Name")]
             public string LastName { get; set; }
-            
+
             /// <summary>
             /// 
             /// </summary>
-            [Required]
             [Display(Name = "Company Name")]
             public string CompanyName { get; set; }
 
@@ -101,8 +106,14 @@ namespace CrucibleBugTracker.Areas.Identity.Pages.Account
             /// 
             /// </summary>
             [Required]
-            [Display(Name = "Company Description")]
-            public string CompanyDescription { get; set; }
+            public int CompanyId { get; set; }
+
+
+            /// <summary>
+            /// 
+            /// </summary>
+            [Required]
+            public string Token { get; set; }
 
             /// <summary>
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -134,40 +145,63 @@ namespace CrucibleBugTracker.Areas.Identity.Pages.Account
         }
 
 
-        public async Task OnGetAsync(string returnUrl = null)
+        public async Task OnGetAsync(string token, int companyId, int id, string returnUrl = null)
         {
             ReturnUrl = returnUrl;
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+
+            Invite invite = await _inviteService.GetInviteAsync(id, companyId);
+
+            Input = new InputModel();
+
+            Input.Email = invite.InviteeEmail;
+            Input.FirstName = invite.InviteeFirstName;
+            Input.LastName = invite.InviteeLastName;
+            Input.CompanyName = invite.Company.Name;
+            Input.CompanyId = invite.CompanyId;
+            Input.Token = token;
         }
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+
+            Invite invite = await _inviteService.GetInviteAsync(Guid.Parse(Input.Token), Input.Email, Input.CompanyId);
+
+            if (invite is null || await _inviteService.ValidateInviteAsync(invite.CompanyToken) == false)
+            {
+                ModelState.AddModelError(string.Empty, "Invalid invite. Please contact the company owner for a new invite");
+                return Page();
+            }
+
             if (ModelState.IsValid)
             {
-                // Create new company
-                Company company = new()
+                BTUser user = new()
                 {
-                    Name =Input.CompanyName,
-                    Description = Input.CompanyDescription,
+                    FirstName = Input.FirstName,
+                    LastName = Input.LastName,
+                    Email = invite.InviteeEmail,
+                    CompanyId = invite.CompanyId
                 };
-                await _context.AddAsync(company);
-                await _context.SaveChangesAsync();
 
-
-                var user = CreateUser(company.Id);
-
-                await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
-                await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+                await _userStore.SetUserNameAsync(user, invite.InviteeEmail, CancellationToken.None);
+                await _emailStore.SetEmailAsync(user, invite.InviteeEmail, CancellationToken.None);
                 var result = await _userManager.CreateAsync(user, Input.Password);
 
                 if (result.Succeeded)
                 {
+                    if (invite.ProjectId is not null or 0)
+                    {
+                        await _projectService.AddMemberToProjectAsync(user, invite.ProjectId.Value, user.CompanyId);
+                    }
+
+                    await _userManager.AddToRoleAsync(user, nameof(BTRoles.Submitter));
+
                     _logger.LogInformation("User created a new account with password.");
 
-                    await _userManager.AddToRoleAsync(user, nameof(BTRoles.Admin));
                     var userId = await _userManager.GetUserIdAsync(user);
+
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
                     var callbackUrl = Url.Page(
@@ -178,6 +212,8 @@ namespace CrucibleBugTracker.Areas.Identity.Pages.Account
 
                     await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
                         $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+
+                    await _inviteService.AcceptInviteAsync(invite.CompanyToken, userId, invite.CompanyId);
 
                     if (_userManager.Options.SignIn.RequireConfirmedAccount)
                     {
@@ -197,25 +233,6 @@ namespace CrucibleBugTracker.Areas.Identity.Pages.Account
 
             // If we got this far, something failed, redisplay form
             return Page();
-        }
-
-        private BTUser CreateUser(int companyId)
-        {
-            try
-            {
-                BTUser btUser = Activator.CreateInstance<BTUser>();
-                btUser.FirstName = Input.FirstName;
-                btUser.LastName = Input.LastName;
-                btUser.CompanyId = companyId;
-
-                return btUser;
-            }
-            catch
-            {
-                throw new InvalidOperationException($"Can't create an instance of '{nameof(BTUser)}'. " +
-                    $"Ensure that '{nameof(BTUser)}' is not an abstract class and has a parameterless constructor, or alternatively " +
-                    $"override the register page in /Areas/Identity/Pages/Account/Register.cshtml");
-            }
         }
 
         private IUserEmailStore<BTUser> GetEmailStore()

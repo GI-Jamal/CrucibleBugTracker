@@ -8,6 +8,7 @@ namespace CrucibleBugTracker.Models
         
         [DataType(DataType.DateTime)]
         [Display(Name = "Invite Date")]
+        [Required]
         public DateTime InviteDate { get; set; }
         
         [DataType(DataType.DateTime)]
