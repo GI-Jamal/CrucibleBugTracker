@@ -19,14 +19,16 @@ namespace CrucibleBugTracker.Controllers
         private readonly IBTProjectService _projectService;
         private readonly IBTTicketService _ticketService;
         private readonly IBTRoleService _roleService;
+        private readonly IBTTicketHistoryService _ticketHistoryService;
 
-        public ProjectsController(UserManager<BTUser> userManager, IBTFileService fileService, IBTProjectService projectService, IBTTicketService ticketService, IBTRoleService roleService)
+        public ProjectsController(UserManager<BTUser> userManager, IBTFileService fileService, IBTProjectService projectService, IBTTicketService ticketService, IBTRoleService roleService, IBTTicketHistoryService ticketHistoryService)
         {
             _userManager = userManager;
             _fileService = fileService;
             _projectService = projectService;
             _ticketService = ticketService;
             _roleService = roleService;
+            _ticketHistoryService = ticketHistoryService;
         }
 
         // GET: Projects
@@ -343,8 +345,13 @@ namespace CrucibleBugTracker.Controllers
                     {
                         foreach (Ticket ticket in tickets)
                         {
+                            Ticket? oldTicket = await _ticketService.GetTicketAsNoTrackingAsync(ticket.Id, companyId);
+
+                            ticket.DeveloperUser = null;
                             ticket.DeveloperUserId = null;
                             await _ticketService.UpdateTicketAsync(ticket, companyId);
+
+                            await _ticketHistoryService.AddHistoryAsync(oldTicket, ticket, userId!);
                         }
                     }
 
