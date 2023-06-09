@@ -1,20 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using CrucibleBugTracker.Enums;
+using CrucibleBugTracker.Extensions;
+using CrucibleBugTracker.Models;
+using CrucibleBugTracker.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using CrucibleBugTracker.Data;
-using CrucibleBugTracker.Models;
-using Microsoft.AspNetCore.Authorization;
-using CrucibleBugTracker.Enums;
-using Microsoft.AspNetCore.Identity;
-using CrucibleBugTracker.Services.Interfaces;
-using CrucibleBugTracker.Extensions;
-using System.Net.Sockets;
-using CrucibleBugTracker.Models.ViewModels;
-using System.ComponentModel.Design;
+using Newtonsoft.Json;
 
 namespace CrucibleBugTracker.Controllers
 {
@@ -61,7 +54,7 @@ namespace CrucibleBugTracker.Controllers
             BTUser? newProjectManager = await _userManager.FindByIdAsync(projectManagerId);
             if (newProjectManager != null)
             {
-                await _projectService.AddProjectManagerAsync(projectManagerId,project.Id, companyId);
+                await _projectService.AddProjectManagerAsync(projectManagerId, project.Id, companyId);
                 return RedirectToAction(nameof(Details), new { id = projectId });
             }
             else if (string.IsNullOrEmpty(projectManagerId))
@@ -238,7 +231,7 @@ namespace CrucibleBugTracker.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = $"{nameof(BTRoles.Admin)}, {nameof(BTRoles.ProjectManager)}")]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,ImageFormFile,ImageFileData,ImageFileType,Description,Created,StartDate,EndDate,Archived,CompanyId,ProjectPriorityId")] Project project, List<string> developerIds, List<string> submitterIds, string? projectManagerId)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,ImageFormFile,ImageFileData,ImageFileType,Description,Created,StartDate,EndDate,Archived,CompanyId,ProjectPriorityId")] Project project, string? developerIds, string? submitterIds, string? projectManagerId, string? ticketsToUnassign = null)
         {
             if (id != project.Id)
             {
@@ -276,8 +269,6 @@ namespace CrucibleBugTracker.Controllers
 
 
                     await _projectService.UpdateProjectAsync(project, companyId);
-
-                    project.Tickets = (await _ticketService.GetTicketsByCompanyIdAsync(companyId)).Where(t => t.ProjectId == project.Id).ToList();
 
                     if (project.Archived == true)
                     {
@@ -319,7 +310,10 @@ namespace CrucibleBugTracker.Controllers
                         project.Members.Remove(member);
                     }
 
-                    foreach (string developerId in developerIds)
+                    List<string> devIds = developerIds?.Split(',').ToList() ?? new List<string>();
+                    List<string> subIds = submitterIds?.Split(',').ToList() ?? new List<string>();
+
+                    foreach (string developerId in devIds)
                     {
                         BTUser? developer = (await _roleService.GetUsersInRoleAsync(nameof(BTRoles.Developer), companyId)).FirstOrDefault(u => u.Id == developerId);
                         if (developer != null)
@@ -328,7 +322,7 @@ namespace CrucibleBugTracker.Controllers
                         }
                     }
 
-                    foreach (string submitterId in submitterIds)
+                    foreach (string submitterId in subIds)
                     {
                         BTUser? submitter = (await _roleService.GetUsersInRoleAsync(nameof(BTRoles.Submitter), companyId)).FirstOrDefault(u => u.Id == submitterId);
                         if (submitter != null)
@@ -338,6 +332,24 @@ namespace CrucibleBugTracker.Controllers
                     }
 
                     await _projectService.UpdateProjectAsync(project, companyId);
+                    List<Ticket>? tickets = new();
+
+                    if (ticketsToUnassign is not null)
+                    {
+                        tickets = JsonConvert.DeserializeObject<List<Ticket>>(ticketsToUnassign);
+                    }
+
+                    if (tickets?.Count > 0)
+                    {
+                        foreach (Ticket ticket in tickets)
+                        {
+                            ticket.DeveloperUserId = null;
+                            await _ticketService.UpdateTicketAsync(ticket, companyId);
+                        }
+                    }
+
+
+
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -429,6 +441,27 @@ namespace CrucibleBugTracker.Controllers
             List<Project> projects = await _projectService.GetUnassignedProjectsByCompanyIdAsync(companyId);
             ViewData["Title"] = "Unassigned Projects";
             return View(nameof(Index), projects);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> CheckForAlteredTickets(int projectId, string? newDevIdsString)
+        {
+            int companyId = User.Identity!.GetCompanyId();
+            Project? project = await _projectService.GetProjectByIdAsync(projectId, companyId);
+
+            if (project == null) return NotFound();
+
+            List<string> newDevIds = new();
+
+            if (newDevIdsString is not null)
+            {
+                newDevIds = newDevIdsString.Split(',').ToList();
+            }
+
+            List<Ticket> potentialUnassignedTickets = await _ticketService.GetTicketsToBeAltered(newDevIds, projectId, companyId);
+
+
+            return Json(new { unassignedTickets = potentialUnassignedTickets });
         }
 
         private async Task<bool> ProjectExistsAsync(int id)

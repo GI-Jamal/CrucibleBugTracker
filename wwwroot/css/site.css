@@ -24,3 +24,11 @@ body {
 select {
     -webkit-appearance: listbox !important;
 }
+
+ol li {
+    list-style-type: circle !important;
+}
+
+ol {
+    margin-top: 1rem !important;
+}

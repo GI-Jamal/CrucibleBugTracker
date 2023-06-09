@@ -22,5 +22,6 @@ namespace CrucibleBugTracker.Services.Interfaces
         Task<bool> AddMemberToProjectAsync(BTUser member, int projectId, int companyId);
         Task<bool> RemoveMemberFromProjectAsync(BTUser member, int projectId, int companyId);
         Task<List<Project>> GetUnassignedProjectsByCompanyIdAsync(int companyId);
+        Task<List<BTUser>> GetProjectMembersByRoleAsNoTrackingAsync(int projectId, string roleName, int companyId);
     }
 }

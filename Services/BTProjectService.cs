@@ -270,6 +270,32 @@ namespace CrucibleBugTracker.Services
                 throw;
             }
         }
+        public async Task<List<BTUser>> GetProjectMembersByRoleAsNoTrackingAsync(int projectId, string roleName, int companyId)
+        {
+            try
+            {
+                Project? project = await _context.Projects.Include(p => p.Members).AsNoTracking().FirstOrDefaultAsync(p => p.Id == projectId && p.CompanyId == companyId);
+
+                List<BTUser> projectMembers = new();
+
+                if (project != null)
+                {
+                    foreach (BTUser member in project.Members)
+                    {
+                        if (await _roleService.IsUserInRole(member, roleName))
+                        {
+                            projectMembers.Add(member);
+                        }
+                    }
+                }
+
+                return projectMembers;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
 
         public async Task<List<ProjectPriority>> GetProjectPrioritiesAsync()
         {

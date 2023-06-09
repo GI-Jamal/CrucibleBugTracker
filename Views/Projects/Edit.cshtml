@@ -12,8 +12,8 @@
     List<BTUser> projectSubmitters = await _ProjectService.GetProjectMembersByRoleAsync(Model.Id, nameof(BTRoles.Submitter), Model.CompanyId);
     List<string> selectedDeveloperIds = projectDevelopers.Select(u => u.Id).ToList();
     List<string> selectedSubmitterIds = projectSubmitters.Select(u => u.Id).ToList();
-    string devIds = string.Join(",", selectedDeveloperIds);
-    string subIds = string.Join(",", selectedSubmitterIds);
+    string devIds = string.Join(",", selectedDeveloperIds) + ',';
+    string subIds = string.Join(",", selectedSubmitterIds) + ',';
 }
 <div id="mainContent">
     <div class="page-header" onload="loadMembers(@selectedDeveloperIds, @selectedSubmitterIds)">
@@ -34,8 +34,13 @@
     </div>
     <div class="row">
         <div class="col-md-12">
-            <form asp-action="Create" asp-controller="Projects" enctype="multipart/form-data" method="post">
+            <form asp-action="Edit" asp-controller="Projects" id="projectEditForm" enctype="multipart/form-data" method="post">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="CompanyId" />
+                <input type="hidden" asp-for="Created" />
+                <input type="hidden" asp-for="ImageFileData" />
+                <input type="hidden" asp-for="ImageFileType" />
                 <div class="card">
                     <div class="card-body">
                         <h6 class="card-title">Project Details</h6>
@@ -155,7 +160,7 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="control-label">Selected Developers</label>
-                                    <input type="hidden" id="developerIds" value="@devIds" name="developerIds" />
+                                    <input type="hidden" id="newDevIds" value="@devIds" name="developerIds" />
                                     <div class="table-responsive">
                                         <table class="table table-hover">
                                             <thead>
@@ -230,7 +235,7 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="control-label">Selected Submitters</label>
-                                    <input type="hidden" id="submitterIds" value="@subIds" name="submitterIds" />
+                                    <input type="hidden" id="newSubIds" value="@subIds" name="submitterIds" />
                                     <div class="table-responsive">
                                         <table class="table table-hover">
                                             <thead>
@@ -259,7 +264,49 @@
                             </div>
                             <div class="col-12">
                                 <div class="form-group">
-                                    <input type="submit" value="Save Changes" class="btn btn-primary" />
+                                    <input type="button" value="Save Changes" id="editCheck" class="btn btn-primary" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="editProjectModal" tabindex="-1" role="dialog" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalCenterTitle">Archive Project</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <i class="ti-close"></i>
+                                </button>
+                            </div>
+                            <div class="d-flex flex-column">
+                                <div class="modal-body pt-0">
+                                    <input type="hidden" name="ticketsToUnassign" id="unassignedTickets" />
+                                    <h5 id="projectName">@Model.Name</h5>
+                                    <h6>Removing developers from this project will unassign the following:</h6>
+                                    <ol>
+                                        <li><span id="activeTickets">(X)</span> active ticket(s).</li>
+                                        <li><span id="archivedTickets">(X)</span> archived ticket(s).</li>
+                                    </ol>
+                                    <h6>Are you sure you want to proceed?</h6>
+                                    <hr />
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Title</th>
+                                                <th>Developer</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="unassignedTicketsBody">
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="modal-footer" style="height:inherit">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                        No/Close
+                                    </button>
+                                    <button type="submit" id="editConfirm" class="btn btn-primary">Yes/Save changes</button>
                                 </div>
                             </div>
                         </div>
@@ -290,14 +337,66 @@
                         return openerElement.is('img') ? openerElement : openerElement.find('img');
                     }
                 }
-            });
+            });           
+
+            $('#editCheck').click(function () {
+
+                let args =
+                {
+                    projectId: @Model.Id,
+                    newDevIdsString: $('#newDevIds').val(),
+                };
+
+                $.ajax({
+                    type: 'GET',
+                    url: '@Url.Action("CheckForAlteredTickets","Projects")',
+                    data: args,
+                    success: function (result) {
+                        let tickets = result.unassignedTickets;
+                        let unassignedTickets = document.getElementById("unassignedTickets");
+                        unassignedTickets.value = null;
+
+                        if (tickets.length > 0) {
+
+                            let activeTickets = tickets.filter(t => t.archived == false).length;
+                            let archivedTickets = tickets.filter(t => t.archived == true).length;
+                            let tableBody = document.getElementById("unassignedTicketsBody");
+                            tableBody.innerHTML = "";
+                                                        
+                            unassignedTickets.value = JSON.stringify(tickets);
+
+                            tickets.forEach(function (ticket) {
+
+                                let tableRow = document.createElement("tr");
+                                let tableData = document.createElement("td");
+                                let tableData2 = document.createElement("td");
+                                let tableData3 = document.createElement("td");
+                                tableData.innerHTML = ticket.title;
+                                tableData2.innerHTML = 'Full Name';
+                                tableData3.innerHTML = ticket.archived ? "Archived" : "Active";
+                                tableRow.appendChild(tableData);
+                                tableRow.appendChild(tableData2);
+                                tableRow.appendChild(tableData3);
+                                tableBody.appendChild(tableRow);
+                                $('#editProjectModal').modal('show');
+                                $('#activeTickets').text(activeTickets);
+                                $('#archivedTickets').text(archivedTickets);
+                            });
+                        }
+                        else {
+                            $('#projectEditForm').submit();
+                        }
+                    },
+                    error: function () {
+                        alert('error');
+                    }
+                })
+            })
         });
     </script>
     <script>
-
         function addDeveloper(developer) {
-            var developerIds = document.getElementById("developerIds")
-
+            var developerIds = document.getElementById("newDevIds")
             var developerId = developer.getAttribute("data-id");
             var projectDevelopers = document.getElementById("projectDevelopers");
             var splitDevelopers = developerIds.value.split(',');
@@ -309,14 +408,13 @@
                 row.setAttribute("data-userId", developerId);
                 cell1 = row.insertCell(0);
                 cell1.innerHTML = developer.cells[0].innerHTML;
-
             }
         }
 
         function removeDeveloper(projectDeveloper) {
             var developerId = projectDeveloper.getAttribute("data-userId");
             projectDeveloper.remove();
-            var developerIds = document.getElementById("developerIds");
+            var developerIds = document.getElementById("newDevIds");
             developers = developerIds.value.split(',');
             var index = developers.indexOf(developerId);
             if (index > -1) {
@@ -328,7 +426,7 @@
         }
 
         function addSubmitter(submitter) {
-            var submitterIds = document.getElementById("submitterIds")
+            var submitterIds = document.getElementById("newSubIds")
             var submitterId = submitter.getAttribute("data-id")
             var projectSubmitters = document.getElementById("projectSubmitters")
             var splitSubmitters = submitterIds.value.split(',');
@@ -346,7 +444,7 @@
         function removeSubmitter(projectSubmitter) {
             var submitterId = projectSubmitter.getAttribute("data-userId");
             projectSubmitter.remove();
-            var submitterIds = document.getElementById("submitterIds");
+            var submitterIds = document.getElementById("newSubIds");
             submitters = submitterIds.value.split(',');
             var index = submitters.indexOf(submitterId);
             if (index > -1) {
@@ -358,101 +456,3 @@
         }
     </script>
 }
-
-
-@*@model CrucibleBugTracker.Models.Project
-
-@using CrucibleBugTracker.Enums;
-@using CrucibleBugTracker.Services.Interfaces
-
-@inject IBTFileService _FileService
-
-@{
-    ViewData["Title"] = "Edit";
-}
-
-<h1>Edit</h1>
-
-<h4>Project</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit" asp-controller="Projects" method="post" enctype="multipart/form-data">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <input type="hidden" asp-for="CompanyId" />
-            <input type="hidden" asp-for="Created" />
-            <input type="hidden" asp-for="ImageFileData" />
-            <input type="hidden" asp-for="ImageFileType" />
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Description" class="control-label"></label>
-                <input asp-for="Description" class="form-control" />
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="StartDate" class="control-label"></label>
-                <input asp-for="StartDate" class="form-control" />
-                <span asp-validation-for="StartDate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="EndDate" class="control-label"></label>
-                <input asp-for="EndDate" class="form-control" />
-                <span asp-validation-for="EndDate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <img src="@_FileService.ConvertByteArrayToFile(Model.ImageFileData, Model.ImageFileType, DefaultImage.ProjectImage)" class="img-fluid" id="projectImage" />
-                <label asp-for="ImageFormFile" class="control-label">Project Image</label>
-                <input asp-for="ImageFormFile" class="form-control" accept=".png, .jpeg, .jpg, .gif, .svg"
-                       onchange="document.getElementById('projectImage').src = window.URL.createObjectURL(this.files[0])" />
-                <span asp-validation-for="ImageFormFile" class="text-danger"></span>
-            </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="Archived" /> @Html.DisplayNameFor(model => model.Archived)
-                </label>
-            </div>
-            <div class="form-group">
-                <label asp-for="ProjectPriorityId" class="control-label"></label>
-                <select asp-for="ProjectPriorityId" class="form-control" asp-items="ViewBag.ProjectPriorityId"></select>
-                <span asp-validation-for="ProjectPriorityId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label class="control-label">Developers</label>
-                <select class="form-control" asp-items="@ViewBag.ProjectDevelopers" name="developerIds" multiple></select>
-            </div>
-            <div class="form-group">
-                <label class="control-label">Submitters</label>
-                <select class="form-control" asp-items="@ViewBag.ProjectSubmitters" name="submitterIds" multiple></select>
-            </div>
-            @{
-                if (User.IsInRole(nameof(BTRoles.Admin)))
-                {
-                    <div class="form-group">
-                        <label class="control-label">Project Manager</label>
-                        <select class="form-control" asp-items="@ViewBag.ProjectManagers" name="projectManagerId">
-                            <option value="@null">Unassigned</option>
-                        </select>
-                    </div>
-                }
-
-            }
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
-    </div>
-</div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
-
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}
-*@

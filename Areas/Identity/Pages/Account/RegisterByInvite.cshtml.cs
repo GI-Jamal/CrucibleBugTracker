@@ -43,7 +43,6 @@ namespace CrucibleBugTracker.Areas.Identity.Pages.Account
             SignInManager<BTUser> signInManager,
             ILogger<RegisterModel> logger,
             IEmailSender emailSender,
-            ApplicationDbContext context,
             IBTInviteService inviteService,
             IBTProjectService projectService)
         {
@@ -152,14 +151,15 @@ namespace CrucibleBugTracker.Areas.Identity.Pages.Account
 
             Invite invite = await _inviteService.GetInviteAsync(id, companyId);
 
-            Input = new InputModel();
-
-            Input.Email = invite.InviteeEmail;
-            Input.FirstName = invite.InviteeFirstName;
-            Input.LastName = invite.InviteeLastName;
-            Input.CompanyName = invite.Company.Name;
-            Input.CompanyId = invite.CompanyId;
-            Input.Token = token;
+            Input = new InputModel
+            {
+                Email = invite.InviteeEmail,
+                FirstName = invite.InviteeFirstName,
+                LastName = invite.InviteeLastName,
+                CompanyName = invite.Company.Name,
+                CompanyId = invite.CompanyId,
+                Token = token
+            };
         }
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
@@ -207,7 +207,7 @@ namespace CrucibleBugTracker.Areas.Identity.Pages.Account
                     var callbackUrl = Url.Page(
                         "/Account/ConfirmEmail",
                         pageHandler: null,
-                        values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
+                        values: new { area = "Identity", userId, code, returnUrl },
                         protocol: Request.Scheme);
 
                     await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
@@ -217,7 +217,7 @@ namespace CrucibleBugTracker.Areas.Identity.Pages.Account
 
                     if (_userManager.Options.SignIn.RequireConfirmedAccount)
                     {
-                        return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
+                        return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl });
                     }
                     else
                     {

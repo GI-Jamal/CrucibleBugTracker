@@ -34,7 +34,9 @@
 
         <!-- logo -->
         <div id="logo">
-            <img src="../../assets/media/image/dark-logo.png" alt="image">
+            <a asp-controller="Home" asp-action="Index">
+                <img src="../../assets/media/image/dark-logo.png" alt="image">
+            </a>
         </div>
         <!-- ./ logo -->
 
@@ -64,10 +66,10 @@
                 <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
             </div>
             <button class="btn btn-primary btn-block" type="submit">Register</button>
-            <hr>
-            <p class="text-muted">Already have an account?</p>
-            <a href="login.html" class="btn btn-outline-light btn-sm">Sign in!</a>
+            <hr>            
         </form>
+        <p class="text-muted">Already have an account?</p>
+        <a asp-page="./Login" class="btn btn-outline-light btn-sm">Sign in!</a>
         <!-- ./ form -->
 
 

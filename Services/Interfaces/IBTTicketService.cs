@@ -21,5 +21,6 @@ namespace CrucibleBugTracker.Services.Interfaces
         Task<TicketAttachment?> GetTicketAttachmentByIdAsync(int ticketAttachmentId);
         Task AddTicketCommentAsync(TicketComment comment);
         Task<bool> IsUserDeveloperInCompany(string userId, int companyId);
+        Task<List<Ticket>> GetTicketsToBeAltered(List<string> newDevIds, int projectId, int companyId);
     }
 }

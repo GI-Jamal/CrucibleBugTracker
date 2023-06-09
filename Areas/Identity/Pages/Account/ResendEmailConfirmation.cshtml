@@ -2,7 +2,74 @@
 @model ResendEmailConfirmationModel
 @{
     ViewData["Title"] = "Resend email confirmation";
+    Layout = null;
 }
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Gogi - Admin and Dashboard Template</title>
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="../../assets/media/image/favicon.png" />
+
+    <!-- Plugin styles -->
+    <link rel="stylesheet" href="../../vendors/bundle.css" type="text/css">
+
+    <!-- App styles -->
+    <link rel="stylesheet" href="../../assets/css/app.min.css" type="text/css">
+</head>
+<body class="form-membership">
+
+    <!-- begin::preloader-->
+    <div class="preloader">
+        <div class="preloader-icon"></div>
+    </div>
+    <!-- end::preloader -->
+
+    <div class="form-wrapper">
+
+        <!-- logo -->
+        <div id="logo">
+            <a asp-controller="Home" asp-action="Index">
+                <img src="../../assets/media/image/dark-logo.png" alt="image">
+            </a>
+        </div>
+        <!-- ./ logo -->
+
+
+        <h5>Resend Email Confirmation</h5>
+
+        <!-- form -->
+        <form method="post">
+            <div asp-validation-summary="All" class="text-danger" role="alert"></div>
+            <div class="form-group">
+                <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" required />
+                <span asp-validation-for="Input.Email" class="text-danger"></span>
+            </div>            
+            <button class="btn btn-primary btn-block" type="submit">Resend</button>
+            <hr>
+        </form>
+        <p class="text-muted">Already have an account?</p>
+        <a asp-page="./Login" class="btn btn-outline-light btn-sm">Sign in!</a>
+        <!-- ./ form -->
+
+
+    </div>
+
+    <!-- Plugin scripts -->
+    <script src="../../vendors/bundle.js"></script>
+
+    <!-- App scripts -->
+    <script src="../../assets/js/app.min.js"></script>
+</body>
+</html>
+
+
+@*
 
 <h1>@ViewData["Title"]</h1>
 <h2>Enter your email.</h2>
@@ -20,7 +87,7 @@
         </form>
     </div>
 </div>
-
+*@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }

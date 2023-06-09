@@ -34,7 +34,9 @@
 
         <!-- logo -->
         <div id="logo">
-            <img src="../../assets/media/image/dark-logo.png" alt="image">
+            <a asp-controller="Home" asp-action="Index">
+                <img src="../../assets/media/image/dark-logo.png" alt="image">
+            </a>
         </div>
         <!-- ./ logo -->
 
@@ -42,39 +44,39 @@
         <h5>Create account</h5>
 
         <!-- form -->
-        <form id ="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+        <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
             <input type="hidden" asp-for="Input.CompanyId" />
             <input type="hidden" asp-for="Input.Token" />
             <input type="hidden" asp-for="Input.Email" />
             <div class="form-group">
-                <input asp-for="Input.FirstName" class="form-control" aria-required="true" placeholder="First name" required autofocus>               
+                <input asp-for="Input.FirstName" class="form-control" aria-required="true" placeholder="First name" required autofocus>
                 <span asp-validation-for="Input.FirstName" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input asp-for="Input.LastName" class="form-control" aria-required="true" placeholder="Last name" required>               
+                <input asp-for="Input.LastName" class="form-control" aria-required="true" placeholder="Last name" required>
                 <span asp-validation-for="Input.LastName" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" disabled required />                
+                <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" disabled required />
                 <span asp-validation-for="Input.Email" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input asp-for="Input.CompanyName" class="form-control" aria-required="true" placeholder="Company name" disabled />         
+                <input asp-for="Input.CompanyName" class="form-control" aria-required="true" placeholder="Company name" disabled />
                 <span asp-validation-for="Input.CompanyName" class="text-danger"></span>
-            </div>          
+            </div>
             <div class="form-group">
-                <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" required />              
+                <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" required />
                 <span asp-validation-for="Input.Password" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="confirm password" />                
+                <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="confirm password" />
                 <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
             </div>
             <button class="btn btn-primary btn-block" type="submit">Register</button>
             <hr>
-            <p class="text-muted">Already have an account?</p>
-            <a href="login.html" class="btn btn-outline-light btn-sm">Sign in!</a>
         </form>
+        <p class="text-muted">Already have an account?</p>
+        <a asp-page="./Login" class="btn btn-outline-light btn-sm">Sign in!</a>
         <!-- ./ form -->
 
 
@@ -113,7 +115,7 @@
                 <input asp-for="Input.CompanyName" class="form-control" aria-required="true" placeholder="Company name" disabled />
                 <label asp-for="Input.CompanyName">Company Name</label>
                 <span asp-validation-for="Input.CompanyName" class="text-danger"></span>
-            </div>            
+            </div>
             <div class="form-floating mb-3">
                 <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" disabled />
                 <label asp-for="Input.Email">Email</label>

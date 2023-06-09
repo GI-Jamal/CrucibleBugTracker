@@ -251,6 +251,45 @@ namespace CrucibleBugTracker.Services
             }
         }
 
+        public async Task<List<Ticket>> GetTicketsToBeAltered(List<string> newDevIds, int projectId, int companyId)
+        {
+            try
+            {
+                List<Ticket> oldAllCurrentlyAssignedTicketsInProject = await _context.Tickets.AsNoTracking()
+                                                                                             .Include(t => t.DeveloperUser)
+                                                                                             .AsNoTracking()
+                                                                                             .Where(t => t.ProjectId == projectId && t.Project!.CompanyId == companyId && t.DeveloperUserId != null)
+                                                                                             .ToListAsync();
+
+                List<Ticket> newAllCurrentlyAssignedTicketsInProject = new();
+
+                foreach (string devId in newDevIds)
+                {
+                    List<Ticket> tickets = await _context.Tickets.Where(t => t.DeveloperUserId == devId && t.ProjectId == projectId && t.Project!.CompanyId == companyId).AsNoTracking().ToListAsync();
+                    newAllCurrentlyAssignedTicketsInProject.AddRange(tickets);
+                }
+
+                List<int> ticketIds = newAllCurrentlyAssignedTicketsInProject.Select(t => t.Id).ToList();
+
+                List<Ticket> ticketsToBeAltered = new();
+
+                foreach (Ticket ticket in oldAllCurrentlyAssignedTicketsInProject)
+                {
+                    if (!ticketIds.Contains(ticket.Id))
+                    {
+                        ticketsToBeAltered.Add(ticket);
+                    }
+                }
+
+                return ticketsToBeAltered;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
         public async Task<List<TicketType>> GetTicketTypes()
         {
             try

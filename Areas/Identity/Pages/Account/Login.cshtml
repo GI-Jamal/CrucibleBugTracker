@@ -39,7 +39,9 @@
 
         <!-- logo -->
         <div id="logo">
-            <img src="~/assets/media/image/dark-logo.png" alt="image">
+            <a asp-controller="Home" asp-action="Index">
+                <img src="../../assets/media/image/dark-logo.png" alt="image">
+            </a>
         </div>
         <!-- ./ logo -->
 
@@ -68,8 +70,28 @@
             </div>
             <button id="login-submit" type="submit" class="btn btn-primary btn-block">Sign in</button>
             <hr />
+            <section>
+                <h4>Or try the bug tracker with one of our demo accounts. </h4>
+
+                <div class="mb-1 text-center">
+                    <form class="" id="account" method="post">
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col-12 btn-block text-center">
+                                    <button type="submit" style="width:inherit;height:min-content" class="btn btn-primary btn-block" name="demoEmail" value="DemoAdminEmail">Demo Admin</button>
+                                    <button type="submit" style="width:inherit;height:min-content" class="btn btn-primary btn-block" name="demoEmail" value="DemoPMEmail">Demo PM</button>
+                                    <button type="submit" style="width:inherit;height:min-content" class="btn btn-primary btn-block" name="demoEmail" value="DemoDevEmail">Demo Developer</button>
+                                    <button type="submit" style="width:inherit;height:min-content" class="btn btn-primary btn-block" name="demoEmail" value="DemoSubEmail">Demo Submitter</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+            </section>
+            <hr />
             <p class="text-muted">Don't have an account?</p>
-            <a href="register.html" class="btn btn-outline-light btn-sm">Register now!</a>
+            <a asp-page="./Register" class="btn btn-outline-light btn-sm">Register now!</a>
             <a id="resend-confirmation" asp-page="./ResendEmailConfirmation" class="btn btn-outline-light btn-sm">Resend confirmation email</a>
         </form>
         <!-- ./ form -->
