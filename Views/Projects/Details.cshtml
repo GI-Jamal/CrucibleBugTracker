@@ -20,7 +20,7 @@
 
 <div class="p-3 d-flex flex-column">
     <h1>Project Details</h1>
-    <div class="row g-3 mb-3">
+    <div class="row mb-3">
         <div class="col-12">
             <div class="card">
                 <div class="card-header d-flex">
@@ -48,7 +48,14 @@
                     {
                         <div class="ms-auto">
                             <a class="btn btn-sm btn-secondary" asp-controller="Projects" asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
-                            <a class="btn btn-sm btn-secondary" href="#">Archive / Restore</a>
+                            @if (Model.Archived)
+                            {
+                                <a role="button" data-toggle="modal" class="btn btn-sm btn-success" data-target="#restoreProjectModal" onclick="populateRestoreModal(@Model.Id, @Model.Tickets.Count(t => t.ArchivedByProject == true), '@Model.Name')">Restore Project</a>
+                            }
+                            else
+                            {
+                                <a role="button" data-toggle="modal" class="btn btn-sm btn-danger" data-target="#archiveProjectModal" onclick="populateArchiveModal(@Model.Id, @Model.Tickets.Count(t => t.ArchivedByProject == false && t.Archived == false), '@Model.Name')">Archive Project</a>
+                            }
                         </div>
                     }
                 </div>
@@ -94,7 +101,7 @@
             </div>
         </div>
         <div class="col-12">
-            <div class="row">
+            <div class="row gy-3">
                 <div class="col-12 col-lg-6">
                     <div class="card h-100">
                         <div class="card-header">
@@ -141,18 +148,8 @@
                 </div>
             </div>
         </div>
-        @if (User.IsInRole(nameof(BTRoles.Admin)) || projectManager?.Id == userId)
-        {
-            <div class="col-12">
-                <div class="d-flex flex-column align-items-stretch align-items-lg-end">
-                    <a href="#" class="btn btn-secondary btn-sm">
-                        Manage Project Members
-                    </a>
-                </div>
-            </div>
-        }
     </div>
-    <div class="row">
+    <div class="row mt-0 mt-lg-3">
         <div class="col-md-12">
             <div class="card">
                 <div class="card-body">
@@ -245,10 +242,13 @@
             </div>
         </div>
     </div>
+    <div class="row">
+        <div class="col-12">
+            <a asp-controller="Projects" asp-action="Index" style="width:auto" class="btn btn-dark">Back to List</a>
+        </div>
+    </div>
 </div>
-<div class="mt-4 ms-auto">
-    <a asp-controller="Projects" asp-action="Index" class="btn btn-dark">Back to List</a>
-</div>
+
 
 <div>
     <dl class="row">
@@ -260,7 +260,85 @@
         </dd>
     </dl>
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+
+<div class="modal fade" id="restoreProjectModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalCenterTitle">Restore Project</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i class="ti-close"></i>
+                </button>
+            </div>
+            <form asp-action="Restore" asp-route-id="" method="post" class="d-flex flex-column">
+                <div class="modal-body pt-0">
+                    <input type="hidden" id="restoreProject" name="restoreProjectId" value="" />
+                    <h5 id="restoreProjectName">Project Name</h5>
+                    <span>Are you sure you want to restore this project? This will also restore <span id="ticketsToRestore"></span> ticket(s) that were archived by this project.</span>
+                </div>
+                <div class="modal-footer" style="height:inherit">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        No/Close
+                    </button>
+                    <button type="submit" class="btn btn-primary">Yes/Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
+<div class="modal fade" id="archiveProjectModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalCenterTitle">Archive Project</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i class="ti-close"></i>
+                </button>
+            </div>
+            <form asp-action="Archive" method="post" class="d-flex flex-column">
+                <div class="modal-body pt-0">
+                    <input type="hidden" id="archiveProject" name="archiveProjectId" value="" />
+                    <h5 id="archiveProjectName">Project Name</h5>
+                    <span>Are you sure you want to archive this Project? This will also archive <span id="ticketsToArchive"></span> ticket(s) not already archived in this project.</span>
+                </div>
+                <div class="modal-footer" style="height:inherit">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        No/Close
+                    </button>
+                    <button type="submit" class="btn btn-primary">Yes/Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            $('#projectsTable').DataTable();
+        });
+    </script>
+    <script>
+        function populateArchiveModal(archiveId, numberOfTickets, projectName) {
+            var projectId = document.getElementById("archiveProject");
+            projectId.value = archiveId
+
+            var ticketsToArchive = document.getElementById("ticketsToArchive");
+            ticketsToArchive.innerHTML = numberOfTickets;
+
+            var archiveProjectName = document.getElementById("archiveProjectName");
+            archiveProjectName.innerHTML = projectName;
+        }
+
+        function populateRestoreModal(restoreId, numberOfTickets, projectName) {
+            var projectId = document.getElementById("restoreProject");
+            projectId.value = restoreId;
+
+            var ticketsToRestore = document.getElementById("ticketsToRestore");
+            ticketsToRestore.innerHTML = numberOfTickets;
+
+            var restoreProjectName = document.getElementById("restoreProjectName");
+            restoreProjectName.innerHTML = projectName;
+        }
+    </script>
+}

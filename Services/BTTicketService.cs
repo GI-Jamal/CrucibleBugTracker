@@ -259,6 +259,7 @@ namespace CrucibleBugTracker.Services
                                                                                              .Include(t => t.DeveloperUser)
                                                                                              .AsNoTracking()
                                                                                              .Where(t => t.ProjectId == projectId && t.Project!.CompanyId == companyId && t.DeveloperUserId != null)
+                                                                                             .OrderBy(t => t.Archived).ThenBy(t => t.DeveloperUser!.FirstName)
                                                                                              .ToListAsync();
 
                 List<Ticket> newAllCurrentlyAssignedTicketsInProject = new();

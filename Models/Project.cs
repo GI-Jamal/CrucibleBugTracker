@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace CrucibleBugTracker.Models
 {
@@ -45,13 +46,16 @@ namespace CrucibleBugTracker.Models
 
 
         // Navigation Properties
+        [JsonIgnore]
         public virtual Company? Company { get; set; }
         
         [Display(Name = "Project Priority")]
         public virtual ProjectPriority? ProjectPriority { get; set; }
-        
+
+        [JsonIgnore]
         public virtual ICollection<BTUser> Members { get; set; } = new HashSet<BTUser>();
         
+        [JsonIgnore]
         public virtual ICollection<Ticket> Tickets { get; set; } = new HashSet<Ticket>();
     }
 }

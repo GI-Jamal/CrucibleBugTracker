@@ -274,7 +274,7 @@
                     <div class="modal-dialog modal-dialog-centered" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="exampleModalCenterTitle">Archive Project</h5>
+                                <h5 class="modal-title" id="exampleModalCenterTitle">Edit Project</h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                     <i class="ti-close"></i>
                                 </button>
@@ -339,7 +339,7 @@
                 }
             });           
 
-            $('#editCheck').click(function () {
+            $('#editCheck').on("click", function () {
 
                 let args =
                 {
@@ -378,10 +378,11 @@
                                 tableRow.appendChild(tableData2);
                                 tableRow.appendChild(tableData3);
                                 tableBody.appendChild(tableRow);
-                                $('#editProjectModal').modal('show');
                                 $('#activeTickets').text(activeTickets);
                                 $('#archivedTickets').text(archivedTickets);
                             });
+
+                            $('#editProjectModal').modal('show');
                         }
                         else {
                             $('#projectEditForm').submit();

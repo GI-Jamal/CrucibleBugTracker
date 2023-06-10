@@ -21,16 +21,16 @@
                             Use the dropdown to select the roles this user should be assigned.
                         </p>
                         <hr />
-                        <form asp-action="ManageUserRoles" asp-controller="Company" method=post>
-                            <input type="hidden" asp-for="@viewModel.User.Id" />
+                        <form onsubmit="submitForm()" data-formId="@viewModel.User!.Id">
+                            <input type="hidden" asp-for="@viewModel.User!.Id" />
                             <div class="form-group">
                                 <label asp-for="@viewModel.Roles" class="custom-label"> Roles for @viewModel.User?.FullName </label>
-                                <select asp-for="@viewModel.SelectedRole" class="form-control tom-select" asp-items="@viewModel.Roles">
+                                <select asp-for="@viewModel.SelectedRole" class="form-control tom-select" asp-items="@viewModel.Roles" onchange="setRole('@viewModel.User!.Id', this)">
                                 </select>
                                 <hr />
                             </div>
                             <div class="form-group">
-                                <input type="submit" value="Assign Role" class="btn btn-secondary" />
+                                <button type="button" data-role="@viewModel.SelectedRole" data-name="@viewModel.User?.FullName" data-id="@viewModel.User!.Id" class="assignRole btn btn-secondary" onclick="checkRole(this)">Assign Role</button>
                             </div>
                         </form>
                     </div>
@@ -39,3 +39,213 @@
         }
     </div>
 </div>
+
+<div class="modal fade" id="manageUsersModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalCenterTitle">Manage User</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i class="ti-close"></i>
+                </button>
+            </div>
+            <div class="d-flex flex-column">
+                <div class="modal-body pt-0">
+                    <input type="hidden" name="userId" id="userId" />
+                    <h5 id="userName">Name</h5>
+                    <h6>Changing this user's role will unassign them from the following <span id="assignmentType">(X)</span>:</h6>
+                    <ol>
+                        <li><span id="activeAssignments">(X)</span> active <span id="assignmentType">(X)</span>.</li>
+                        <li><span id="archivedAssignments">(X)</span> archived <span id="assignmentType">(X)</span>.</li>
+                    </ol>
+                    <h6>Are you sure you want to proceed?</h6>
+                    <hr />
+                    <table class="table">
+                        <thead>
+                            <tr id="modalTableHeaderRow">
+                            </tr>
+                        </thead>
+                        <tbody id="modalTableBody">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer" style="height:inherit">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        No/Close
+                    </button>
+                    <button type="button" id="editConfirm" onclick="submitForm()" class="btn btn-primary">Yes/Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        function checkRole(buttonElement) {
+            if (document.readyState != "complete") {
+                return;
+            }
+
+            let button = buttonElement
+
+            let args =
+            {
+                id: button.dataset.id,
+                roleName: button.dataset.role,
+                userName: button.dataset.name
+            }
+
+            toastr.options =
+            {
+                timeOut: 3000,
+                progressBar: true,
+                showMethod: "slideDown",
+                hideMethod: "slideUp",
+                showDuration: 200,
+                hideDuration: 200
+            };
+
+            $.ajax({
+                type: 'GET',
+                url: '@Url.Action("CheckForAssignments","Company")',
+                data: args,
+                success: function (result) {
+                    let userId = result.userId;
+                    let role = result.selectedRole;
+
+                    if (result.changeRole == false) {
+                        if (result.currentRole == "Admin") {
+                            toastr.error('Your company must have atleast 1 admin');
+                        }
+
+                        document.querySelector(`[data-id="${userId}"]`).blur();
+                        toastr.warning('New role must be different from current role');
+                        return;
+                    }
+
+                    else {
+                        let assignments;
+                        let assignmentType;
+
+                        if (result.currentRole == "Admin" || result.currentRole == "Submitter") {
+                            submitForm(userId, role);
+                        }
+                        else {
+
+
+                            if (result.currentRole == "ProjectManager") {
+                                assignments = result.userProjects;
+                                assignmentType = "projects";
+                            }
+
+                            else if (result.currentRole == "Developer") {
+                                assignments = result.userTickets;
+                                assignmentType = "tickets";
+                            }
+
+
+                            if (assignments.length > 0) {
+                                let tableBody = $('#modalTableBody');
+                                let tableHeaderRow = $('#modalTableHeaderRow');
+                                tableBody.empty();
+                                tableHeaderRow.empty();
+
+                                document.getElementById('userName').innerText = result.userName;
+
+                                let activeAssignments = assignments.filter(a => a.archived == false);
+                                let archivedAssignments = assignments.filter(a => a.archived == true);
+                                document.getElementById('activeAssignments').innerHTML = activeAssignments.length;
+                                document.getElementById('archivedAssignments').innerHTML = archivedAssignments.length;
+
+                                let taskTypeOutput = document.querySelectorAll('#assignmentType')
+                                taskTypeOutput.forEach(t => t.innerText = (assignmentType == 'projects' ? 'project(s)' : 'ticket(s)'));
+
+                                let tableColumn1 = document.createElement('th');
+                                let tableColumn2 = document.createElement('th');
+                                tableColumn1.innerText = (assignmentType == 'projects' ? 'Project Name' : 'Ticket Title');
+                                tableColumn2.innerText = 'Status';
+                                tableHeaderRow.append(tableColumn1);
+                                tableHeaderRow.append(tableColumn2);
+
+                                let confirmButton = document.getElementById('editConfirm');
+                                confirmButton.setAttribute('onclick', `submitForm('${userId}', '${role}')`);
+
+                                assignments.forEach(a => {
+                                    let tableRow = document.createElement('tr');
+                                    let tableData1 = document.createElement('td');
+                                    let tableData2 = document.createElement('td');
+                                    tableData1.innerText = assignmentType == 'projects' ? a.name : a.title;
+                                    tableData2.innerHTML = a.archived ? "Archived" : "Active";
+                                    tableRow.append(tableData1);
+                                    tableRow.append(tableData2);
+                                    tableBody.append(tableRow);
+                                });
+
+                                $('#manageUsersModal').modal('show');
+                            }
+                            else {
+                                submitForm(userId, role);
+                            }
+                        }
+                    }
+                },
+                error: function () {
+                    toastr.error('Something went wrong in checkRole()');
+                }
+            });
+        }
+
+        function setRole(userId, roleSelectList) {
+            let associatedButton = document.querySelector(`[data-id="${userId}"]`);
+            associatedButton.setAttribute("data-role", `${roleSelectList.value}`);
+        }
+
+        function submitForm(userId = null, role = null) {
+            $('#manageUsersModal').modal('hide');
+
+            toastr.options =
+            {
+                timeOut: 3000,
+                progressBar: true,
+                showMethod: "slideDown",
+                hideMethod: "slideUp",
+                showDuration: 200,
+                hideDuration: 200
+            };
+
+            var element = this;
+
+            let args =
+            {
+                id: userId ?? element.find('button').data('role'),
+                newRole: role ?? element.find('button').data('id')
+
+            }
+
+            var form = $('#__AjaxAntiForgeryForm');
+            var token = $('input[name="__RequestVerificationToken"]', form).val();
+
+            $.ajax({
+                type: 'POST',
+                async: false,
+                url: '@Url.Action("ManageUserRoles","Company")',
+                data: {
+                    __RequestVerificationToken: token,
+                    id: args.id,
+                    newRole: args.newRole
+
+                },
+                success: function (result) {
+                    toastr.success('Change successful');
+                },
+                error: function () {
+                    toastr.error('Change failed');
+                }
+            });
+        }
+    </script>
+}

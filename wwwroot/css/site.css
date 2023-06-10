@@ -25,10 +25,21 @@ select {
     -webkit-appearance: listbox !important;
 }
 
-ol li {
+ol:not(.breadcrumb) li {
     list-style-type: circle !important;
 }
 
 ol {
     margin-top: 1rem !important;
+}
+
+.assignProjectUsers {
+    max-height: 300px;
+    overflow: auto;
+    width: 100%;
+}
+
+.assignProjectUsersTable {
+    max-height: 300px;
+    overflow: auto;
 }

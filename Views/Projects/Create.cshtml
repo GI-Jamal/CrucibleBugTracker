@@ -101,8 +101,8 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="control-label">All Active Developers</label>
-                                    <div class="table-responsive">
-                                        <table class="table table-hover">
+                                    <div class="assignProjectUsers">
+                                        <table class="table table-hover assignProjectUsersTable">
                                             <thead>
                                                 <tr>
                                                     <th>Full Name</th>
@@ -131,8 +131,8 @@
                                 <div class="form-group">
                                     <label class="control-label">Selected Developers</label>
                                     <input type="hidden" id="developerIds" name="developerIds" />
-                                    <div class="table-responsive">
-                                        <table class="table table-hover">
+                                    <div class="assignProjectUsers">
+                                        <table class="table table-hover assignProjectUsersTable">
                                             <thead>
                                                 <tr>
                                                     <th>Full Name</th>
@@ -147,8 +147,8 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="control-label">All Active Submitters</label>
-                                    <div class="table-responsive">
-                                        <table class="table table-hover">
+                                    <div class="assignProjectUsers">
+                                        <table class="table table-hover assignProjectUsersTable">
                                             <thead>
                                                 <tr>
                                                     <th>Full Name</th>
@@ -177,8 +177,8 @@
                                 <div class="form-group">
                                     <label class="control-label">Selected Submitters</label>
                                     <input type="hidden" id="submitterIds" name="submitterIds" />
-                                    <div class="table-responsive">
-                                        <table class="table table-hover">
+                                    <div class="assignProjectUsers">
+                                        <table class="table table-hover assignProjectUsersTable">
                                             <thead>
                                                 <tr>
                                                     <th>Full Name</th>
@@ -224,7 +224,11 @@
                     }
                 }
             });
-        });        
+
+            $('.assignProjectUsersTable').DataTable({
+               "paging": false
+            });
+        });
     </script>
     <script>
         function addDeveloper(developer) {

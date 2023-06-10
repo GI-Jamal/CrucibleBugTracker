@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.DataProtection;
 using CrucibleBugTracker.Extensions;
+using System.Net.Mail;
 
 namespace CrucibleBugTracker.Controllers
 {
@@ -33,6 +34,7 @@ namespace CrucibleBugTracker.Controllers
                                  IBTCompanyService companyService,
                                  IEmailSender emailSender,
                                  UserManager<BTUser> userManager,
+                                 IConfiguration configuration,
                                  IDataProtectionProvider protectionProvider)
         {
             _inviteService = inviteService;
@@ -40,8 +42,7 @@ namespace CrucibleBugTracker.Controllers
             _companyService = companyService;
             _emailService = emailSender;
             _userManager = userManager;
-
-            _protectorPurpose = "Cru!b3BT2023??!";
+            _protectorPurpose = configuration.GetValue<string>("ProtectorString") ?? Environment.GetEnvironmentVariable("ProtectorString")!;
             _protector = protectionProvider.CreateProtector(_protectorPurpose);
         }
 

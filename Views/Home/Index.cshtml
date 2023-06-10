@@ -5,4 +5,28 @@
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
     <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <button class="btn btn-primary" onclick="testFunction()">Click Me</button>
+    <button class="btn btn-primary" onclick="testFunction2()">Click Me 2</button>
 </div>
+
+@section Scripts {
+    <script>
+       function testFunction() {
+           swal("Good job!", "You clicked the button!", "success");
+       }
+
+       function testFunction2() {
+            toastr.options = {
+                timeOut: 3000,
+                progressBar: true,
+                showMethod: "slideDown",
+                hideMethod: "slideUp",
+                showDuration: 200,
+                hideDuration: 200
+            };
+
+            toastr.success('Successfully completed');
+       }
+
+    </script>
+}
