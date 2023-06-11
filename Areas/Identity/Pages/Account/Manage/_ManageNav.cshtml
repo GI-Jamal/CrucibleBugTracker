@@ -2,14 +2,72 @@
 @{
     var hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
 }
-<ul class="nav nav-pills flex-column">
-    <li class="nav-item"><a class="nav-link @ManageNavPages.IndexNavClass(ViewContext)" id="profile" asp-page="./Index">Profile</a></li>
-    <li class="nav-item"><a class="nav-link @ManageNavPages.EmailNavClass(ViewContext)" id="email" asp-page="./Email">Email</a></li>
-    <li class="nav-item"><a class="nav-link @ManageNavPages.ChangePasswordNavClass(ViewContext)" id="change-password" asp-page="./ChangePassword">Password</a></li>
-    @if (hasExternalLogins)
-    {
-        <li id="external-logins" class="nav-item"><a id="external-login" class="nav-link @ManageNavPages.ExternalLoginsNavClass(ViewContext)" asp-page="./ExternalLogins">External logins</a></li>
-    }
-    <li class="nav-item"><a class="nav-link @ManageNavPages.TwoFactorAuthenticationNavClass(ViewContext)" id="two-factor" asp-page="./TwoFactorAuthentication">Two-factor authentication</a></li>
-    <li class="nav-item"><a class="nav-link @ManageNavPages.PersonalDataNavClass(ViewContext)" id="personal-data" asp-page="./PersonalData">Personal data</a></li>
-</ul>
+
+<div class="nav nav-pills flex-column d-none d-md-block" id="v-pills-tab" aria-orientation="vertical">
+    <ul class="nav nav-pills flex-column">
+        <li class="nav-item">
+            <a class="nav-link @ManageNavPages.IndexNavClass(ViewContext)" role="tab" asp-page="./Index">
+                Profile
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @ManageNavPages.EmailNavClass(ViewContext)" role="tab" asp-page="./Email">Email</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @ManageNavPages.ChangePasswordNavClass(ViewContext)" role="tab" asp-page="./ChangePassword">
+                Password
+            </a>
+        </li>
+        @if (hasExternalLogins)
+        {
+            <li class="nav-item">
+                <a class="nav-link @ManageNavPages.ExternalLoginsNavClass(ViewContext)" role="tab" asp-page="./ExternalLogins">
+                    External Logins
+                </a>
+            </li>
+        }
+        <li class="nav-item">
+            <a class="nav-link @ManageNavPages.TwoFactorAuthenticationNavClass(ViewContext)" role="tab" asp-page="./TwoFactorAuthentication">
+                Two-factor Authentication
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @ManageNavPages.PersonalDataNavClass(ViewContext)" role="tab" asp-page="./PersonalData">
+                Personal Data
+            </a>
+        </li>
+    </ul>
+</div>
+
+<div class="d-md-none">
+    <ul class="nav nav-tabs justify-content-end mb-3" role="tablist">
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button"
+               aria-haspopup="true" aria-expanded="false">Account</a>
+            <div class="dropdown-menu">
+                <a class="nav-link @ManageNavPages.IndexNavClass(ViewContext)" role="tab" asp-page="./Index">
+                    Profile
+                </a>
+                <a class="nav-link @ManageNavPages.EmailNavClass(ViewContext)" role="tab" asp-page="./Email">Email</a>
+                <a class="nav-link @ManageNavPages.EmailNavClass(ViewContext)" role="tab" asp-page="./Email">Email</a>
+                <a class="nav-link @ManageNavPages.ChangePasswordNavClass(ViewContext)" role="tab" asp-page="./ChangePassword">
+                    Password
+                </a>
+                @if (hasExternalLogins)
+                {
+
+                    <a class="nav-link @ManageNavPages.ExternalLoginsNavClass(ViewContext)" role="tab" asp-page="./ExternalLogins">
+                        External Logins
+                    </a>
+
+                }
+                <a class="nav-link @ManageNavPages.TwoFactorAuthenticationNavClass(ViewContext)" role="tab" asp-page="./TwoFactorAuthentication">
+                    Two-factor Authentication
+                </a>
+                <a class="nav-link @ManageNavPages.PersonalDataNavClass(ViewContext)" role="tab" asp-page="./PersonalData">
+                    Personal Data
+                </a>
+            </div>
+        </li>
+    </ul>
+</div>

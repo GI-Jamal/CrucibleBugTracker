@@ -44,70 +44,8 @@
         <span>Loading...</span>
     </div>
     <!-- ./ Preloader -->
-    <!-- Sidebar group -->
-    <div class="sidebar-group">
-
-        <!-- BEGIN: Settings -->
-        <div class="sidebar" id="settings">
-            <div class="card">
-                <div class="card-body">
-                    <h6 class="card-title d-flex justify-content-between">
-                        Settings
-                        <a class="btn-sidebar-close" href="#">
-                            <i class="ti-close"></i>
-                        </a>
-                    </h6>
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item pl-0 pr-0">
-                            <div class="custom-control custom-switch">
-                                <input type="checkbox" class="custom-control-input" id="customSwitch1" checked>
-                                <label class="custom-control-label" for="customSwitch1">Allow notifications.</label>
-                            </div>
-                        </li>
-                        <li class="list-group-item pl-0 pr-0">
-                            <div class="custom-control custom-switch">
-                                <input type="checkbox" class="custom-control-input" id="customSwitch2">
-                                <label class="custom-control-label" for="customSwitch2">Hide user requests</label>
-                            </div>
-                        </li>
-                        <li class="list-group-item pl-0 pr-0">
-                            <div class="custom-control custom-switch">
-                                <input type="checkbox" class="custom-control-input" id="customSwitch3" checked>
-                                <label class="custom-control-label" for="customSwitch3">Speed up demands</label>
-                            </div>
-                        </li>
-                        <li class="list-group-item pl-0 pr-0">
-                            <div class="custom-control custom-switch">
-                                <input type="checkbox" class="custom-control-input" id="customSwitch4" checked>
-                                <label class="custom-control-label" for="customSwitch4">Hide menus</label>
-                            </div>
-                        </li>
-                        <li class="list-group-item pl-0 pr-0">
-                            <div class="custom-control custom-switch">
-                                <input type="checkbox" class="custom-control-input" id="customSwitch5">
-                                <label class="custom-control-label" for="customSwitch5">Remember next visits</label>
-                            </div>
-                        </li>
-                        <li class="list-group-item pl-0 pr-0">
-                            <div class="custom-control custom-switch">
-                                <input type="checkbox" class="custom-control-input" id="customSwitch6">
-                                <label class="custom-control-label" for="customSwitch6">
-                                    Enable report
-                                    generation.
-                                </label>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-        <!-- END: Settings -->
-
-    </div>
-    <!-- ./ Sidebar group -->
     <!-- Layout wrapper -->
     <div class="layout-wrapper">
-
         <!-- Header -->
         <div class="header d-print-none">
             <div class="header-container">
@@ -120,7 +58,7 @@
 
                     <div class="header-logo">
                         <a asp-controller="Home" asp-action="Index">
-                            <img class="logo" src="../../assets/media/image/logo.png" alt="logo">
+                            <img class="logo" src="~/assets/media/image/logo.png" alt="logo">
                         </a>
                     </div>
                 </div>
@@ -284,13 +222,6 @@
                                     </div>
                                 </div>
                             </li>
-
-                            <li class="nav-item dropdown">
-                                <a href="#" class="nav-link" title="Settings" data-sidebar-target="#settings">
-                                    <i data-feather="settings"></i>
-                                </a>
-                            </li>
-
                             <li class="nav-item dropdown">
                                 <partial name="_LoginPartial" />
                             </li>

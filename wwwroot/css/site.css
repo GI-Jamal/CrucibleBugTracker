@@ -21,7 +21,7 @@ body {
     margin-bottom: 60px;
 }
 
-select {
+select:not(.custom-select) {
     -webkit-appearance: listbox !important;
 }
 
