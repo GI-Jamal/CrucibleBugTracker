@@ -101,12 +101,13 @@ namespace CrucibleBugTracker.Controllers
 
             List<BTUser> admins = await _roleService.GetUsersInRoleAsync(nameof(BTRoles.Admin), User.Identity!.GetCompanyId());
 
-            if (admins.Count <= 1 && selectedRole != nameof(BTRoles.Admin))
+            
+            IEnumerable<string> currentRoles = await _roleService.GetUserRolesAsync(user);
+
+            if (admins.Count <= 1 && currentRoles.Contains(nameof(BTRoles.Admin)) && selectedRole != nameof(BTRoles.Admin))
             {
                 return Json(new { success = false });
             }
-
-            IEnumerable<string> currentRoles = await _roleService.GetUserRolesAsync(user);
 
             if (await _roleService.RemoveUserFromRolesAsync(user, currentRoles))
             {

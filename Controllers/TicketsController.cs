@@ -368,7 +368,7 @@ namespace CrucibleBugTracker.Controllers
         {
             TicketAttachment? ticketAttachment = await _ticketService.GetTicketAttachmentByIdAsync(id);
             string? fileName = ticketAttachment?.FileName;
-            byte[]? fileData = ticketAttachment?.FileData;
+            byte[] fileData = ticketAttachment?.FileData ?? Array.Empty<byte>();
             string? ext = Path.GetExtension(fileName)?.Replace(".", "");
 
             Response.Headers.Add("Content-Disposition", $"inline; filename={fileName}");

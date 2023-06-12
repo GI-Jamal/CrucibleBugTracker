@@ -44,6 +44,13 @@ ol {
     overflow: auto;
 }
 
-#logoutButton:hover {
-    color: white;
+@media (max-width: 991px) {
+    #searchBar {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 57px;
+        width: 90%;
+        margin: auto;
+    }
 }

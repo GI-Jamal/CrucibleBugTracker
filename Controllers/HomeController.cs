@@ -13,12 +13,8 @@ namespace CrucibleBugTracker.Controllers
             _logger = logger;
         }
 
-        public IActionResult Index(Message? message = null)
+        public IActionResult Index()
         {
-            if (message != null)
-            {
-                ViewData["Message"] = message;
-            }
             return View();
         }
 

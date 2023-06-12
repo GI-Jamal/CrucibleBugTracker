@@ -194,7 +194,7 @@
                     }
                 },
                 error: function () {
-                    toastr.error('Something went wrong in checkRole()');
+                    toastr.error('Something went wrong');
                 }
             });
         }
@@ -240,7 +240,14 @@
 
                 },
                 success: function (result) {
-                    toastr.success('Change successful');
+                    if (result.success = true) {
+
+                        toastr.success('Change successful');
+                    }
+                    else {
+
+                        toastr.error('Change failed');
+                    }
                 },
                 error: function () {
                     toastr.error('Change failed');

@@ -23,7 +23,6 @@ namespace CrucibleBugTracker.Controllers
     {
         private readonly IBTInviteService _inviteService;
         private readonly IBTProjectService _projectService;
-        private readonly IBTCompanyService _companyService;
         private readonly IEmailSender _emailService;
         private readonly UserManager<BTUser> _userManager;
         private readonly IDataProtector _protector;
@@ -31,7 +30,6 @@ namespace CrucibleBugTracker.Controllers
 
         public InvitesController(IBTInviteService inviteService,
                                  IBTProjectService projectService,
-                                 IBTCompanyService companyService,
                                  IEmailSender emailSender,
                                  UserManager<BTUser> userManager,
                                  IConfiguration configuration,
@@ -39,7 +37,6 @@ namespace CrucibleBugTracker.Controllers
         {
             _inviteService = inviteService;
             _projectService = projectService;
-            _companyService = companyService;
             _emailService = emailSender;
             _userManager = userManager;
             _protectorPurpose = configuration.GetValue<string>("ProtectorString") ?? Environment.GetEnvironmentVariable("ProtectorString")!;
@@ -94,8 +91,7 @@ namespace CrucibleBugTracker.Controllers
                     string subject = "You've been invited to join the Crucible Bug Tracker!";
 
                     await _emailService.SendEmailAsync(invite.InviteeEmail!, subject, body);
-                    Message message = new() { Success = true, SwalMessage = $"Invite sent to {invite.InviteeEmail} sucessfully." };
-                    return RedirectToAction("Index", "Home", message);
+                    return RedirectToAction("Index", "Home");
                 }
                 catch (Exception)
                 {

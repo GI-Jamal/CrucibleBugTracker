@@ -9308,14 +9308,14 @@ small {
     display: block !important;
   }
 
-  .header .header-body {
+  /*.header .header-body {
     display: none;
     background-color: white;
     position: absolute;
     left: 0;
     right: 0;
     top: 70px;
-  }
+  }*/
 
   .header .header-body li a {
     color: black !important;
@@ -9888,9 +9888,9 @@ small {
     background-color: #383a3f;
   }
 
-  body.dark .header .header-body ul li a {
+  /*body.dark .header .header-body ul li a {
     color: rgba(255, 255, 255, 0.5) !important;
-  }
+  }*/
 
   body.dark .header .header-right {
     background-color: #5066e1;
