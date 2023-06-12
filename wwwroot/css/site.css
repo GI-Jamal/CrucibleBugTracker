@@ -44,6 +44,21 @@ ol {
     overflow: auto;
 }
 
+
+@media (max-width: 500px) {
+    .tinyMargin {
+        margin-bottom: 1rem;
+    }
+}
+
+
+.manageUsers {
+    margin-right: 0;
+    margin-left: 0;
+    padding-left: 0;
+    --bs-gutter-x: 1.5rem;
+}
+
 @media (max-width: 991px) {
     #searchBar {
         position: absolute;

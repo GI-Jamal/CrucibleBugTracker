@@ -64,12 +64,12 @@ namespace CrucibleBugTracker.Controllers
                 if (member.Id != _userManager.GetUserId(User) && !await _roleService.IsUserInRole(member, nameof(BTRoles.DemoUser)))
                 {
                     IEnumerable<string> userRoles = await _roleService.GetUserRolesAsync(member);
+                    BTRoles selectedRole = Enum.GetValues<BTRoles>().FirstOrDefault(r => Enum.GetName(r) == userRoles.FirstOrDefault());
 
                     ManageUserRolesViewModel viewModel = new()
                     {
-                        Roles = new SelectList(roles, "Name", "Name", userRoles.FirstOrDefault()),
                         User = member,
-                        SelectedRole = userRoles.FirstOrDefault()
+                        SelectedRole = selectedRole
                     };
 
                     model.Add(viewModel);
@@ -80,6 +80,7 @@ namespace CrucibleBugTracker.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         [Authorize(Roles = nameof(BTRoles.Admin))]
         public async Task<IActionResult> ManageUserRoles(string? id, string? newRole)
         {

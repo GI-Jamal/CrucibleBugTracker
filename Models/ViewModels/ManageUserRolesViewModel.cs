@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using CrucibleBugTracker.Enums;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CrucibleBugTracker.Models.ViewModels
 {
@@ -8,6 +9,6 @@ namespace CrucibleBugTracker.Models.ViewModels
         
         public BTUser? User { get; set; }
 
-        public string? SelectedRole { get; set; }
+        public BTRoles? SelectedRole { get; set; }
     }
 }

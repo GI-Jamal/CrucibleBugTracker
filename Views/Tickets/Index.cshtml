@@ -88,10 +88,10 @@
                 <div class="p-15 text-light">
                     <h3>
                         @*@(
-                            Model.Projects.Count()
-                            + Model.Tickets.Count()
-                            + Model.Members.Count()
-                            )*@
+                        Model.Projects.Count()
+                        + Model.Tickets.Count()
+                        + Model.Members.Count()
+                        )*@
                     </h3>
                     <span>Total Data</span>
                 </div>
@@ -106,13 +106,14 @@
         <div class="card">
             <div class="card-body">
                 <h6 class="card-title">@ViewBag.Title</h6>
-                <div class="table-responsive">
+                <div class="table-responsive text-white">
                     <table id="ticketsTable" class="table">
                         <thead>
                             <tr class="text-center">
                                 <th class="text-start">Ticket Title</th>
                                 <th class="text-start">Project</th>
                                 <th>Last Updated Date</th>
+                                <th>Submitter</th>
                                 <th>Type</th>
                                 <th>Priority</th>
                                 <th>Status</th>
@@ -140,7 +141,30 @@
                                         else
                                         {
                                             <td>@ticket.UpdatedDate.Value.ToString("MMM dd, yyyy")</td>
-                                        }                                       
+                                        }
+                                        <td>
+                                            @if (ticket.SubmitterUser?.ImageFileData != null)
+                                            {
+                                                <figure class="avatar">
+                                                    <img data-bs-toggle="tooltip"
+                                                         data-bs-placement="top"
+                                                         title="@ticket.SubmitterUser?.FullName"
+                                                         data-bs-title="@ticket.SubmitterUser?.FullName" src="@_FileService.ConvertByteArrayToFile(ticket.SubmitterUser?.ImageFileData, ticket.SubmitterUser?.ImageFileType, DefaultImage.BTUserImage)" class="rounded-circle" alt="avatar">
+                                                </figure>
+                                            }
+                                            else
+                                            {
+                                                <figure class="avatar">
+                                                    <span class="avatar-title bg-info-bright text-info rounded-circle"
+                                                          data-bs-toggle="tooltip"
+                                                          data-bs-placement="top"
+                                                          title="@ticket.SubmitterUser?.FullName"
+                                                          data-bs-title="@ticket.SubmitterUser?.FullName">
+                                                        @ticket.SubmitterUser?.FirstName?[0]
+                                                    </span>
+                                                </figure>
+                                            }
+                                        </td>
                                         <td>
                                             @switch (ticket.TicketType?.Name)
                                             {
@@ -167,22 +191,29 @@
                                             }
                                         </td>
                                         <td>
-                                            @switch (ticket.TicketPriority?.Name)
+                                            @if (ticket.Archived == true)
                                             {
-                                                case nameof(BTTicketPriorities.Low):
-                                                    <span class="badge bg-success-bright">@ticket.TicketPriority.Name</span>
-                                                    break;
-                                                case nameof(BTTicketPriorities.Medium):
-                                                    <span class="badge bg-warning-bright">@ticket.TicketPriority.Name</span>
-                                                    break;
-                                                case nameof(BTTicketPriorities.High):
-                                                    <span class="badge bg-secondary-bright">@ticket.TicketPriority.Name</span>
-                                                    break;
-                                                case nameof(BTTicketPriorities.Urgent):
-                                                    <span class="badge bg-danger-bright">@ticket.TicketPriority.Name</span>
-                                                    break;
-                                                default:
-                                                    break;
+                                                <span class="badge bg-info-bright">None</span>
+                                            }
+                                            else
+                                            {
+                                                switch (ticket.TicketPriority?.Name)
+                                                {
+                                                    case nameof(BTTicketPriorities.Low):
+                                                        <span class="badge bg-success-bright">@ticket.TicketPriority.Name</span>
+                                                        break;
+                                                    case nameof(BTTicketPriorities.Medium):
+                                                        <span class="badge bg-warning-bright">@ticket.TicketPriority.Name</span>
+                                                        break;
+                                                    case nameof(BTTicketPriorities.High):
+                                                        <span class="badge bg-secondary-bright">@ticket.TicketPriority.Name</span>
+                                                        break;
+                                                    case nameof(BTTicketPriorities.Urgent):
+                                                        <span class="badge bg-danger-bright">@ticket.TicketPriority.Name</span>
+                                                        break;
+                                                    default:
+                                                        break;
+                                                }
                                             }
                                         </td>
                                         <td>
@@ -225,7 +256,7 @@
                                                              data-bs-placement="top"
                                                              title="@ticket.DeveloperUser?.FullName"
                                                              data-bs-title="@ticket.DeveloperUser?.FullName" src="@_FileService.ConvertByteArrayToFile(ticket.DeveloperUser?.ImageFileData, ticket.DeveloperUser?.ImageFileType, DefaultImage.BTUserImage)" class="rounded-circle" alt="avatar">
-                                                    </figure>                                                    
+                                                    </figure>
                                                 }
                                                 else
                                                 {
@@ -238,7 +269,7 @@
                                                             @ticket.DeveloperUser?.FirstName?[0]
                                                         </span>
                                                     </figure>
-                                                }                                                
+                                                }
                                             }
                                             else
                                             {
@@ -367,7 +398,8 @@
         $(document).ready(function () {
             $('#ticketsTable').DataTable({
                 "columnDefs": [
-                    { "type": "date", "targets": [2] }
+                    { "type": "date", "targets": [2] },
+                    { "orderable": false, "targets": [-1] }
                 ]
             });
         });
@@ -378,9 +410,9 @@
         {
             <text>
                 {
-                    projectId: @project.Id,
+                    projectId: @project?.Id,
                     members: [
-                @foreach (var member in project.Members.Where(m => companyDeveloperIds.Contains(m.Id) == true))
+                @foreach (var member in project?.Members.Where(m => companyDeveloperIds.Contains(m.Id) == true))
                 {
                     <text>
                             {
@@ -389,11 +421,11 @@
                             },
                     </text>
                 }
-                                                                                                                                    ]
+                                                                                                                                                            ]
                 },
             </text>
         }
-                                                                                ];
+                                                                                                ];
 
         function getMembers(projectId) {
             return projectMembers.find(p => p.projectId == projectId).members;

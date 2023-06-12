@@ -89,10 +89,10 @@
                 <div class="p-15 text-light">
                     <h3>
                         @*@(
-                            Model.Projects.Count()
-                            + Model.Tickets.Count()
-                            + Model.Members.Count()
-                            )*@
+                        Model.Projects.Count()
+                        + Model.Tickets.Count()
+                        + Model.Members.Count()
+                        )*@
                     </h3>
                     <span>Total Data</span>
                 </div>
@@ -137,21 +137,28 @@
                                         <td>@project.EndDate.ToString("MMM dd, yyyy")</td>
                                         <td class="text-center">
                                             @{
-                                                if (project.ProjectPriority?.Name == nameof(BTProjectPriorities.Low))
+                                                @if (project.Archived == true)
                                                 {
-                                                    <span class="badge bg-success-bright">@project.ProjectPriority?.Name</span>
+                                                    <span class="badge bg-info-bright">None</span>
                                                 }
-                                                if (project.ProjectPriority?.Name == nameof(BTProjectPriorities.Medium))
+                                                else
                                                 {
-                                                    <span class="badge bg-warning-bright">@project.ProjectPriority?.Name</span>
-                                                }
-                                                if (project.ProjectPriority?.Name == nameof(BTProjectPriorities.High))
-                                                {
-                                                    <span class="badge bg-secondary-bright">@project.ProjectPriority?.Name</span>
-                                                }
-                                                if (project.ProjectPriority?.Name == nameof(BTProjectPriorities.Urgent))
-                                                {
-                                                    <span class="badge bg-danger-bright">@project.ProjectPriority?.Name</span>
+                                                    if (project.ProjectPriority?.Name == nameof(BTProjectPriorities.Low))
+                                                    {
+                                                        <span class="badge bg-success-bright">@project.ProjectPriority?.Name</span>
+                                                    }
+                                                    if (project.ProjectPriority?.Name == nameof(BTProjectPriorities.Medium))
+                                                    {
+                                                        <span class="badge bg-warning-bright">@project.ProjectPriority?.Name</span>
+                                                    }
+                                                    if (project.ProjectPriority?.Name == nameof(BTProjectPriorities.High))
+                                                    {
+                                                        <span class="badge bg-secondary-bright">@project.ProjectPriority?.Name</span>
+                                                    }
+                                                    if (project.ProjectPriority?.Name == nameof(BTProjectPriorities.Urgent))
+                                                    {
+                                                        <span class="badge bg-danger-bright">@project.ProjectPriority?.Name</span>
+                                                    }
                                                 }
                                             }
                                         </td>
@@ -172,7 +179,7 @@
                                                                  src="@_FileService.ConvertByteArrayToFile(projectManager.ImageFileData, projectManager.ImageFileType, DefaultImage.BTUserImage)"
                                                                  class="rounded-circle"
                                                                  alt="avatar">
-                                                        </figure>                                                        
+                                                        </figure>
                                                     }
                                                     else
                                                     {
@@ -338,7 +345,8 @@
         $(document).ready(function () {
             $('#projectsTable').DataTable({
                 "columnDefs": [
-                    { "type": "date", "targets": [1,2,3] }
+                    { "type": "date", "targets": [1, 2, 3] },
+                    { "orderable": false, "targets": [-1] }
                 ]
             });
         });

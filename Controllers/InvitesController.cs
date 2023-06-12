@@ -91,6 +91,9 @@ namespace CrucibleBugTracker.Controllers
                     string subject = "You've been invited to join the Crucible Bug Tracker!";
 
                     await _emailService.SendEmailAsync(invite.InviteeEmail!, subject, body);
+
+                    TempData["SuccessMessage"] = $"Invite sent to {invite.InviteeEmail} successfully.";
+
                     return RedirectToAction("Index", "Home");
                 }
                 catch (Exception)

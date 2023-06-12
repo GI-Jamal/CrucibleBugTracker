@@ -1,4 +1,5 @@
-﻿@using CrucibleBugTracker.Models.ViewModels
+﻿@using CrucibleBugTracker.Enums;
+@using CrucibleBugTracker.Models.ViewModels
 
 @model IEnumerable<ManageUserRolesViewModel>
 
@@ -7,8 +8,8 @@
 }
 
 <div class="row">
-    <h2 class="m-t-0 h3"><b>Manage Member Roles </b></h2>
-    <div class="row">
+    <h2 class="m-t-0 h3" style="padding:20px;"><b>Manage Member Roles </b></h2>
+    <div class="row manageUsers" >
         @foreach (ManageUserRolesViewModel viewModel in Model)
         {
             <div class="col-xxl-4 col-lg-6">
@@ -21,12 +22,13 @@
                             Use the dropdown to select the roles this user should be assigned.
                         </p>
                         <hr />
-                        <form onsubmit="submitForm()" data-formId="@viewModel.User!.Id">
+                        <form onsubmit="submitForm()" asp-controller="Company" asp-action="ManageUserRoles" data-formId="@viewModel.User!.Id">
                             <input type="hidden" asp-for="@viewModel.User!.Id" />
                             <div class="form-group">
                                 <label asp-for="@viewModel.Roles" class="custom-label"> Roles for @viewModel.User?.FullName </label>
-                                <select asp-for="@viewModel.SelectedRole" class="form-control tom-select" asp-items="@viewModel.Roles" onchange="setRole('@viewModel.User!.Id', this)">
-                                </select>
+                                @Html.DropDownListFor(m => viewModel.SelectedRole, Html.GetEnumSelectList<BTRoles>().Where(o => o.Text != nameof(BTRoles.DemoUser)), new { @class = "form-control tom-select", onchange = $"setRole(`{viewModel.User!.Id}`, this)" })
+                                @*<select asp-for="@viewModel.SelectedRole" class="form-control tom-select" asp-items="@viewModel.Roles" onchange="setRole('@viewModel.User!.Id', this)">
+                            </select>*@
                                 <hr />
                             </div>
                             <div class="form-group">
@@ -99,15 +101,7 @@
                 userName: button.dataset.name
             }
 
-            toastr.options =
-            {
-                timeOut: 3000,
-                progressBar: true,
-                showMethod: "slideDown",
-                hideMethod: "slideUp",
-                showDuration: 200,
-                hideDuration: 200
-            };
+            
 
             $.ajax({
                 type: 'GET',
@@ -201,21 +195,33 @@
 
         function setRole(userId, roleSelectList) {
             let associatedButton = document.querySelector(`[data-id="${userId}"]`);
-            associatedButton.setAttribute("data-role", `${roleSelectList.value}`);
+
+            let role;
+
+            switch (roleSelectList.value) {
+                case "0":
+                    role = "Admin"
+                    break;
+                case "1":
+                    role = "ProjectManager";
+                    break;
+                case "2":
+                    role = "Developer";
+                    break;
+                case "3":
+                    role = "Submitter";
+                    break;
+                default:
+                    toastr.error('Something went wrong');
+                    return;
+
+            }
+
+            associatedButton.setAttribute("data-role", role);
         }
 
         function submitForm(userId = null, role = null) {
             $('#manageUsersModal').modal('hide');
-
-            toastr.options =
-            {
-                timeOut: 3000,
-                progressBar: true,
-                showMethod: "slideDown",
-                hideMethod: "slideUp",
-                showDuration: 200,
-                hideDuration: 200
-            };
 
             var element = this;
 
@@ -226,8 +232,7 @@
 
             }
 
-            var form = $('#__AjaxAntiForgeryForm');
-            var token = $('input[name="__RequestVerificationToken"]', form).val();
+            var token = $('input[name="__RequestVerificationToken"]').val();
 
             $.ajax({
                 type: 'POST',

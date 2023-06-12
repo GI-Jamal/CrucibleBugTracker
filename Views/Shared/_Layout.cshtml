@@ -6,6 +6,16 @@
 
 @{
     string? controllerName = ViewContext.RouteData.Values["controller"]?.ToString();
+
+    if (TempData.ContainsKey("SuccessMessage"))
+    {
+        ViewData["SuccessMessage"] = TempData["SuccessMessage"];
+    }
+
+    if (TempData.ContainsKey("ErrorMessage"))
+    {
+        ViewData["ErrorMessage"] = TempData["ErrorMessage"];
+    }
 }
 
 <!DOCTYPE html>
@@ -468,6 +478,29 @@
                     break;
                 default:
                     break;
+            }
+
+            toastr.options =
+            {
+                timeOut: 3000,
+                progressBar: true,
+                showMethod: "slideDown",
+                hideMethod: "slideUp",
+                showDuration: 200,
+                hideDuration: 200
+            };
+
+            @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+            {
+                <text>
+                    toastr.error(`@ViewBag.ErrorMessage`);
+                </text>
+            }
+            else if (!string.IsNullOrEmpty(ViewBag.SuccessMessage))
+            {
+                <text>
+                    toastr.success(`@ViewBag.SuccessMessage`);
+                </text>
             }
         });
     </script>

@@ -43,7 +43,7 @@
                             <div>
                                 <label asp-for="ImageFormFile" class="control-label">Project Image</label>
                                 <input asp-for="ImageFormFile" class="form-control" accept=".png, .jpeg, .jpg, .gif, .svg"
-                                       onchange="document.getElementById('projectImage').src = window.URL.createObjectURL(this.files[0])" />
+                                       onchange="changeImage(this)" />
                                 <span asp-validation-for="ImageFormFile" class="text-danger"></span>
                             </div>
                         </div>
@@ -311,6 +311,12 @@
             submitterIds.value = submitters.join(',');
             var submitter = document.querySelector(`[data-id="${submitterId}"]`);
             submitter.style.display = "table-row";
+        }
+
+        function changeImage(image)
+        {
+            document.getElementById('projectImage').src = window.URL.createObjectURL(image.files[0])
+            document.getElementById('lightBoxImg').href = window.URL.createObjectURL(image.files[0])
         }
     </script>
 }

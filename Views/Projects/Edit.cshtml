@@ -46,14 +46,14 @@
                         <h6 class="card-title">Project Details</h6>
                         <div class="d-flex mb-3">
                             <figure class="mr-3">
-                                <a class="image-popup" id="lightBoxImg" href="~/img/DefaultProjectImage.jpg">
+                                <a class="image-popup" id="lightBoxImg" href="@_FileService.ConvertByteArrayToFile(Model.ImageFileData, Model.ImageFileType, DefaultImage.ProjectImage)">
                                     <img width="100" src="@_FileService.ConvertByteArrayToFile(Model.ImageFileData, Model.ImageFileType, DefaultImage.ProjectImage)" class="img-fluid" id="projectImage" onchange="document.getElementById('lightBoxImg').setAttribute('href', )" />
                                 </a>
                             </figure>
                             <div>
                                 <label asp-for="ImageFormFile" class="control-label">Project Image</label>
                                 <input asp-for="ImageFormFile" class="form-control" accept=".png, .jpeg, .jpg, .gif, .svg"
-                                       onchange="document.getElementById('projectImage').src = window.URL.createObjectURL(this.files[0])" />
+                                       onchange="changeImage(this)" />
                                 <span asp-validation-for="ImageFormFile" class="text-danger"></span>
                             </div>
                         </div>
@@ -526,6 +526,11 @@
             submitterIds.value = submitters.join(',');
             var submitter = document.querySelector(`[data-id="${submitterId}"]`);
             submitter.style.display = "table-row";
+        }
+
+        function changeImage(image) {
+            document.getElementById('projectImage').src = window.URL.createObjectURL(image.files[0])
+            document.getElementById('lightBoxImg').href = window.URL.createObjectURL(image.files[0])
         }
     </script>
 }
