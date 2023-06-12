@@ -86,6 +86,7 @@ namespace CrucibleBugTracker.Controllers
             string? selectedRole = newRole;
             string? userId = id;
             int companyId = User.Identity!.GetCompanyId();
+            string? currentUserId = _userManager.GetUserId(User);
 
             if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(selectedRole))
             {
@@ -163,7 +164,7 @@ namespace CrucibleBugTracker.Controllers
 
                         ticket.DeveloperUserId = null;
                         await _ticketService.UpdateTicketAsync(ticket, companyId);
-                        await _ticketHistoryService.AddHistoryAsync(oldTicket, ticket, user.Id);
+                        await _ticketHistoryService.AddHistoryAsync(oldTicket, ticket, currentUserId!);
                     }
                     catch (Exception)
                     {
