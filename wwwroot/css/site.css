@@ -43,3 +43,7 @@ ol {
     max-height: 300px;
     overflow: auto;
 }
+
+#logoutButton:hover {
+    color: white;
+}

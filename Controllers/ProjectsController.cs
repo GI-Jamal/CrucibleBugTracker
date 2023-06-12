@@ -103,7 +103,13 @@ namespace CrucibleBugTracker.Controllers
             ViewData["ProjectSubmitters"] = new List<BTUser>(await _roleService.GetUsersInRoleAsync(nameof(BTRoles.Submitter), companyId));
             ViewData["ProjectManagers"] = new SelectList(await _roleService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId), nameof(BTUser.Id), nameof(BTUser.FullName));
 
-            return View();
+            Project project = new()
+            {
+                StartDate = DateTime.Today,
+                EndDate = DateTime.Today.AddDays(7)
+            };
+
+            return View(project);
         }
 
         // POST: Projects/Create

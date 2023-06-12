@@ -4,9 +4,11 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using CrucibleBugTracker.Models;
+using CrucibleBugTracker.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -17,13 +19,16 @@ namespace CrucibleBugTracker.Areas.Identity.Pages.Account.Manage
     {
         private readonly UserManager<BTUser> _userManager;
         private readonly SignInManager<BTUser> _signInManager;
+        private readonly IBTFileService _fileService;
 
         public IndexModel(
             UserManager<BTUser> userManager,
-            SignInManager<BTUser> signInManager)
+            SignInManager<BTUser> signInManager,
+            IBTFileService fileService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _fileService = fileService;
         }
 
         /// <summary>
@@ -59,6 +64,13 @@ namespace CrucibleBugTracker.Areas.Identity.Pages.Account.Manage
             [Phone]
             [Display(Name = "Phone number")]
             public string PhoneNumber { get; set; }
+
+            public byte[] ImageData { get; set; }
+
+            public string ImageType { get; set; }
+
+            [NotMapped]
+            public IFormFile ImageFile { get; set; }
         }
 
         private async Task LoadAsync(BTUser user)
@@ -70,7 +82,9 @@ namespace CrucibleBugTracker.Areas.Identity.Pages.Account.Manage
 
             Input = new InputModel
             {
-                PhoneNumber = phoneNumber
+                PhoneNumber = phoneNumber,
+                ImageData = user.ImageFileData,
+                ImageType = user.ImageFileType
             };
         }
 
@@ -99,6 +113,14 @@ namespace CrucibleBugTracker.Areas.Identity.Pages.Account.Manage
                 await LoadAsync(user);
                 return Page();
             }
+
+            if (Input.ImageFile != null)
+            {
+                user.ImageFileData = await _fileService.ConvertFileToByteArrayAsync(Input.ImageFile);
+                user.ImageFileType = Input.ImageFile.ContentType;
+            }
+
+            await _userManager.UpdateAsync(user);
 
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
             if (Input.PhoneNumber != phoneNumber)

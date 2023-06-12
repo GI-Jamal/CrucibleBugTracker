@@ -11,11 +11,26 @@
 
 @section Scripts {
     <script>
-       function testFunction() {
-           swal("Good job!", "You clicked the button!", "success");
-       }
+        $(document).ready(function () {
+            if (@ViewBag.Message != null) {
+                var message = @ViewBag.Message;
+                if (message.success = true) {
 
-       function testFunction2() {
+                    swal("Success!", message.swalMessage, "success");
+                }
+                else {
+
+                    swal("Error!", message.swalMessage, "error");
+                }
+            }
+        });
+    </script>
+    <script>        
+        function testFunction() {
+            swal("Good job!", "You clicked the button!", "success");
+        }
+
+        function testFunction2() {
             toastr.options = {
                 timeOut: 3000,
                 progressBar: true,
@@ -26,7 +41,6 @@
             };
 
             toastr.success('Successfully completed');
-       }
-
+        }
     </script>
 }

@@ -270,6 +270,7 @@ namespace CrucibleBugTracker.Services
                 throw;
             }
         }
+        
         public async Task<List<BTUser>> GetProjectMembersByRoleAsNoTrackingAsync(int projectId, string roleName, int companyId)
         {
             try

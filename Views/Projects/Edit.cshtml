@@ -47,7 +47,7 @@
                         <div class="d-flex mb-3">
                             <figure class="mr-3">
                                 <a class="image-popup" id="lightBoxImg" href="~/img/DefaultProjectImage.jpg">
-                                    <img width="100" src="~/img/DefaultProjectImage.jpg" class="img-fluid" id="projectImage" onchange="document.getElementById('lightBoxImg').setAttribute('href', )" />
+                                    <img width="100" src="@_FileService.ConvertByteArrayToFile(Model.ImageFileData, Model.ImageFileType, DefaultImage.ProjectImage)" class="img-fluid" id="projectImage" onchange="document.getElementById('lightBoxImg').setAttribute('href', )" />
                                 </a>
                             </figure>
                             <div>
@@ -113,8 +113,8 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="control-label">All Active Developers</label>
-                                    <div class="table-responsive">
-                                        <table class="table table-hover">
+                                    <div class="assignProjectUsers">
+                                        <table class="table table-hover assignProjectUsersTable">
                                             <thead>
                                                 <tr>
                                                     <th>Full Name</th>
@@ -127,12 +127,24 @@
                                                     {
                                                         <tr data-id="@user.Id" id="developer" role="button" style="display:none;" onclick="addDeveloper(this)">
                                                             <td>
-                                                                <figure class="avatar avatar-sm mr-3">
-                                                                    <span class="avatar-title bg-info-bright text-info rounded-circle">
-                                                                        @user.FirstName?[0]
-                                                                    </span>
-                                                                </figure>
-                                                                <span>@user.FullName</span>
+                                                                @if (user.ImageFileData != null)
+                                                                {
+                                                                    <figure class="avatar mr-3">
+                                                                        <img src="@_FileService.ConvertByteArrayToFile(user.ImageFileData, user.ImageFileType, DefaultImage.BTUserImage)"
+                                                                             class="rounded-circle"
+                                                                             alt="avatar">
+                                                                    </figure>
+                                                                    <span>@user.FullName</span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <figure class="avatar mr-3">
+                                                                        <span class="avatar-title bg-info-bright text-info rounded-circle">
+                                                                            @user.FirstName?[0]
+                                                                        </span>
+                                                                    </figure>
+                                                                    <span>@user.FullName</span>
+                                                                }
                                                             </td>
                                                         </tr>
                                                     }
@@ -141,12 +153,24 @@
                                                     {
                                                         <tr data-id="@user.Id" id="developer" role="button" onclick="addDeveloper(this)">
                                                             <td>
-                                                                <figure class="avatar avatar-sm mr-3">
-                                                                    <span class="avatar-title bg-info-bright text-info rounded-circle">
-                                                                        @user.FirstName?[0]
-                                                                    </span>
-                                                                </figure>
-                                                                <span>@user.FullName</span>
+                                                                @if (user.ImageFileData != null)
+                                                                {
+                                                                    <figure class="avatar mr-3">
+                                                                        <img src="@_FileService.ConvertByteArrayToFile(user.ImageFileData, user.ImageFileType, DefaultImage.BTUserImage)"
+                                                                             class="rounded-circle"
+                                                                             alt="avatar">
+                                                                    </figure>
+                                                                    <span>@user.FullName</span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <figure class="avatar mr-3">
+                                                                        <span class="avatar-title bg-info-bright text-info rounded-circle">
+                                                                            @user.FirstName?[0]
+                                                                        </span>
+                                                                    </figure>
+                                                                    <span>@user.FullName</span>
+                                                                }
                                                             </td>
                                                         </tr>
                                                     }
@@ -161,8 +185,8 @@
                                 <div class="form-group">
                                     <label class="control-label">Selected Developers</label>
                                     <input type="hidden" id="newDevIds" value="@devIds" name="developerIds" />
-                                    <div class="table-responsive">
-                                        <table class="table table-hover">
+                                    <div class="assignProjectUsers">
+                                        <table class="table table-hover assignProjectUsersTable">
                                             <thead>
                                                 <tr>
                                                     <th>Full Name</th>
@@ -173,12 +197,24 @@
                                                 {
                                                     <tr data-userId="@developer.Id" id="developer" role="button" onclick="removeDeveloper(this)">
                                                         <td>
-                                                            <figure class="avatar avatar-sm mr-3">
-                                                                <span class="avatar-title bg-info-bright text-info rounded-circle">
-                                                                    @developer.FirstName?[0]
-                                                                </span>
-                                                            </figure>
-                                                            <span>@developer.FullName</span>
+                                                            @if (developer.ImageFileData != null)
+                                                            {
+                                                                <figure class="avatar mr-3">
+                                                                    <img src="@_FileService.ConvertByteArrayToFile(developer.ImageFileData, developer.ImageFileType, DefaultImage.BTUserImage)"
+                                                                         class="rounded-circle"
+                                                                         alt="avatar">
+                                                                </figure>
+                                                                <span>@developer.FullName</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <figure class="avatar mr-3">
+                                                                    <span class="avatar-title bg-info-bright text-info rounded-circle">
+                                                                        @developer.FirstName?[0]
+                                                                    </span>
+                                                                </figure>
+                                                                <span>@developer.FullName</span>
+                                                            }
                                                         </td>
                                                     </tr>
                                                 }
@@ -190,8 +226,8 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="control-label">All Active Submitters</label>
-                                    <div class="table-responsive">
-                                        <table class="table table-hover">
+                                    <div class="assignProjectUsers">
+                                        <table class="table table-hover assignProjectUsersTable">
                                             <thead>
                                                 <tr>
                                                     <th>Full Name</th>
@@ -204,12 +240,24 @@
                                                     {
                                                         <tr role="button" data-id="@user.Id" id="submitter" style="display:none;" onclick="addSubmitter(this)">
                                                             <td>
-                                                                <figure class="avatar avatar-sm mr-3">
-                                                                    <span class="avatar-title bg-info-bright text-info rounded-circle">
-                                                                        @user.FirstName?[0]
-                                                                    </span>
-                                                                </figure>
-                                                                <span>@user.FullName</span>
+                                                                @if (user.ImageFileData != null)
+                                                                {
+                                                                    <figure class="avatar mr-3">
+                                                                        <img src="@_FileService.ConvertByteArrayToFile(user.ImageFileData, user.ImageFileType, DefaultImage.BTUserImage)"
+                                                                             class="rounded-circle"
+                                                                             alt="avatar">
+                                                                    </figure>
+                                                                    <span>@user.FullName</span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <figure class="avatar mr-3">
+                                                                        <span class="avatar-title bg-info-bright text-info rounded-circle">
+                                                                            @user.FirstName?[0]
+                                                                        </span>
+                                                                    </figure>
+                                                                    <span>@user.FullName</span>
+                                                                }
                                                             </td>
                                                         </tr>
                                                     }
@@ -217,12 +265,24 @@
                                                     {
                                                         <tr role="button" data-id="@user.Id" id="submitter" onclick="addSubmitter(this)">
                                                             <td>
-                                                                <figure class="avatar avatar-sm mr-3">
-                                                                    <span class="avatar-title bg-info-bright text-info rounded-circle">
-                                                                        @user.FirstName?[0]
-                                                                    </span>
-                                                                </figure>
-                                                                <span>@user.FullName</span>
+                                                                @if (user.ImageFileData != null)
+                                                                {
+                                                                    <figure class="avatar mr-3">
+                                                                        <img src="@_FileService.ConvertByteArrayToFile(user.ImageFileData, user.ImageFileType, DefaultImage.BTUserImage)"
+                                                                             class="rounded-circle"
+                                                                             alt="avatar">
+                                                                    </figure>
+                                                                    <span>@user.FullName</span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <figure class="avatar mr-3">
+                                                                        <span class="avatar-title bg-info-bright text-info rounded-circle">
+                                                                            @user.FirstName?[0]
+                                                                        </span>
+                                                                    </figure>
+                                                                    <span>@user.FullName</span>
+                                                                }
                                                             </td>
                                                         </tr>
                                                     }
@@ -236,8 +296,8 @@
                                 <div class="form-group">
                                     <label class="control-label">Selected Submitters</label>
                                     <input type="hidden" id="newSubIds" value="@subIds" name="submitterIds" />
-                                    <div class="table-responsive">
-                                        <table class="table table-hover">
+                                    <div class="assignProjectUsers">
+                                        <table class="table table-hover assignProjectUsersTable">
                                             <thead>
                                                 <tr>
                                                     <th>Full Name</th>
@@ -248,12 +308,24 @@
                                                 {
                                                     <tr data-userId="@submitter.Id" id="submitter" role="button" onclick="removeSubmitter(this)">
                                                         <td>
-                                                            <figure class="avatar avatar-sm mr-3">
-                                                                <span class="avatar-title bg-info-bright text-info rounded-circle">
-                                                                    @submitter.FirstName?[0]
-                                                                </span>
-                                                            </figure>
-                                                            <span>@submitter.FullName</span>
+                                                            @if (submitter.ImageFileData != null)
+                                                            {
+                                                                <figure class="avatar mr-3">
+                                                                    <img src="@_FileService.ConvertByteArrayToFile(submitter.ImageFileData, submitter.ImageFileType, DefaultImage.BTUserImage)"
+                                                                         class="rounded-circle"
+                                                                         alt="avatar">
+                                                                </figure>
+                                                                <span>@submitter.FullName</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <figure class="avatar mr-3">
+                                                                    <span class="avatar-title bg-info-bright text-info rounded-circle">
+                                                                        @submitter.FirstName?[0]
+                                                                    </span>
+                                                                </figure>
+                                                                <span>@submitter.FullName</span>
+                                                            }
                                                         </td>
                                                     </tr>
                                                 }

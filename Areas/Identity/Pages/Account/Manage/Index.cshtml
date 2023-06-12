@@ -1,25 +1,40 @@
 ﻿@page
 @model IndexModel
+
+@using CrucibleBugTracker.Services.Interfaces
+@using CrucibleBugTracker.Enums
+@inject IBTFileService _FileService
+@inject UserManager<BTUser> UserManager
+
 @{
     ViewData["Title"] = "Profile";
     ViewData["ActivePage"] = ManageNavPages.Index;
+    BTUser? user = await UserManager.FindByIdAsync(UserManager.GetUserId(User)!);
 }
 
 <partial name="_StatusMessage" for="StatusMessage" />
+
 <div class="tab-pane fade show active" id="v-pills-home" role="tabpanel"
      aria-labelledby="v-pills-home-tab">
-    <form class="card" id="profile-form" method="post">
+    <form class="card" id="profile-form" enctype="multipart/form-data" method="post">
+
         <div class="card-body">
             <h6 class="card-title">Your Profile</h6>
-            <div class="col-12 d-flex flex-column flex-sm-row mb-3">
-                <figure class="mr-3 text-center text-sm-left">
-                    <img width="100" class="rounded-pill"
-                         src="../../assets/media/image/user/women_avatar1.jpg" alt="...">
-                </figure>
-                <div style="margin-left:2rem;">
-                    <p>Roxana Roussell</p>
-                    <button class="btn btn-outline-light mr-2">Change Avatar</button>
-                    <button class="btn btn-outline-danger">Remove Avatar</button>
+            <div class="row flex-column flex-sm-row mb-3">
+                <div class="col-12 col-sm-3 d-flex justify-content-center pt-2">
+                    <figure class="avatar avatar-xl text-sm-left">
+                        <img id="userImage" src="@_FileService.ConvertByteArrayToFile(Model.Input.ImageData,Model.Input.ImageType, DefaultImage.BTUserImage)"
+                             class="rounded-circle"
+                             alt="avatar">
+                    </figure>
+                </div>
+                <div class="col-12 col-sm-9 ps-sm-3">
+                    <p>@user?.FullName</p>
+                    <div>
+                        <input type="file" asp-for="Input.ImageFile" class="form-control" id="customFile" accept=".png,.jpg,.jpeg,.gif,.tif"
+                               onchange="document.getElementById('userImage').src = window.URL.createObjectURL(this.files[0])" />
+                        <span asp-validation-for="Input.ImageFile" class="text-danger"></span>
+                    </div>
                     <p class="small text-muted mt-3">
                         For best results, use an image at least
                         256px by 256px in either .jpg or .png format

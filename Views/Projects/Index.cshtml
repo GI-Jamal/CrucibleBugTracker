@@ -46,6 +46,61 @@
     </div>
 </div>
 
+<!-- Info Pills -->
+<div class="row mt-2">
+    <div class="col-lg-3 col-md-6 col-sm-6">
+        <a style="text-decoration:none">
+            <div class="card text-center bg-info">
+                <div class="body">
+                    <div class="p-15 text-light">
+                        <h3>@Model.Where(p => p.StartDate < DateTime.Now && p.EndDate > DateTime.Now).Count()</h3>
+                        <span>Active Projects</span>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-lg-3 col-md-6 col-sm-6">
+        <a style="text-decoration:none">
+            <div class="card text-center bg-secondary">
+                <div class="body">
+                    <div class="p-15 text-light">
+
+                        <h3>@*@Model.Tickets.Count()*@</h3>
+                        <span>Total Tickets</span>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-lg-3 col-md-6 col-sm-6">
+        <div class="card text-center bg-warning">
+            <div class="body">
+                <div class="p-15 text-light">
+                    <h3>@*@Model.Tickets.Where(t => string.IsNullOrEmpty(t.DeveloperUserId)).Count()*@</h3>
+                    <span>Unassigned Tickets</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 col-sm-6">
+        <div class="card text-center bg-dark">
+            <div class="body">
+                <div class="p-15 text-light">
+                    <h3>
+                        @*@(
+                            Model.Projects.Count()
+                            + Model.Tickets.Count()
+                            + Model.Members.Count()
+                            )*@
+                    </h3>
+                    <span>Total Data</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row">
     <div class="col-md-12">
         <div class="card">
@@ -54,8 +109,8 @@
                 <div class="table-responsive">
                     <table id="projectsTable" class="table">
                         <thead>
-                            <tr>
-                                <th>Project Name</th>
+                            <tr class="text-center">
+                                <th class="text-start">Project Name</th>
                                 <th>Created Date</th>
                                 <th>Start Date</th>
                                 <th>End Date</th>
@@ -80,32 +135,66 @@
                                         <td>@project.Created.ToString("MMM dd, yyyy")</td>
                                         <td>@project.StartDate.ToString("MMM dd, yyyy")</td>
                                         <td>@project.EndDate.ToString("MMM dd, yyyy")</td>
-                                        <td>
-                                            <span class="badge bg-secondary-bright text-secondary">@project.ProjectPriority?.Name</span>
+                                        <td class="text-center">
+                                            @{
+                                                if (project.ProjectPriority?.Name == nameof(BTProjectPriorities.Low))
+                                                {
+                                                    <span class="badge bg-success-bright">@project.ProjectPriority?.Name</span>
+                                                }
+                                                if (project.ProjectPriority?.Name == nameof(BTProjectPriorities.Medium))
+                                                {
+                                                    <span class="badge bg-warning-bright">@project.ProjectPriority?.Name</span>
+                                                }
+                                                if (project.ProjectPriority?.Name == nameof(BTProjectPriorities.High))
+                                                {
+                                                    <span class="badge bg-secondary-bright">@project.ProjectPriority?.Name</span>
+                                                }
+                                                if (project.ProjectPriority?.Name == nameof(BTProjectPriorities.Urgent))
+                                                {
+                                                    <span class="badge bg-danger-bright">@project.ProjectPriority?.Name</span>
+                                                }
+                                            }
                                         </td>
-                                        <td>
+                                        <td class="text-center">
                                             @{
                                                 BTUser? projectManager = await _ProjectService.GetProjectManagerAsync(project.Id, project.CompanyId);
 
                                                 if (projectManager != null)
                                                 {
-                                                    <figure class="avatar avatar-sm mr-3">
-                                                        <span class="avatar-title bg-info-bright text-info rounded-circle"
-                                                              data-bs-toggle="tooltip"
-                                                              data-bs-placement="top"
-                                                              title="@projectManager.FullName"
-                                                              data-bs-title="@projectManager.FullName">
-                                                            @projectManager.FirstName?[0]
-                                                        </span>
-                                                    </figure>
+
+                                                    @if (projectManager.ImageFileData != null)
+                                                    {
+                                                        <figure class="avatar">
+                                                            <img data-bs-toggle="tooltip"
+                                                                 data-bs-placement="top"
+                                                                 title="@projectManager.FullName"
+                                                                 data-bs-title="@projectManager.FullName"
+                                                                 src="@_FileService.ConvertByteArrayToFile(projectManager.ImageFileData, projectManager.ImageFileType, DefaultImage.BTUserImage)"
+                                                                 class="rounded-circle"
+                                                                 alt="avatar">
+                                                        </figure>                                                        
+                                                    }
+                                                    else
+                                                    {
+                                                        <figure class="avatar mr-3">
+                                                            <span class="avatar-title bg-info-bright text-info rounded-circle"
+                                                                  data-bs-toggle="tooltip"
+                                                                  data-bs-placement="top"
+                                                                  title="@projectManager.FullName"
+                                                                  data-bs-title="@projectManager.FullName">
+                                                                @projectManager.FirstName?[0]
+                                                            </span>
+                                                        </figure>
+                                                    }
+
                                                 }
                                                 else
                                                 {
-                                                    <span>Unassigned</span>
+                                                    <span class="text-start">Unassigned</span>
                                                 }
                                             }
                                         </td>
-                                        <td>
+                                        <td class="text-center">
                                             @{
                                                 if (project.Archived)
                                                 {
@@ -121,7 +210,7 @@
                                                 }
                                                 else
                                                 {
-                                                    <span class="badge bg-success">In Progress</span>
+                                                    <span class="badge bg-secondary">In Progress</span>
                                                 }
                                             }
                                         </td>
@@ -247,7 +336,11 @@
 @section scripts {
     <script>
         $(document).ready(function () {
-            $('#projectsTable').DataTable();
+            $('#projectsTable').DataTable({
+                "columnDefs": [
+                    { "type": "date", "targets": [1,2,3] }
+                ]
+            });
         });
     </script>
     <script>

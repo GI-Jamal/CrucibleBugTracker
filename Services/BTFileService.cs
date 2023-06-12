@@ -32,6 +32,7 @@ namespace CrucibleBugTracker.Services
                 throw;
             }
         }
+        
         public async Task<byte[]> ConvertFileToByteArrayAsync(IFormFile file)
         {
             try

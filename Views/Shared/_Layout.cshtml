@@ -1,5 +1,9 @@
 ﻿@using CrucibleBugTracker.Enums;
 
+@{
+    string? controllerName = ViewContext.RouteData.Values["controller"]?.ToString();
+}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,6 +12,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>@ViewData["Title"] - CrucibleBugTracker</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/CrucibleBugTracker.styles.css" asp-append-version="true" />
 
@@ -103,125 +108,130 @@
                                 </a>
                             </li>
 
-                            <li class="nav-item dropdown">
-                                <a href="#" class="nav-link nav-link-notify" title="Notifications" data-toggle="dropdown">
-                                    <i data-feather="bell"></i>
-                                </a>
-                                <div class="dropdown-menu dropdown-menu-right dropdown-menu-big">
-                                    <div class="border-bottom px-4 py-3 text-center d-flex justify-content-between align-items-center">
-                                        <h5 class="mb-0">Notifications</h5>
-                                        <small class="opacity-7">2   unread notifications</small>
-                                    </div>
-                                    <div class="dropdown-scroll">
-                                        <ul class="list-group list-group-flush">
-                                            <li class="px-4 py-2 text-center small text-muted bg-light">Today</li>
-                                            <li class="px-4 py-3 list-group-item">
-                                                <a href="#" class="d-flex align-items-center hide-show-toggler">
-                                                    <div class="flex-shrink-0">
-                                                        <figure class="avatar mr-3">
-                                                            <span class="avatar-title bg-info-bright text-info rounded-circle">
-                                                                <i class="ti-lock"></i>
-                                                            </span>
-                                                        </figure>
-                                                    </div>
-                                                    <div class="flex-grow-1">
-                                                        <p class="mb-0 line-height-20 d-flex justify-content-between">
-                                                            2 steps verification
-                                                            <i title="Mark as read" data-toggle="tooltip"
-                                                               class="hide-show-toggler-item fa fa-circle-o font-size-11"></i>
-                                                        </p>
-                                                        <span class="text-muted small">20 min ago</span>
-                                                    </div>
-                                                </a>
-                                            </li>
-                                            <li class="px-4 py-3 list-group-item">
-                                                <a href="#" class="d-flex align-items-center hide-show-toggler">
-                                                    <div class="flex-shrink-0">
-                                                        <figure class="avatar mr-3">
-                                                            <span class="avatar-title bg-warning-bright text-warning rounded-circle">
-                                                                <i class="ti-server"></i>
-                                                            </span>
-                                                        </figure>
-                                                    </div>
-                                                    <div class="flex-grow-1">
-                                                        <p class="mb-0 line-height-20 d-flex justify-content-between">
-                                                            Storage is running low!
-                                                            <i title="Mark as read" data-toggle="tooltip"
-                                                               class="hide-show-toggler-item fa fa-circle-o font-size-11"></i>
-                                                        </p>
-                                                        <span class="text-muted small">45 sec ago</span>
-                                                    </div>
-                                                </a>
-                                            </li>
-                                            <li class="px-4 py-2 text-center small text-muted bg-light">Old Notifications</li>
-                                            <li class="px-4 py-3 list-group-item">
-                                                <a href="#" class="d-flex align-items-center hide-show-toggler">
-                                                    <div class="flex-shrink-0">
-                                                        <figure class="avatar mr-3">
-                                                            <span class="avatar-title bg-secondary-bright text-secondary rounded-circle">
-                                                                <i class="ti-file"></i>
-                                                            </span>
-                                                        </figure>
-                                                    </div>
-                                                    <div class="flex-grow-1">
-                                                        <p class="mb-0 line-height-20 d-flex justify-content-between">
-                                                            1 person sent a file
-                                                            <i title="Mark as unread" data-toggle="tooltip"
-                                                               class="hide-show-toggler-item fa fa-check font-size-11"></i>
-                                                        </p>
-                                                        <span class="text-muted small">Yesterday</span>
-                                                    </div>
-                                                </a>
-                                            </li>
-                                            <li class="px-4 py-3 list-group-item">
-                                                <a href="#" class="d-flex align-items-center hide-show-toggler">
-                                                    <div class="flex-shrink-0">
-                                                        <figure class="avatar mr-3">
-                                                            <span class="avatar-title bg-success-bright text-success rounded-circle">
-                                                                <i class="ti-download"></i>
-                                                            </span>
-                                                        </figure>
-                                                    </div>
-                                                    <div class="flex-grow-1">
-                                                        <p class="mb-0 line-height-20 d-flex justify-content-between">
-                                                            Reports ready to download
-                                                            <i title="Mark as unread" data-toggle="tooltip"
-                                                               class="hide-show-toggler-item fa fa-check font-size-11"></i>
-                                                        </p>
-                                                        <span class="text-muted small">Yesterday</span>
-                                                    </div>
-                                                </a>
-                                            </li>
-                                            <li class="px-4 py-3 list-group-item">
-                                                <a href="#" class="d-flex align-items-center hide-show-toggler">
-                                                    <div class="flex-shrink-0">
-                                                        <figure class="avatar mr-3">
-                                                            <span class="avatar-title bg-primary-bright text-primary rounded-circle">
-                                                                <i class="ti-arrow-top-right"></i>
-                                                            </span>
-                                                        </figure>
-                                                    </div>
-                                                    <div class="flex-grow-1">
-                                                        <p class="mb-0 line-height-20 d-flex justify-content-between">
-                                                            The invitation has been sent.
-                                                            <i title="Mark as unread" data-toggle="tooltip"
-                                                               class="hide-show-toggler-item fa fa-check font-size-11"></i>
-                                                        </p>
-                                                        <span class="text-muted small">Last Week</span>
-                                                    </div>
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                    <div class="px-4 py-3 text-right border-top">
-                                        <ul class="list-inline small">
-                                            <li class="list-inline-item mb-0">
-                                                <a href="#">Mark All Read</a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </li>
+                            @{
+                                if (User.Identity!.IsAuthenticated)
+                                {
+                                    <li class="nav-item dropdown">
+                                        <a href="#" class="nav-link nav-link-notify" title="Notifications" data-toggle="dropdown">
+                                            <i data-feather="bell"></i>
+                                        </a>
+                                        <div class="dropdown-menu dropdown-menu-right dropdown-menu-big">
+                                            <div class="border-bottom px-4 py-3 text-center d-flex justify-content-between align-items-center">
+                                                <h5 class="mb-0">Notifications</h5>
+                                                <small class="opacity-7">2   unread notifications</small>
+                                            </div>
+                                            <div class="dropdown-scroll">
+                                                <ul class="list-group list-group-flush">
+                                                    <li class="px-4 py-2 text-center small text-muted bg-light">Today</li>
+                                                    <li class="px-4 py-3 list-group-item">
+                                                        <a href="#" class="d-flex align-items-center hide-show-toggler">
+                                                            <div class="flex-shrink-0">
+                                                                <figure class="avatar mr-3">
+                                                                    <span class="avatar-title bg-info-bright text-info rounded-circle">
+                                                                        <i class="ti-lock"></i>
+                                                                    </span>
+                                                                </figure>
+                                                            </div>
+                                                            <div class="flex-grow-1">
+                                                                <p class="mb-0 line-height-20 d-flex justify-content-between">
+                                                                    2 steps verification
+                                                                    <i title="Mark as read" data-toggle="tooltip"
+                                                                       class="hide-show-toggler-item fa fa-circle-o font-size-11"></i>
+                                                                </p>
+                                                                <span class="text-muted small">20 min ago</span>
+                                                            </div>
+                                                        </a>
+                                                    </li>
+                                                    <li class="px-4 py-3 list-group-item">
+                                                        <a href="#" class="d-flex align-items-center hide-show-toggler">
+                                                            <div class="flex-shrink-0">
+                                                                <figure class="avatar mr-3">
+                                                                    <span class="avatar-title bg-warning-bright text-warning rounded-circle">
+                                                                        <i class="ti-server"></i>
+                                                                    </span>
+                                                                </figure>
+                                                            </div>
+                                                            <div class="flex-grow-1">
+                                                                <p class="mb-0 line-height-20 d-flex justify-content-between">
+                                                                    Storage is running low!
+                                                                    <i title="Mark as read" data-toggle="tooltip"
+                                                                       class="hide-show-toggler-item fa fa-circle-o font-size-11"></i>
+                                                                </p>
+                                                                <span class="text-muted small">45 sec ago</span>
+                                                            </div>
+                                                        </a>
+                                                    </li>
+                                                    <li class="px-4 py-2 text-center small text-muted bg-light">Old Notifications</li>
+                                                    <li class="px-4 py-3 list-group-item">
+                                                        <a href="#" class="d-flex align-items-center hide-show-toggler">
+                                                            <div class="flex-shrink-0">
+                                                                <figure class="avatar mr-3">
+                                                                    <span class="avatar-title bg-secondary-bright text-secondary rounded-circle">
+                                                                        <i class="ti-file"></i>
+                                                                    </span>
+                                                                </figure>
+                                                            </div>
+                                                            <div class="flex-grow-1">
+                                                                <p class="mb-0 line-height-20 d-flex justify-content-between">
+                                                                    1 person sent a file
+                                                                    <i title="Mark as unread" data-toggle="tooltip"
+                                                                       class="hide-show-toggler-item fa fa-check font-size-11"></i>
+                                                                </p>
+                                                                <span class="text-muted small">Yesterday</span>
+                                                            </div>
+                                                        </a>
+                                                    </li>
+                                                    <li class="px-4 py-3 list-group-item">
+                                                        <a href="#" class="d-flex align-items-center hide-show-toggler">
+                                                            <div class="flex-shrink-0">
+                                                                <figure class="avatar mr-3">
+                                                                    <span class="avatar-title bg-success-bright text-success rounded-circle">
+                                                                        <i class="ti-download"></i>
+                                                                    </span>
+                                                                </figure>
+                                                            </div>
+                                                            <div class="flex-grow-1">
+                                                                <p class="mb-0 line-height-20 d-flex justify-content-between">
+                                                                    Reports ready to download
+                                                                    <i title="Mark as unread" data-toggle="tooltip"
+                                                                       class="hide-show-toggler-item fa fa-check font-size-11"></i>
+                                                                </p>
+                                                                <span class="text-muted small">Yesterday</span>
+                                                            </div>
+                                                        </a>
+                                                    </li>
+                                                    <li class="px-4 py-3 list-group-item">
+                                                        <a href="#" class="d-flex align-items-center hide-show-toggler">
+                                                            <div class="flex-shrink-0">
+                                                                <figure class="avatar mr-3">
+                                                                    <span class="avatar-title bg-primary-bright text-primary rounded-circle">
+                                                                        <i class="ti-arrow-top-right"></i>
+                                                                    </span>
+                                                                </figure>
+                                                            </div>
+                                                            <div class="flex-grow-1">
+                                                                <p class="mb-0 line-height-20 d-flex justify-content-between">
+                                                                    The invitation has been sent.
+                                                                    <i title="Mark as unread" data-toggle="tooltip"
+                                                                       class="hide-show-toggler-item fa fa-check font-size-11"></i>
+                                                                </p>
+                                                                <span class="text-muted small">Last Week</span>
+                                                            </div>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                            <div class="px-4 py-3 text-right border-top">
+                                                <ul class="list-inline small">
+                                                    <li class="list-inline-item mb-0">
+                                                        <a href="#">Mark All Read</a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </li>
+                                }
+                            }
                             <li class="nav-item dropdown">
                                 <partial name="_LoginPartial" />
                             </li>
@@ -252,101 +262,116 @@
                 <div class="navigation-menu-body">
                     <ul>
                         <li>
-                            <a class="active" asp-controller="Home" asp-action="Index">
-                                <span class="nav-link-icon">
-                                    <i data-feather="pie-chart"></i>
-                                </span>
-                                <span>Dashboard</span>
-                            </a>
+                            @if (User.Identity.IsAuthenticated)
+                            {
+                                <a id="dashboard" asp-controller="Home" asp-action="Index">
+                                    <span class="nav-link-icon">
+                                        <i data-feather="pie-chart"></i>
+                                    </span>
+                                    <span>Dashboard</span>
+                                </a>
+                            }
+                            else
+                            {
+                                <a id="home" id="dashboard" asp-controller="Home" asp-action="Index">
+                                    <span class="nav-link-icon">
+                                        <i data-feather="home"></i>
+                                    </span>
+                                    <span>Home</span>
+                                </a>
+                            }
                         </li>
-                        <li>
-                            <a>
-                                <span class="nav-link-icon">
-                                    <i data-feather="pie-chart"></i>
-                                </span>
-                                <span>Company</span>
-                            </a>
-                            <ul>
-                                <li>
-                                    <a asp-controller="Company" asp-action="Index">Company Details</a>
-                                </li>
-                                @{
-                                    if (User.IsInRole(nameof(BTRoles.Admin)))
-                                    {
-                                        <li>
-                                            <a asp-controller="Company" asp-action="ManageUserRoles">Manage Users</a>
-                                            <a asp-controller="Invites" asp-action="Create">Invite Users</a>
-                                        </li>
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <li>
+                                <a id="company">
+                                    <span class="nav-link-icon">
+                                        <i data-feather="pie-chart"></i>
+                                    </span>
+                                    <span>Company</span>
+                                </a>
+                                <ul>
+                                    <li>
+                                        <a asp-controller="Company" asp-action="Index">Company Details</a>
+                                    </li>
+                                    @{
+                                        if (User.IsInRole(nameof(BTRoles.Admin)))
+                                        {
+                                            <li>
+                                                <a asp-controller="Company" asp-action="ManageUserRoles">Manage Users</a>
+                                                <a asp-controller="Invites" asp-action="Create">Invite Users</a>
+                                            </li>
+                                        }
                                     }
-                                }
-                            </ul>
-                        </li>
-                        <li>
-                            <a>
-                                <span class="nav-link-icon">
-                                    <i data-feather="folder"></i>
-                                </span>
-                                <span>Projects</span>
-                            </a>
-                            <ul>
-                                <li>
-                                    <a asp-controller="Projects" asp-action="Create">Add Project</a>
-                                </li>
-                                <li>
-                                    <a asp-controller="Projects" asp-action="Index">All Projects</a>
-                                </li>
-                                @{
-                                    if (!User.IsInRole(nameof(BTRoles.Admin)))
-                                    {
-                                        <li>
-                                            <a asp-controller="Projects" asp-action="MyProjects">My Projects</a>
-                                        </li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a id="projects">
+                                    <span class="nav-link-icon">
+                                        <i data-feather="folder"></i>
+                                    </span>
+                                    <span>Projects</span>
+                                </a>
+                                <ul>
+                                    <li>
+                                        <a asp-controller="Projects" asp-action="Create">Add Project</a>
+                                    </li>
+                                    <li>
+                                        <a asp-controller="Projects" asp-action="Index">All Projects</a>
+                                    </li>
+                                    @{
+                                        if (!User.IsInRole(nameof(BTRoles.Admin)))
+                                        {
+                                            <li>
+                                                <a asp-controller="Projects" asp-action="MyProjects">My Projects</a>
+                                            </li>
+                                        }
                                     }
-                                }
-                                <li>
-                                    <a asp-controller="Projects" asp-action="Active">Active Projects</a>
-                                </li>
-                                <li>
-                                    <a asp-controller="Projects" asp-action="Archived">Archived Projects</a>
-                                </li>
-                                <li>
-                                    <a asp-controller="Projects" asp-action="Unassigned">Unassigned Projects</a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li>
-                            <a>
-                                <span class="nav-link-icon">
-                                    <i data-feather="check-square"></i>
-                                </span>
-                                <span>Tickets</span>
-                            </a>
-                            <ul>
-                                <li>
-                                    <a asp-controller="Tickets" asp-action="Create">Add Ticket</a>
-                                </li>
-                                <li>
-                                    <a asp-controller="Tickets" asp-action="Index">All Tickets</a>
-                                </li>
-                                @{
-                                    if (!User.IsInRole(nameof(BTRoles.Admin)))
-                                    {
-                                        <li>
-                                            <a asp-controller="Tickets" asp-action="MyTickets">My Tickets</a>
-                                        </li>
+                                    <li>
+                                        <a asp-controller="Projects" asp-action="Active">Active Projects</a>
+                                    </li>
+                                    <li>
+                                        <a asp-controller="Projects" asp-action="Archived">Archived Projects</a>
+                                    </li>
+                                    <li>
+                                        <a asp-controller="Projects" asp-action="Unassigned">Unassigned Projects</a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a id="tickets">
+                                    <span class="nav-link-icon">
+                                        <i data-feather="check-square"></i>
+                                    </span>
+                                    <span>Tickets</span>
+                                </a>
+                                <ul>
+                                    <li>
+                                        <a asp-controller="Tickets" asp-action="Create">Add Ticket</a>
+                                    </li>
+                                    <li>
+                                        <a asp-controller="Tickets" asp-action="Index">All Tickets</a>
+                                    </li>
+                                    @{
+                                        if (!User.IsInRole(nameof(BTRoles.Admin)))
+                                        {
+                                            <li>
+                                                <a asp-controller="Tickets" asp-action="MyTickets">My Tickets</a>
+                                            </li>
+                                        }
                                     }
-                                }
-                                <li>
-                                    <a asp-controller="Tickets" asp-action="Active">Active Tickets</a>
-                                </li>
-                                <li>
-                                    <a asp-controller="Tickets" asp-action="Archived">Archived Tickets</a>
-                                </li>
-                                <li>
-                                    <a asp-controller="Tickets" asp-action="Unassigned">Unassigned Tickets</a>
-                                </li>
-                            </ul>
-                        </li>
+                                    <li>
+                                        <a asp-controller="Tickets" asp-action="Active">Active Tickets</a>
+                                    </li>
+                                    <li>
+                                        <a asp-controller="Tickets" asp-action="Archived">Archived Tickets</a>
+                                    </li>
+                                    <li>
+                                        <a asp-controller="Tickets" asp-action="Unassigned">Unassigned Tickets</a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>
@@ -419,6 +444,32 @@
                     ]
                 }
             })
+    </script>
+    <script>
+        $(document).ready(function () {
+           let controller = '@controllerName';
+
+           switch (controller) {
+               case 'Home':
+                   $('#dashboard').addClass('active');
+                   $('#home').addClass('active');
+                   break;
+               case 'Projects':
+                   $('#projects').addClass('active');
+                   break;
+               case 'Tickets':
+                   $('#tickets').addClass('active');
+                   break;
+               case 'Company':
+               case 'Invites':
+                   $('#company').addClass('active');
+                   break;
+               default:
+                   break;
+           }
+
+
+        });
     </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

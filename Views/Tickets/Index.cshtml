@@ -6,6 +6,7 @@
 @using CrucibleBugTracker.Extensions;
 
 @inject IBTProjectService _ProjectService
+@inject IBTFileService _FileService
 @inject IBTRoleService _RoleService
 @inject UserManager<BTUser> _UserManager
 
@@ -44,6 +45,62 @@
     </div>
 </div>
 
+<!-- Info Pills -->
+<div class="row mt-2">
+    <div class="col-lg-3 col-md-6 col-sm-6">
+        <a style="text-decoration:none">
+            <div class="card text-center bg-info">
+                <div class="body">
+                    <div class="p-15 text-light">
+                        <h3>@*@Model.Where(p => p.StartDate < DateTime.Now && p.EndDate > DateTime.Now).Count()*@</h3>
+                        <span>Active Projects</span>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-lg-3 col-md-6 col-sm-6">
+        <a style="text-decoration:none">
+            <div class="card text-center bg-secondary">
+                <div class="body">
+                    <div class="p-15 text-light">
+
+                        <h3>@*@Model.Tickets.Count()*@</h3>
+                        <span>Total Tickets</span>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-lg-3 col-md-6 col-sm-6">
+        <div class="card text-center bg-warning">
+            <div class="body">
+                <div class="p-15 text-light">
+                    <h3>@*@Model.Tickets.Where(t => string.IsNullOrEmpty(t.DeveloperUserId)).Count()*@</h3>
+                    <span>Unassigned Tickets</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 col-sm-6">
+        <div class="card text-center bg-dark">
+            <div class="body">
+                <div class="p-15 text-light">
+                    <h3>
+                        @*@(
+                            Model.Projects.Count()
+                            + Model.Tickets.Count()
+                            + Model.Members.Count()
+                            )*@
+                    </h3>
+                    <span>Total Data</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <div class="row">
     <div class="col-md-12">
         <div class="card">
@@ -52,10 +109,10 @@
                 <div class="table-responsive">
                     <table id="ticketsTable" class="table">
                         <thead>
-                            <tr>
-                                <th>Ticket Title</th>
+                            <tr class="text-center">
+                                <th class="text-start">Ticket Title</th>
+                                <th class="text-start">Project</th>
                                 <th>Last Updated Date</th>
-                                <th>Project</th>
                                 <th>Type</th>
                                 <th>Priority</th>
                                 <th>Status</th>
@@ -71,10 +128,11 @@
                             @{
                                 foreach (Ticket ticket in Model)
                                 {
-                                    <tr>
-                                        <td>
+                                    <tr class="text-center">
+                                        <td class="text-start">
                                             <a asp-controller="Tickets" asp-action="Details" asp-route-id="@ticket.Id">@ticket.Title</a>
                                         </td>
+                                        <td class="text-start"><a asp-controller="Projects" asp-action="Details" asp-route-id="@ticket.ProjectId">@ticket.Project?.Name</a></td>
                                         @if (ticket.UpdatedDate == null)
                                         {
                                             <td>@ticket.Created.ToString("MMM dd, yyyy")</td>
@@ -82,28 +140,27 @@
                                         else
                                         {
                                             <td>@ticket.UpdatedDate.Value.ToString("MMM dd, yyyy")</td>
-                                        }
-                                        <td><a asp-controller="Projects" asp-action="Details" asp-route-id="@ticket.ProjectId">@ticket.Project?.Name</a></td>
+                                        }                                       
                                         <td>
                                             @switch (ticket.TicketType?.Name)
                                             {
                                                 case nameof(BTTicketTypes.NewDevelopment):
-                                                    <span class="badge bg-primary-bright text-primary">New Development</span>
+                                                    <span class="badge bg-facebook"><i class="ti-bell"></i>&nbsp;&nbsp;New Development</span>
                                                     break;
                                                 case nameof(BTTicketTypes.GeneralTask):
-                                                    <span class="badge bg-secondary-bright text-secondary">General Task</span>
+                                                    <span class="badge bg-dribbble"><i class="fa fa-user"></i>&nbsp;&nbsp;General Task</span>
                                                     break;
                                                 case nameof(BTTicketTypes.WorkTask):
-                                                    <span class="badge bg-info-bright text-info">Work Task</span>
+                                                    <span class="badge bg-linkedin"><i class="fa fa-users"></i>&nbsp;&nbsp;Work Task</span>
                                                     break;
                                                 case nameof(BTTicketTypes.Enhancement):
-                                                    <span class="badge bg-success-bright text-success">Enhancement</span>
+                                                    <span class="badge bg-warning"><i class="fa fa-plus"></i>&nbsp;&nbsp;Enhancement</span>
                                                     break;
                                                 case nameof(BTTicketTypes.ChangeRequest):
-                                                    <span class="badge bg-warning-bright text-warning">Change Request</span>
+                                                    <span class="badge bg-google"><i class="fa fa-info-circle"></i>&nbsp;&nbsp;Change Request</span>
                                                     break;
                                                 case nameof(BTTicketTypes.Defect):
-                                                    <span class="badge bg-danger-bright text-danger">Defect</span>
+                                                    <span class="badge bg-youtube"><i class="fa fa-warning"></i>&nbsp;&nbsp;Defect</span>
                                                     break;
                                                 default:
                                                     break;
@@ -113,16 +170,16 @@
                                             @switch (ticket.TicketPriority?.Name)
                                             {
                                                 case nameof(BTTicketPriorities.Low):
-                                                    <span class="badge bg-success-bright text-success">@ticket.TicketPriority.Name</span>
+                                                    <span class="badge bg-success-bright">@ticket.TicketPriority.Name</span>
                                                     break;
                                                 case nameof(BTTicketPriorities.Medium):
-                                                    <span class="badge bg-primary-bright text-primary">@ticket.TicketPriority.Name</span>
+                                                    <span class="badge bg-warning-bright">@ticket.TicketPriority.Name</span>
                                                     break;
                                                 case nameof(BTTicketPriorities.High):
-                                                    <span class="badge bg-warning-bright text-warning">@ticket.TicketPriority.Name</span>
+                                                    <span class="badge bg-secondary-bright">@ticket.TicketPriority.Name</span>
                                                     break;
                                                 case nameof(BTTicketPriorities.Urgent):
-                                                    <span class="badge bg-danger-bright text-danger">@ticket.TicketPriority.Name</span>
+                                                    <span class="badge bg-danger-bright">@ticket.TicketPriority.Name</span>
                                                     break;
                                                 default:
                                                     break;
@@ -132,16 +189,16 @@
                                             @switch (ticket.TicketStatus?.Name)
                                             {
                                                 case nameof(BTTicketStatuses.New):
-                                                    <span class="badge bg-primary-bright text-primary">@ticket.TicketStatus.Name</span>
+                                                    <span class="badge bg-primary">@ticket.TicketStatus.Name</span>
                                                     break;
                                                 case nameof(BTTicketStatuses.Development):
-                                                    <span class="badge bg-warning-bright text-warning">@ticket.TicketStatus.Name</span>
+                                                    <span class="badge bg-secondary">@ticket.TicketStatus.Name</span>
                                                     break;
                                                 case nameof(BTTicketStatuses.Testing):
-                                                    <span class="badge bg-info-bright text-info">@ticket.TicketStatus.Name</span>
+                                                    <span class="badge bg-info">@ticket.TicketStatus.Name</span>
                                                     break; ;
                                                 case nameof(BTTicketStatuses.Resolved):
-                                                    <span class="badge bg-sucess-bright text-success">@ticket.TicketStatus.Name</span>
+                                                    <span class="badge bg-sucess">@ticket.TicketStatus.Name</span>
                                                     break;
                                                 default:
                                                     break;
@@ -151,25 +208,37 @@
                                         {
                                             @if (ticket.Archived)
                                             {
-                                                <td>✓</td>
+                                                <td class="text-success">Archived&nbsp;&nbsp;<i class="bi bi-door-closed"></i></td>
                                             }
                                             else
                                             {
-                                                <td>No</td>
+                                                <td class="text-danger">Active&nbsp;&nbsp;<i class="bi bi-door-open"></i></td>
                                             }
                                         }
                                         <td>
                                             @if (ticket.DeveloperUserId != null)
                                             {
-                                                <figure class="avatar avatar-sm mr-3">
-                                                    <span class="avatar-title bg-info-bright text-info rounded-circle"
-                                                          data-bs-toggle="tooltip"
-                                                          data-bs-placement="top"
-                                                          title="@ticket.DeveloperUser?.FullName"
-                                                          data-bs-title="@ticket.DeveloperUser?.FullName">
-                                                        @ticket.DeveloperUser?.FirstName?[0]
-                                                    </span>
-                                                </figure>
+                                                @if (ticket.DeveloperUser?.ImageFileData != null)
+                                                {
+                                                    <figure class="avatar">
+                                                        <img data-bs-toggle="tooltip"
+                                                             data-bs-placement="top"
+                                                             title="@ticket.DeveloperUser?.FullName"
+                                                             data-bs-title="@ticket.DeveloperUser?.FullName" src="@_FileService.ConvertByteArrayToFile(ticket.DeveloperUser?.ImageFileData, ticket.DeveloperUser?.ImageFileType, DefaultImage.BTUserImage)" class="rounded-circle" alt="avatar">
+                                                    </figure>                                                    
+                                                }
+                                                else
+                                                {
+                                                    <figure class="avatar">
+                                                        <span class="avatar-title bg-info-bright text-info rounded-circle"
+                                                              data-bs-toggle="tooltip"
+                                                              data-bs-placement="top"
+                                                              title="@ticket.DeveloperUser?.FullName"
+                                                              data-bs-title="@ticket.DeveloperUser?.FullName">
+                                                            @ticket.DeveloperUser?.FirstName?[0]
+                                                        </span>
+                                                    </figure>
+                                                }                                                
                                             }
                                             else
                                             {
@@ -296,7 +365,11 @@
 @section scripts {
     <script>
         $(document).ready(function () {
-            $('#ticketsTable').DataTable();
+            $('#ticketsTable').DataTable({
+                "columnDefs": [
+                    { "type": "date", "targets": [2] }
+                ]
+            });
         });
     </script>
     <script>

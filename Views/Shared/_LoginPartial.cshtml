@@ -1,17 +1,48 @@
-﻿@using Microsoft.AspNetCore.Identity
+﻿@using CrucibleBugTracker.Extensions;
+@using Microsoft.AspNetCore.Identity
+@using CrucibleBugTracker.Services.Interfaces
+@using CrucibleBugTracker.Enums
 @inject SignInManager<BTUser> SignInManager
 @inject UserManager<BTUser> UserManager
+@inject IBTFileService _FileService
+@inject IBTRoleService _RoleService
+@inject IBTCompanyService _CompanyService
+
+@{
+    BTUser? user = User.Identity!.IsAuthenticated ? await UserManager.GetUserAsync(User) : new BTUser();
+    string? companyName = (await _CompanyService.GetCompanyInfoAsync(user?.CompanyId))?.Name;
+}
 
 <ul class="navbar-nav">
     @if (SignInManager.IsSignedIn(User))
     {
-        <li class="nav-item">
-            <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @User.Identity?.Name!</a>
-        </li>
-        <li class="nav-item">
-            <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-                <button type="submit" class="nav-link btn btn-link text-dark">Logout</button>
-            </form>
+        <li class="nav-item dropdown">
+            <a href="#" class="nav-link dropdown-toggle" title="User menu" data-toggle="dropdown">
+                <figure class="avatar avatar-sm">
+                    <img src="@_FileService.ConvertByteArrayToFile(user?.ImageFileData, user?.ImageFileType, DefaultImage.BTUserImage)"
+                         class="rounded-circle"
+                         alt="avatar">
+                </figure>
+                <span class="ml-2 d-sm-inline d-none">@user?.FullName</span>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right dropdown-menu-big">
+                <div class="text-center py-4">
+                    <figure class="avatar avatar-lg mb-3 border-0">
+                        <img src="@_FileService.ConvertByteArrayToFile(user?.Company?.ImageFileData, user?.Company?.ImageFileType, DefaultImage.CompanyImage)"
+                             class="rounded-circle" alt="image">
+                    </figure>
+                    <h5 class="text-center">@companyName @((await _RoleService.GetUserRolesAsync(user)).FirstOrDefault())</h5>
+                    <h5 class="text-center">@user?.FullName</h5>
+                    <div class="mb-3 small text-center text-muted"></div>
+                    <a asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage" class="btn btn-outline-light btn-rounded">Manage Your Account</a>
+                </div>
+                <div class="list-group">
+                    <a href="profile.html" class="list-group-item text-center">View Profile</a>
+                    <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                        <button id="logoutButton" type="submit" class="w-100 list-group-item text-danger">Logout</button>
+                    </form>                   
+                </div>
+            </div>
         </li>
     }
     else
@@ -24,44 +55,3 @@
         </li>
     }
 </ul>
-
-@*<a href="#" class="nav-link dropdown-toggle" title="User menu" data-toggle="dropdown">
-    <figure class="avatar avatar-sm">
-        <img src="../../assets/media/image/user/man_avatar3.jpg"
-                class="rounded-circle"
-                alt="avatar">
-    </figure>
-    <span class="ml-2 d-sm-inline d-none">Bony Gidden</span>
-</a>
-<div class="dropdown-menu dropdown-menu-right dropdown-menu-big">
-    <div class="text-center py-4">
-        <figure class="avatar avatar-lg mb-3 border-0">
-            <img src="../../assets/media/image/user/man_avatar3.jpg"
-                    class="rounded-circle" alt="image">
-        </figure>
-        <h5 class="text-center">Bony Gidden</h5>
-        <div class="mb-3 small text-center text-muted">bonygidden</div>
-        <a href="#" class="btn btn-outline-light btn-rounded">Manage Your Account</a>
-    </div>
-    <div class="list-group">
-        <a href="profile.html" class="list-group-item">View Profile</a>
-        <a href="http://bifor.laborasyon.com/login" class="list-group-item text-danger"
-            data-sidebar-target="#settings">Sign Out!</a>
-    </div>
-    <div class="p-4">
-        <div class="mb-4">
-            <h6 class="d-flex justify-content-between">
-                Storage
-                <span>%25</span>
-            </h6>
-            <div class="progress" style="height: 5px;">
-                <div class="progress-bar bg-success-gradient" role="progressbar" style="width: 40%;"
-                        aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
-            </div>
-        </div>
-        <hr class="mb-3">
-        <p class="small mb-0">
-            <a href="#">Privacy policy</a>
-        </p>
-    </div>
-</div>*@

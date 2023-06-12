@@ -13,6 +13,7 @@ namespace CrucibleBugTracker.Services
         {
             _context = context;
         }
+        
         public async Task<Company?> GetCompanyInfoAsync(int? companyId)
         {
             try
