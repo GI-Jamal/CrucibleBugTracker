@@ -399,18 +399,6 @@
     }
     <script>
         $(document).ready(function () {
-            $('.image-popup').magnificPopup({
-                type: 'image',
-                zoom: {
-                    enabled: true,
-                    duration: 300,
-                    easing: 'ease-in-out',
-                    opener: function (openerElement) {
-                        return openerElement.is('img') ? openerElement : openerElement.find('img');
-                    }
-                }
-            });           
-
             $('#editCheck').on("click", function () {
 
                 let args =

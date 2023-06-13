@@ -15,6 +15,8 @@
     int companyId = User.Identity!.GetCompanyId();
     bool isUserAdmin = User.IsInRole(nameof(BTRoles.Admin));
     ViewData["ProjectManagers"] = new SelectList(await _RoleService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId), nameof(BTUser.Id), nameof(BTUser.FullName));
+    List<int> unassignedProjectIds = (await _ProjectService.GetUnassignedProjectsByCompanyIdAsync(User.Identity!.GetCompanyId())).Select(p => p.Id).ToList();
+
 }
 
 <div class="page-header d-md-flex justify-content-between">
@@ -33,16 +35,9 @@
         </nav>
     </div>
     <div class="mt-2 mt-md-0">
-        <div class="dropdown">
-            <a href="#" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
-                <i class="ti-settings mr-2"></i> Actions
-            </a>
-            <div class="dropdown-menu dropdown-menu-right">
-                <a class="dropdown-item" asp-controller="Projects" asp-action="Create">Create a project</a>
-                <a class="dropdown-item" href="#">Another action</a>
-                <a class="dropdown-item" href="#">Something else here</a>
-            </div>
-        </div>
+        <a asp-controller="Projects" asp-action="Create" class="btn btn-primary">
+            <i data-feather="plus" class="mr-2"></i> Create a project
+        </a>
     </div>
 </div>
 
@@ -52,8 +47,8 @@
         <a style="text-decoration:none">
             <div class="card text-center bg-info">
                 <div class="body">
-                    <div class="p-15 text-light">
-                        <h3>@Model.Where(p => p.StartDate < DateTime.Now && p.EndDate > DateTime.Now).Count()</h3>
+                    <div class="p-15 text-dark">
+                        <h3>@Model.Where(p => p.StartDate < DateTime.Now && p.EndDate > DateTime.Now && p.Archived == false).Count()</h3>
                         <span>Active Projects</span>
                     </div>
                 </div>
@@ -66,8 +61,8 @@
                 <div class="body">
                     <div class="p-15 text-light">
 
-                        <h3>@*@Model.Tickets.Count()*@</h3>
-                        <span>Total Tickets</span>
+                        <h3>@Model.Where(p => p.EndDate < DateTime.Now && p.Archived == false).Count()</h3>
+                        <span>Overdue Projects</span>
                     </div>
                 </div>
             </div>
@@ -76,9 +71,9 @@
     <div class="col-lg-3 col-md-6 col-sm-6">
         <div class="card text-center bg-warning">
             <div class="body">
-                <div class="p-15 text-light">
-                    <h3>@*@Model.Tickets.Where(t => string.IsNullOrEmpty(t.DeveloperUserId)).Count()*@</h3>
-                    <span>Unassigned Tickets</span>
+                <div class="p-15 text-dark">
+                    <h3>@Model.Count(p => p.ProjectPriority?.Name == nameof(BTProjectPriorities.Urgent) && p.Archived == false)</h3>
+                    <span>Urgent Projects</span>
                 </div>
             </div>
         </div>
@@ -88,13 +83,9 @@
             <div class="body">
                 <div class="p-15 text-light">
                     <h3>
-                        @*@(
-                        Model.Projects.Count()
-                        + Model.Tickets.Count()
-                        + Model.Members.Count()
-                        )*@
+                        @Model.Count(p => unassignedProjectIds.Contains(p.Id))
                     </h3>
-                    <span>Total Data</span>
+                    <span>Unassigned Projects</span>
                 </div>
             </div>
         </div>
@@ -115,6 +106,8 @@
                                 <th>Start Date</th>
                                 <th>End Date</th>
                                 <th>Priority</th>
+                                <th>Ticket Count</th>
+                                <th>Unassigned Ticket Count</th>
                                 <th>Project Manager</th>
                                 <th>Status</th>
                                 <th class="text-right">Action</th>
@@ -126,11 +119,15 @@
                                 {
                                     <tr>
                                         <td>
-                                            <a asp-controller="Projects" asp-action="Details" asp-route-id="@project.Id" class="d-flex align-items-center">
-                                                <img width="40" src="@_FileService.ConvertByteArrayToFile(project.ImageFileData, project.ImageFileType, DefaultImage.ProjectImage)"
-                                                     class="rounded mr-3" alt="Project Image">
-                                                <span>@project.Name</span>
-                                            </a>
+                                            <div class="d-flex flex-row">
+                                                <a class="image-popup" id="lightBoxImg" href="@_FileService.ConvertByteArrayToFile(project.ImageFileData, project.ImageFileType, DefaultImage.ProjectImage)">
+                                                    <img width="40" src="@_FileService.ConvertByteArrayToFile(project.ImageFileData, project.ImageFileType, DefaultImage.ProjectImage)"
+                                                         class="rounded mr-3" alt="Project Image">
+                                                </a>
+                                                <a asp-controller="Projects" asp-action="Details" asp-route-id="@project.Id" class="d-flex align-items-center">
+                                                    <span>@project.Name</span>
+                                                </a>
+                                            </div>
                                         </td>
                                         <td>@project.Created.ToString("MMM dd, yyyy")</td>
                                         <td>@project.StartDate.ToString("MMM dd, yyyy")</td>
@@ -162,6 +159,8 @@
                                                 }
                                             }
                                         </td>
+                                        <td class="text-center">@project.Tickets.Count</td>
+                                        <td class="text-center">@project.Tickets.Count(t => t.DeveloperUserId == null)</td>
                                         <td class="text-center">
                                             @{
                                                 BTUser? projectManager = await _ProjectService.GetProjectManagerAsync(project.Id, project.CompanyId);
@@ -197,7 +196,7 @@
                                                 }
                                                 else
                                                 {
-                                                    <span class="text-start">Unassigned</span>
+                                                    <a class="btn btn-outline-primary text-start" id="unassignedButton" data-toggle="modal" data-target="#assignPMModal"><span>Unassigned</span></a>
                                                 }
                                             }
                                         </td>

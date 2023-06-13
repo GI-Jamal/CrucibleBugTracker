@@ -8,7 +8,8 @@
 }
 
 <div class="row">
-    <h2 class="m-t-0 h3" style="padding:20px;"><b>Manage Member Roles </b></h2>
+    <h2 class="m-t-0 h3" style="padding:20px;"><b>Manage Member Roles </b><hr /></h2>
+   
     <div class="row manageUsers">
         @foreach (ManageUserRolesViewModel viewModel in Model)
         {
@@ -85,11 +86,7 @@
 @section scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-    <script>
-        $(document).ready(function () {
-            $('.content').st
-        });
+    }    
     <script>
         function checkRole(buttonElement) {
             if (document.readyState != "complete") {

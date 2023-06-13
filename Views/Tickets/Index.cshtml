@@ -32,16 +32,9 @@
         </nav>
     </div>
     <div class="mt-2 mt-md-0">
-        <div class="dropdown">
-            <a href="#" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
-                <i class="ti-settings mr-2"></i> Actions
-            </a>
-            <div class="dropdown-menu dropdown-menu-right">
-                <a class="dropdown-item" asp-controller="Tickets" asp-action="Create">Create a ticket</a>
-                <a class="dropdown-item" href="#">Another action</a>
-                <a class="dropdown-item" href="#">Something else here</a>
-            </div>
-        </div>
+        <a asp-controller="Tickets" asp-action="Create" class="btn btn-primary">
+            <i data-feather="plus" class="mr-2"></i> Create a ticket
+        </a>
     </div>
 </div>
 
@@ -51,9 +44,9 @@
         <a style="text-decoration:none">
             <div class="card text-center bg-info">
                 <div class="body">
-                    <div class="p-15 text-light">
-                        <h3>@*@Model.Where(p => p.StartDate < DateTime.Now && p.EndDate > DateTime.Now).Count()*@</h3>
-                        <span>Active Projects</span>
+                    <div class="p-15 text-dark">
+                        <h3>@Model.Count(t => t.Archived == false)</h3>
+                        <span>Active Tickets</span>
                     </div>
                 </div>
             </div>
@@ -65,8 +58,8 @@
                 <div class="body">
                     <div class="p-15 text-light">
 
-                        <h3>@*@Model.Tickets.Count()*@</h3>
-                        <span>Total Tickets</span>
+                        <h3>@Model.Count(t => t.TicketPriority?.Name == nameof(BTTicketPriorities.Urgent))</h3>
+                        <span>Urgent Tickets</span>
                     </div>
                 </div>
             </div>
@@ -75,8 +68,8 @@
     <div class="col-lg-3 col-md-6 col-sm-6">
         <div class="card text-center bg-warning">
             <div class="body">
-                <div class="p-15 text-light">
-                    <h3>@*@Model.Tickets.Where(t => string.IsNullOrEmpty(t.DeveloperUserId)).Count()*@</h3>
+                <div class="p-15 text-dark">
+                    <h3>@Model.Count(t => t.DeveloperUserId == null)</h3>
                     <span>Unassigned Tickets</span>
                 </div>
             </div>
@@ -86,14 +79,8 @@
         <div class="card text-center bg-dark">
             <div class="body">
                 <div class="p-15 text-light">
-                    <h3>
-                        @*@(
-                        Model.Projects.Count()
-                        + Model.Tickets.Count()
-                        + Model.Members.Count()
-                        )*@
-                    </h3>
-                    <span>Total Data</span>
+                    <h3>@Model.Count()</h3>
+                    <span>Total Tickets</span>
                 </div>
             </div>
         </div>
@@ -273,7 +260,7 @@
                                             }
                                             else
                                             {
-                                                <span>Unassigned</span>
+                                                <a class="btn btn-outline-primary text-start" id="unassignedButton" data-toggle="modal" data-target="#assignDevModal"><span>Unassigned</span></a>
                                             }
                                         </td>
                                         <td class="text-right">

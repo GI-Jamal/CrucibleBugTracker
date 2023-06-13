@@ -59,6 +59,14 @@ ol {
     --bs-gutter-x: 0px !important;
 }
 
+#unassignedButton:hover span {
+    display: none
+}
+
+#unassignedButton:hover:before {
+    content: "Assign"
+}
+
 @media (max-width: 991px) {
     #searchBar {
         position: absolute;

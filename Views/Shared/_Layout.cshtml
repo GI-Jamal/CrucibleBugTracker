@@ -58,10 +58,10 @@
 </head>
 <body class="dark">
     <!-- Preloader -->
-    <div class="preloader">
+    @*<div class="preloader">
         <div class="preloader-icon"></div>
         <span>Loading...</span>
-    </div>
+    </div>*@
     <!-- ./ Preloader -->
     <!-- Layout wrapper -->
     <div class="layout-wrapper">
@@ -440,7 +440,7 @@
     <script src="~/vendors/ckeditor5/ckeditor.js"></script>
 
     <!-- App scripts -->
-    <script src="~/assets/js/app.js"></script>
+@*    <script src="~/assets/js/app.js"></script>*@
 
     <script src="~/js/site.js" asp-append-version="true"></script>
 
@@ -488,7 +488,7 @@
                 hideMethod: "slideUp",
                 showDuration: 200,
                 hideDuration: 200
-            };
+            };            
 
             @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
             {
@@ -502,6 +502,18 @@
                     toastr.success(`@ViewBag.SuccessMessage`);
                 </text>
             }
+
+            $('.image-popup').magnificPopup({
+                type: 'image',
+                zoom: {
+                    enabled: true,
+                    duration: 300,
+                    easing: 'ease-in-out',
+                    opener: function (openerElement) {
+                        return openerElement.is('img') ? openerElement : openerElement.find('img');
+                    }
+                }
+            });
         });
     </script>
     @await RenderSectionAsync("Scripts", required: false)

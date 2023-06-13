@@ -22,6 +22,12 @@ namespace CrucibleBugTracker.Services
                                                            .Include(c => c.Projects)
                                                                 .ThenInclude(p => p.Tickets)
                                                            .Include(c => c.Invites)
+                                                           .Include(c => c.Projects)
+                                                                .ThenInclude(p => p.Tickets)
+                                                                    .ThenInclude(t => t.TicketStatus)
+                                                            .Include(c => c.Projects)
+                                                                .ThenInclude(p => p.Tickets)
+                                                                    .ThenInclude(t => t.TicketType)
                                                            .FirstOrDefaultAsync(c => c.Id == companyId);
                 return company;
             }
