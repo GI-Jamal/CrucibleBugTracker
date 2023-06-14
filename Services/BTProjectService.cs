@@ -188,7 +188,13 @@ namespace CrucibleBugTracker.Services
                                                       .Include(p => p.Members)
                                                       .Include(p => p.Tickets)
                                                         .ThenInclude(t => t.DeveloperUser)
-                                                       .Include(p => p.Tickets)
+                                                      .Include(p => p.Tickets)
+                                                        .ThenInclude(t => t.SubmitterUser)
+                                                      .Include(p => p.Tickets)
+                                                        .ThenInclude(t => t.TicketStatus)
+                                                      .Include(p => p.Tickets)
+                                                        .ThenInclude(t => t.TicketType)
+                                                      .Include(p => p.Tickets)
                                                         .ThenInclude(t => t.TicketPriority).FirstOrDefaultAsync(p => p.Id == projectId && p.CompanyId == companyId);
                 if (project != null)
                 {

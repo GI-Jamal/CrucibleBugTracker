@@ -14,6 +14,7 @@ using CrucibleBugTracker.Enums;
 using Microsoft.AspNetCore.Identity;
 using CrucibleBugTracker.Models.ViewModels;
 using Newtonsoft.Json;
+using CrucibleBugTracker.Services;
 
 namespace CrucibleBugTracker.Controllers
 {
@@ -26,8 +27,9 @@ namespace CrucibleBugTracker.Controllers
         private readonly IBTProjectService _projectService;
         private readonly IBTTicketService _ticketService;
         private readonly IBTTicketHistoryService _ticketHistoryService;
+        private readonly IBTFileService _fileService;
 
-        public CompanyController(IBTCompanyService companyService, IBTRoleService roleService, UserManager<BTUser> userManager, IBTProjectService projectService, IBTTicketService ticketService, IBTTicketHistoryService ticketHistoryService)
+        public CompanyController(IBTCompanyService companyService, IBTRoleService roleService, UserManager<BTUser> userManager, IBTProjectService projectService, IBTTicketService ticketService, IBTTicketHistoryService ticketHistoryService, IBTFileService fileService)
         {
             _companyService = companyService;
             _roleService = roleService;
@@ -35,13 +37,15 @@ namespace CrucibleBugTracker.Controllers
             _projectService = projectService;
             _ticketService = ticketService;
             _ticketHistoryService = ticketHistoryService;
+            _fileService = fileService;
         }
 
         // GET: Companies/Details/5
         public async Task<IActionResult> Index()
         {
             int companyId = User.Identity!.GetCompanyId();
-            Company? company = await _companyService.GetCompanyInfoAsync(companyId);
+            string? userId = _userManager.GetUserId(User);
+            Company? company = await _companyService.GetCompanyInfoByUserIdAsync(userId!, companyId);
 
             if (company == null)
             {
@@ -103,7 +107,7 @@ namespace CrucibleBugTracker.Controllers
 
             List<BTUser> admins = await _roleService.GetUsersInRoleAsync(nameof(BTRoles.Admin), User.Identity!.GetCompanyId());
 
-            
+
             IEnumerable<string> currentRoles = await _roleService.GetUserRolesAsync(user);
 
             if (admins.Count <= 1 && currentRoles.Contains(nameof(BTRoles.Admin)) && selectedRole != nameof(BTRoles.Admin))
@@ -233,6 +237,24 @@ namespace CrucibleBugTracker.Controllers
                     return Json(new { changeRole = false, userId = user.Id, currentRole = nameof(BTRoles.Admin), selectedRole = roleName });
                 }
             }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangeCompanyImage(IFormFile companyImage)
+        {
+            if (companyImage != null)
+            {
+                int companyId = User.Identity!.GetCompanyId();
+                Company? company = await _companyService.GetCompanyInfoAsync(companyId);
+
+                company!.ImageFileData = await _fileService.ConvertFileToByteArrayAsync(companyImage);
+                company!.ImageFileType = companyImage.ContentType;
+
+                await _companyService.UpdateCompanyAsync(company, companyId);
+            }
+
+            return RedirectToAction("Index", "Company");
         }
     }
 }

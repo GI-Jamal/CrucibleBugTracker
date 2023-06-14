@@ -260,7 +260,7 @@
                                             }
                                             else
                                             {
-                                                <a class="btn btn-outline-primary text-start" id="unassignedButton" data-toggle="modal" data-target="#assignDevModal"><span>Unassigned</span></a>
+                                                <a class="btn btn-outline-primary text-start" id="unassignedButton" data-toggle="modal" data-target="#assignDevModal" onclick="populateDevModal(@ticket.Id, @ticket.ProjectId, '@ticket.DeveloperUserId', '@ticket.Title')"><span>Unassigned</span></a>
                                             }
                                         </td>
                                         <td class="text-right">

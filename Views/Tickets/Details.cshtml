@@ -1,5 +1,6 @@
 ﻿@model CrucibleBugTracker.Models.Ticket
 
+@using CrucibleBugTracker.Enums;
 @using CrucibleBugTracker.Services.Interfaces
 @using Microsoft.AspNetCore.Identity;
 
@@ -11,6 +12,7 @@
 @{
     ViewData["Title"] = "Details";
     BTUser? user = await _UserManager.GetUserAsync(User);
+    BTUser? projectManager = await _ProjectService.GetProjectManagerAsync(Model.ProjectId, user!.CompanyId);
 }
 
 
@@ -23,40 +25,117 @@
 <div>
     <div class="container-fluid">
         <div class="row gy-2">
-            <div class="col-md-12 col">
-                <div class="row col-cols-2 mt-5 bg-secondary">
-                    <div class="card col m-1 p-2">
-                        <div class="card-body">
-                            @*Title of Ticket*@
-                            <h5>@Model.Title</h5>
-                            @*Description of Ticket*@
-                            <p>@Html.Raw(Model.Description)</p>
-                            <div class="my-3">
-                                <a asp-controller="Projects" asp-action="Details" asp-route-id="@Model.ProjectId">
-                                    <span style="font-size:small">Project: @Model.Project?.Name</span>
-                                </a>
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex">
+                        <h5 class="mr-2">
+                            @switch (Model.TicketStatus?.Name)
+                            {
+                                case nameof(BTTicketStatuses.New):
+                                    <span class="badge bg-primary">@Model.TicketStatus.Name</span>
+                                    break;
+                                case nameof(BTTicketStatuses.Development):
+                                    <span class="badge bg-secondary">@Model.TicketStatus.Name</span>
+                                    break;
+                                case nameof(BTTicketStatuses.Testing):
+                                    <span class="badge bg-info">@Model.TicketStatus.Name</span>
+                                    break; ;
+                                case nameof(BTTicketStatuses.Resolved):
+                                    <span class="badge bg-sucess">@Model.TicketStatus.Name</span>
+                                    break;
+                                default:
+                                    break;
+                            }
+                        </h5>
+                        <h5>
+                            @switch (Model.TicketType?.Name)
+                            {
+                                case nameof(BTTicketTypes.NewDevelopment):
+                                    <span class="badge bg-facebook"><i class="ti-bell"></i>&nbsp;&nbsp;New Development</span>
+                                    break;
+                                case nameof(BTTicketTypes.GeneralTask):
+                                    <span class="badge bg-dribbble"><i class="fa fa-user"></i>&nbsp;&nbsp;General Task</span>
+                                    break;
+                                case nameof(BTTicketTypes.WorkTask):
+                                    <span class="badge bg-linkedin"><i class="fa fa-users"></i>&nbsp;&nbsp;Work Task</span>
+                                    break;
+                                case nameof(BTTicketTypes.Enhancement):
+                                    <span class="badge bg-warning"><i class="fa fa-plus"></i>&nbsp;&nbsp;Enhancement</span>
+                                    break;
+                                case nameof(BTTicketTypes.ChangeRequest):
+                                    <span class="badge bg-google"><i class="fa fa-info-circle"></i>&nbsp;&nbsp;Change Request</span>
+                                    break;
+                                case nameof(BTTicketTypes.Defect):
+                                    <span class="badge bg-youtube"><i class="fa fa-warning"></i>&nbsp;&nbsp;Defect</span>
+                                    break;
+                                default:
+                                    break;
+                            }
+                        </h5>
+                        @if (User.IsInRole(nameof(BTRoles.Admin)) || projectManager?.Id == user.Id)
+                        {
+                            <div class="ms-auto">
+                                <a class="btn btn-sm btn-secondary" asp-controller="Tickets" asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
+                                @if (Model.Archived)
+                                {
+                                    <a role="button" data-toggle="modal" class="btn btn-sm btn-success" data-target="#restoreTicketModal" onclick="populateTicketRestoreModal(@Model.Id, '@Model.Title')">Restore Ticket</a>
+                                }
+                                else
+                                {
+                                    <a role="button" data-toggle="modal" class="btn btn-sm btn-danger" data-target="#archiveTicketModal" onclick="populateTicketArchiveModal(@Model.Id, '@Model.Title')">Archive Ticket</a>
+                                }
+                            </div>
+                        }
+                    </div>
+                    <div class="card-body pb-1">
+                        <div class="d-flex flex-row justify-content-between">
+                            <h5 class="card-title mb-0">
+                                @Model.Title&nbsp;
+                                @{
+                                    @if (Model.Archived == true)
+                                    {
+                                        <span class="badge bg-info-bright">No Priority</span>
+                                    }
+                                    else
+                                    {
+                                        if (Model.TicketPriority?.Name == nameof(BTTicketPriorities.Low))
+                                        {
+                                            <span class="badge bg-success-bright">@Model.TicketPriority?.Name Priority</span>
+                                        }
+                                        if (Model.TicketPriority?.Name == nameof(BTTicketPriorities.Medium))
+                                        {
+                                            <span class="badge bg-warning-bright">@Model.TicketPriority?.Name Priority</span>
+                                        }
+                                        if (Model.TicketPriority?.Name == nameof(BTTicketPriorities.High))
+                                        {
+                                            <span class="badge bg-secondary-bright">@Model.TicketPriority?.Name Priority</span>
+                                        }
+                                        if (Model.TicketPriority?.Name == nameof(BTTicketPriorities.Urgent))
+                                        {
+                                            <span class="badge bg-danger-bright">@Model.TicketPriority?.Name Priority</span>
+                                        }
+                                    }
+                                }
+                            </h5>
+                            <div>
+                                <h6 class="card-subtitle mb-0 text-muted">Last Updated: @(@Model.UpdatedDate?.ToString("MMMM dd, yyyy") ?? "N/A")</h6>
                             </div>
                         </div>
+
+
+                        <p class="card-text">
+                            @Html.Raw(Model.Description)
+                        </p>
+                        <div class="text-end">
+                            Created Date: @Model.Created.ToString("MMM dd, yyyy")
+                        </div>
                     </div>
-                    <div class="card col m-1 p-2">
-                        <div class="card-body">
-                            <ul class="list-unstyled">
-                                @*Ticket date*@
-                                <li><strong>Date Entered:</strong> <span class="">@Model.Created.ToString("MMMM dd, yyyy")</</span></li>
-                                @*Ticket Last Updated date*@
-                                @if (Model.UpdatedDate != null)
-                                {
-                                    <li><strong>Last Updated Date:</strong> <span class="">@Model.UpdatedDate.Value.ToString("MMMM dd, yyyy")</span></li>
-                                }                                
-                                @*Project end date*@
-                                <li><strong>Deadline:</strong> <span class="">@Model.Project?.EndDate.ToString("MMMM dd, yyyy")</</span></li>
-                                @*Ticket type*@
-                                <li><strong>Type:</strong> <span class="">@Model.TicketType?.Name</span></li>
-                                @*Ticket priority*@
-                                <li><strong>Priority:</strong> <span class="">@Model.TicketPriority?.Name</span></li>
-                                @*Ticket status*@
-                                <li><strong>Status:</strong> <span class="">@Model.TicketStatus?.Name</span></li>
-                            </ul>
+                    <div class="card-footer d-flex flex-row justify-content-between pt-3">
+                        <div class="">
+                            <h6 class="card-subtitle text-muted">Submitter: @Model.SubmitterUser?.FullName</h6>
+                        </div>
+                        <div class="">
+                            <h6 class="card-subtitle text-muted">Developer: @(@Model.DeveloperUser?.FullName ?? "Unassigned")</h6>
                         </div>
                     </div>
                 </div>
@@ -182,22 +261,74 @@
                         </div>
                     </div>
                 </div>
+
             </div>
             <div class="col-md-4 col mt-5 ">
-                <div class="bg-dark">
-                    <div class="card m-1 p-2">
-                        <div class="card-header">
-                            <h2>History</h2>
-                            <hr />
-                        </div>
-                        <div class="card-body" style="overflow-y:auto;height:1000px;background-color:antiquewhite">
-                            @foreach(TicketHistory ticketHistory in Model.History.OrderByDescending(h => h.Created))
-                            {
-                                <p style="color:black">@ticketHistory.Description?.Replace("<p>","").Replace("</p>", "")</p>
-                                <p style="color:black">@ticketHistory.User?.FullName</p>
-                                <p style="color:black">@ticketHistory.Created.ToString("MMM dd, yyyy")</p>
-                                <hr />
-                            }
+                <div class="row">
+                    <div class="col-md-12">
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="card">
+                                    <div class="card-body" style="overflow-y:auto;height:1000px;">
+                                        <div class="card m-1 p-2">
+                                            <div class="card-header" style="border:none;">
+                                                <h2>History</h2>
+                                                <hr />
+                                            </div>
+                                            <div class="timeline">
+                                                @if (Model.History.Count > 0)
+                                                {
+                                                    @foreach (TicketHistory ticketHistory in Model.History.OrderByDescending(h => h.Created))
+                                                    {
+                                                        <div class="timeline-item">
+                                                            <div>
+                                                                @if (ticketHistory.User?.ImageFileData != null)
+                                                                {
+                                                                    <figure class="avatar avatar-sm">
+                                                                        <img data-bs-toggle="tooltip"
+                                                                             src="@_FileService.ConvertByteArrayToFile(ticketHistory.User?.ImageFileData, ticketHistory.User?.ImageFileType, DefaultImage.BTUserImage)"
+                                                                             loading="lazy"
+                                                                             class="rounded-circle"
+                                                                             alt="avatar">
+                                                                    </figure>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <figure class="avatar avatar-sm mr-3">
+                                                                        <span class="avatar-title bg-info-bright text-info rounded-circle">
+                                                                            @ticketHistory.User?.FirstName?[0]
+                                                                        </span>
+                                                                    </figure>
+                                                                }
+                                                            </div>
+                                                            <div>
+                                                                <h6 class="d-flex justify-content-between mb-4">
+                                                                    <span>
+                                                                        <a href="#" class="link-1">@ticketHistory.User?.FullName</a>
+                                                                    </span>
+                                                                    <span class="text-muted font-weight-normal">@ticketHistory.Created.ToString("MMM dd, yyyy")</span>
+                                                                </h6>
+                                                                <a href="#">
+                                                                    <div class="mb-3 border p-3 border-radius-1">
+                                                                        @ticketHistory.Description.Replace("<p>", "").Replace("</p>", "")
+                                                                    </div>
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <h5 class="text-center">No history</h5>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -206,39 +337,72 @@
     </div>
 </div>
 
-<div>
-    <dl class="row">        
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Archived)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Archived)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.ArchivedByProject)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.ArchivedByProject)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.DeveloperUser)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.DeveloperUser.FullName)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.SubmitterUser)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.SubmitterUser.FullName)
-        </dd>
-    </dl>
+<div class="modal fade" id="restoreTicketModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalCenterTitle">Restore Ticket</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i class="ti-close"></i>
+                </button>
+            </div>
+            <form asp-action="Restore" asp-controller="Tickets" method="post" class="d-flex flex-column">
+                <div class="modal-body pt-0">
+                    <h5 id="restoreTicketTitle">Ticket Title</h5>
+                    <input type="hidden" id="restoreTicket" name="restoreTicketId" value="" />
+                    <span>Are you sure you want to restore this ticket?</span>
+                </div>
+                <div class="modal-footer" style="height:inherit">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        No/Close
+                    </button>
+                    <button type="submit" class="btn btn-primary">Yes/Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+<div class="modal fade" id="archiveTicketModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalCenterTitle">Archive Ticket</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i class="ti-close"></i>
+                </button>
+            </div>
+            <form asp-action="Archive" method="post" asp-controller="Tickets" class="d-flex flex-column">
+                <div class="modal-body pt-0">
+                    <h5 id="archiveTicketTitle">Ticket Title</h5>
+                    <input type="hidden" id="archiveTicket" name="archiveTicketId" value="" />
+                    <span>Are you sure you want to archive this ticket?</span>
+                </div>
+                <div class="modal-footer" style="height:inherit">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        No/Close
+                    </button>
+                    <button type="submit" class="btn btn-primary">Yes/Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 @section scripts {
-    
-}
+    <script>
+        function populateTicketArchiveModal(archiveId, ticketTitle) {
+            var ticketId = document.getElementById("archiveTicket");
+            ticketId.value = archiveId
+            var archiveTicketTitle = document.getElementById("archiveTicketTitle");
+            archiveTicketTitle.innerHTML = ticketTitle;
+        }
+
+        function populateTicketRestoreModal(restoreId, ticketTitle) {
+            var ticketId = document.getElementById("restoreTicket");
+            ticketId.value = restoreId;
+            var restoreTicketTitle = document.getElementById("restoreTicketTitle");
+            restoreTicketTitle.innerHTML = ticketTitle;
+        }
+    </script>
+
+    }

@@ -71,6 +71,8 @@ namespace CrucibleBugTracker.Areas.Identity.Pages.Account.Manage
 
             [NotMapped]
             public IFormFile ImageFile { get; set; }
+
+            public bool RemoveImage { get; set; }
         }
 
         private async Task LoadAsync(BTUser user)

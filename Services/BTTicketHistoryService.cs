@@ -1,6 +1,7 @@
 ﻿using CrucibleBugTracker.Data;
 using CrucibleBugTracker.Models;
 using CrucibleBugTracker.Services.Interfaces;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
 
 namespace CrucibleBugTracker.Services
@@ -63,7 +64,7 @@ namespace CrucibleBugTracker.Services
                             NewValue = newTicket.Description,
                             Created = DateTime.UtcNow,
                             UserId = userId,
-                            Description = $"Ticket description changed from {oldTicket.Description} to {newTicket.Description}"
+                            Description = $"Ticket description changed from {oldTicket.Description?.Replace("<p>", "").Replace("</p>", "")} to {newTicket.Description?.Replace("<p>", "").Replace("</p>", "")}"
                         };
 
                         _context.Add(history);
@@ -71,6 +72,7 @@ namespace CrucibleBugTracker.Services
 
                     if (oldTicket.Archived != newTicket.Archived)
                     {
+                        
                         TicketHistory history = new()
                         {
                             TicketId = newTicket.Id,

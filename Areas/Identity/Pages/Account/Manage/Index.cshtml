@@ -30,11 +30,12 @@
                 </div>
                 <div class="col-12 col-sm-9 ps-sm-3">
                     <p>@user?.FullName</p>
-                    <div>
+                    <div class="mb-2">
                         <input type="file" asp-for="Input.ImageFile" class="form-control" id="customFile" accept=".png,.jpg,.jpeg,.gif,.tif"
                                onchange="document.getElementById('userImage').src = window.URL.createObjectURL(this.files[0])" />
-                        <span asp-validation-for="Input.ImageFile" class="text-danger"></span>
+                        <span asp-validation-for="Input.ImageFile" class="text-danger"></span>                        
                     </div>
+                    <a class="btn btn-primary" id="removePicture" onclick="removePicture()">Remove Profile Picture</a>
                     <p class="small text-muted mt-3">
                         For best results, use an image at least
                         256px by 256px in either .jpg or .png format
@@ -59,4 +60,10 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        function removePicture() {
+            document.getElementById('customFile').value = null;
+            document.getElementById('userImage').src = null;
+        }
+    </script>
 }
