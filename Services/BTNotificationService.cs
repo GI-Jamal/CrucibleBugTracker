@@ -81,7 +81,7 @@ namespace CrucibleBugTracker.Services
                 {
 
                     notifications = await _context.Notifications.Include(n => n.Recipient)
-                                                  .Where(n => n.RecipientId == userId || n.SenderId == userId)                                                  
+                                                  .Where(n => n.RecipientId == userId || n.SenderId == userId)
                                                   .Include(n => n.Sender)
                                                   .ToListAsync();
                 }
@@ -112,7 +112,7 @@ namespace CrucibleBugTracker.Services
                     Created = DateTime.UtcNow,
                     SenderId = senderId,
                     RecipientId = developerId,
-                    NotificationType = new() { Id = 1, Name = nameof(BTNotificationType.Ticket)}
+                    NotificationType = new() { Id = 1, Name = nameof(BTNotificationType.Ticket) }
                 };
 
 
@@ -133,9 +133,9 @@ namespace CrucibleBugTracker.Services
         {
             BTUser? btUser = await _userManager.FindByIdAsync(senderId!);
             Ticket? ticket = await _context.Tickets.FindAsync(ticketId);
-            
+
             BTUser? projectManager = await _projectService.GetProjectManagerAsync(ticket!.ProjectId, btUser!.CompanyId);
-                
+            List<BTUser> admins = await _rolesService.GetUsersInRoleAsync(nameof(BTRoles.Admin), btUser.CompanyId);
 
             if (ticket != null && btUser != null)
             {
@@ -147,8 +147,25 @@ namespace CrucibleBugTracker.Services
                     Created = DateTime.UtcNow,
                     SenderId = senderId,
                     RecipientId = projectManager?.Id ?? senderId,
-                    NotificationType = new() { Id = 1, Name = nameof(BTNotificationType.Ticket)}
+                    NotificationType = new() { Id = 1, Name = nameof(BTNotificationType.Ticket) }
                 };
+
+                List<Notification> adminNotifications = new();
+
+                foreach (var admin in admins)
+                {
+                    adminNotifications.Add(new Notification()
+                    {
+                        TicketId = ticket.Id,
+                        Title = "New Ticket Added",
+                        Message = $"New Ticket: {ticket.Title} was created by {btUser.FullName} ",
+                        Created = DateTime.UtcNow,
+                        SenderId = senderId,
+                        RecipientId = admin.Id,
+                        NotificationType = new() { Id = 1, Name = nameof(BTNotificationType.Ticket) }
+                    });
+                }
+
 
 
                 if (projectManager != null)
@@ -161,6 +178,20 @@ namespace CrucibleBugTracker.Services
                     await NotificationsByRoleAsync(btUser.CompanyId, notification, BTRoles.Admin);
                     await SendEmailNotificationByRoleAsync(btUser.CompanyId, notification, BTRoles.Admin);
                 }
+
+                foreach (Notification adminNotification in adminNotifications)
+                {
+                    if (adminNotification.RecipientId == btUser.Id)
+                    {
+                        await AddNotificationAsync(adminNotification);
+                        await SendEmailNotificationAsync(adminNotification, "New Ticket Added");
+                    }
+                    else
+                    {
+                        await NotificationsByRoleAsync(btUser.CompanyId, adminNotification, BTRoles.Admin);
+                        await SendEmailNotificationByRoleAsync(btUser.CompanyId, adminNotification, BTRoles.Admin);
+                    }
+                }
                 return true;
             }
             return false;
@@ -171,7 +202,7 @@ namespace CrucibleBugTracker.Services
             try
             {
                 BTUser? btUser = await _userManager.FindByIdAsync(developerId!);
-                Ticket? ticket = await _context.Tickets.Include(t=>t.Project).FirstOrDefaultAsync(t=>t.Id==ticketId);
+                Ticket? ticket = await _context.Tickets.Include(t => t.Project).FirstOrDefaultAsync(t => t.Id == ticketId);
                 BTUser? projectManager = await _projectService.GetProjectManagerAsync(ticket!.ProjectId, btUser!.CompanyId);
 
 
@@ -186,7 +217,7 @@ namespace CrucibleBugTracker.Services
                         Created = DateTime.UtcNow,
                         SenderId = senderId,
                         RecipientId = projectManager?.Id ?? senderId,
-                        NotificationType = new() { Id = 1, Name = nameof(BTNotificationType.Ticket)}
+                        NotificationType = new() { Id = 1, Name = nameof(BTNotificationType.Ticket) }
                     };
 
 

@@ -17,6 +17,7 @@
     string? userId = (await _UserManager.GetUserAsync(User))?.Id;
     int companyId = User.Identity!.GetCompanyId();
     List<string> companyDeveloperIds = (await _RoleService.GetUsersInRoleAsync(nameof(BTRoles.Developer), companyId)).Select(u => u.Id).ToList();
+    ViewData["ProjectManagers"] = new SelectList(await _RoleService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId), nameof(BTUser.Id), nameof(BTUser.FullName));
 }
 
 
@@ -24,17 +25,17 @@
     <h1>Project Details</h1>
     <div class="row mb-3">
         <div class="col-12">
-            <div class="card">
+            <div class="card" style="margin-bottom:1rem;">
                 <div class="card-header d-flex">
                     <h5>
                         @{
                             if (Model.Archived)
                             {
-                                <span class="badge bg-secondary">Archived</span>
+                                <span class="badge bg-info">Archived</span>
                             }
                             else if (Model.StartDate > DateTime.UtcNow)
                             {
-                                <span class="badge bg-secondary">Not Started</span>
+                                <span class="badge bg-primary">Not Started</span>
                             }
                             else if (Model.EndDate < DateTime.UtcNow)
                             {
@@ -42,14 +43,14 @@
                             }
                             else
                             {
-                                <span class="badge bg-success">In Progress</span>
+                                <span class="badge bg-secondary">In Progress</span>
                             }
                         }
                     </h5>
                     @if (User.IsInRole(nameof(BTRoles.Admin)) || projectManager?.Id == userId)
                     {
                         <div class="ms-auto">
-                            <a class="btn btn-sm btn-secondary" asp-controller="Projects" asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
+                            <a class="btn btn-sm btn-secondary mr-2" asp-controller="Projects" asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
                             @if (Model.Archived)
                             {
                                 <a role="button" data-toggle="modal" class="btn btn-sm btn-success" data-target="#restoreProjectModal" onclick="populateRestoreModal(@Model.Id, @Model.Tickets.Count(t => t.ArchivedByProject == true), '@Model.Name')">Restore Project</a>
@@ -94,39 +95,59 @@
                         <div>
                             <h6 class="card-subtitle mb-0 text-muted">Created Date: @Model.Created.ToString("MMMM dd, yyyy")</h6>
                         </div>
-                    </div>                    
-             
-                    
+                    </div>
+
+
                     <p class="card-text">
                         @Html.Raw(Model.Description)
                     </p>
                     <div class="text-end">
-                        Project Manager:
-                        @{
-                            if (string.IsNullOrEmpty(projectManager?.FullName))
-                            {
-                                <span>Unassigned</span>
-                            }
-                            else
-                            {
-                                <span>@projectManager.FullName</span>
-                            }
+                        @if (User.IsInRole(nameof(BTRoles.Admin)) || projectManager?.Id == userId)
+                        {
+                            <h6 class="card-subtitle text-primary" id="assignUser" data-toggle="modal" data-target="#assignPMModal" role="button" onclick="populatePMModal('@Model.Id', '@projectManager?.Id', '@Model.Name')">Project Manager: @(projectManager?.FullName ?? "Unassigned")</h6>
                         }
+                        else
+                        {
+                            <h6 class="card-subtitle text-muted" id="assignUser" data-toggle="modal" data-target="#assignPMModal" role="button" onclick="populatePMModal('@Model.Id', '@projectManager?.Id', '@Model.Name')">
+                                Project Manager:
+                                @{
+                                    if (string.IsNullOrEmpty(projectManager?.FullName))
+                                    {
+                                        <span>Unassigned</span>
+                                    }
+                                    else
+                                    {
+                                        <span>@projectManager.FullName</span>
+                                    }
+                                }
+                            </h6>
+                        }
+
+
+
                     </div>
                 </div>
                 <div class="card-footer d-flex flex-row justify-content-between pt-3">
                     <div class="">
-                        <h6 class="card-subtitle text-muted">Start Date: @Model.StartDate.ToString("MMMM dd, yyyy")</h6>                        
+                        <h6 class="card-subtitle text-muted">Start Date: @Model.StartDate.ToString("MMMM dd, yyyy")</h6>
                     </div>
                     <div class="">
                         <h6 class="card-subtitle text-muted">End Date: @Model.EndDate.ToString("MMMM dd, yyyy")</h6>
                     </div>
-                </div>   
+                </div>
             </div>
         </div>
-        <div class="col-12">
-            <div class="row gy-3">
-                <div class="col-12 col-lg-6">
+        @if (User.IsInRole(nameof(BTRoles.Admin)) || projectManager?.Id == userId)
+        {
+            <div class="d-flex flex-row">
+                <a asp-controller="Projects" asp-action="ManageProjectMembers" asp-route-id="@Model.Id" class="btn btn-secondary ms-auto btn-sm">
+                    Manage Project Members
+                </a>
+            </div>
+        }
+        <div class="col-12" style="margin-top:1rem;">
+            <div class="row">
+                <div class="col-12 col-lg-6 mb-3 mb-lg-0">
                     <div class="card h-100 assignProjectUsers">
                         <div class="card-header">
                             Developers
@@ -134,6 +155,7 @@
                         <div class="card-body assignProjectUsersTable">
                             <ul>
                                 @{
+                                    int memberCount = 0;
                                     foreach (BTUser member in Model.Members)
                                     {
 
@@ -160,6 +182,14 @@
                                                 }
                                             </li>
                                             <hr />
+
+                                            continue;
+                                        }
+                                        memberCount++;
+
+                                        if (memberCount == Model.Members.Count)
+                                        {
+                                            <h5 class="text-center">No Developers Assigned</h5>
                                         }
                                     }
                                 }
@@ -175,7 +205,7 @@
                         <div class="card-body assignProjectUsersTable">
                             <ul>
                                 @{
-                                    int memberCount = 0;
+                                    memberCount = 0;
                                     foreach (BTUser member in Model.Members)
                                     {
                                         if (await _RoleService.IsUserInRole(member, nameof(BTRoles.Submitter)))
@@ -432,7 +462,7 @@
                 </div>
             </div>
         </div>
-    </div>   
+    </div>
 </div>
 <div>
     <a asp-action="Index">Back to List</a>
@@ -494,6 +524,33 @@
                         No/Close
                     </button>
                     <button type="submit" class="btn btn-primary">Yes/Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="assignPMModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalCenterTitle">Assign Project Manager</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i class="ti-close"></i>
+                </button>
+            </div>
+            <form asp-controller="Projects" asp-action="AssignPM" method="post" class="d-flex flex-column">
+                <div class="modal-body pt-1">
+                    <input type="hidden" id="modalProjectId" name="projectId" value="" />
+                    <h5 id="modalProjectName"></h5>
+                    <select class="form-control" asp-items="@ViewBag.ProjectManagers" name="projectManagerId" id="projectManagers">
+                        <option value="@null">Unassigned</option>
+                    </select>
+                </div>
+                <div class="modal-footer" style="height:inherit">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        Close
+                    </button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
                 </div>
             </form>
         </div>
@@ -604,7 +661,7 @@
                         },
             </text>
         }
-                                                                                                                                                                                                            ]
+                                                                                                                                                                                                                                    ]
             },
 
 
@@ -634,6 +691,23 @@
 
                 select.add(option);
             });
+        }
+
+        function populatePMModal(projectId, projectManagerId, projectName) {
+            var project = document.getElementById("modalProjectId");
+            project.value = projectId;
+
+            var modalProjectName = document.getElementById("modalProjectName");
+            modalProjectName.innerHTML = projectName;
+
+            var projectManagers = document.getElementById("projectManagers");
+
+            for (var i = 0; i < projectManagers.options.length; i++) {
+                if (projectManagers.options[i].value == projectManagerId) {
+                    projectManagers.options[i].selected = true;
+                    break;
+                }
+            }
         }
 
         function populateArchiveModal(archiveId, numberOfTickets, projectName) {

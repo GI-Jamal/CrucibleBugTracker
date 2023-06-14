@@ -477,6 +477,169 @@ namespace CrucibleBugTracker.Controllers
             return Json(new { unassignedTickets = potentialUnassignedTickets });
         }
 
+        [HttpGet]
+        public async Task<IActionResult> ManageProjectMembers(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            int companyId = User.Identity!.GetCompanyId();
+            Project? project = await _projectService.GetProjectByIdAsync((int)id, companyId);
+
+            if (project == null)
+            {
+                return NotFound();
+            }
+
+            if (project.CompanyId != companyId)
+            {
+                return NotFound();
+            }
+
+            string? projectManagerId = (await _projectService.GetProjectManagerAsync(project.Id, companyId))?.Id;
+            string? userId = _userManager.GetUserId(User);
+
+            if (!User.IsInRole(nameof(BTRoles.Admin)) && projectManagerId != userId)
+            {
+                return NotFound();
+            }
+
+            List<string> developerIds = (await _projectService.GetProjectMembersByRoleAsync(project.Id, nameof(BTRoles.Developer), companyId)).Select(u => u.Id).ToList();
+            List<string> submitterIds = (await _projectService.GetProjectMembersByRoleAsync(project.Id, nameof(BTRoles.Submitter), companyId)).Select(u => u.Id).ToList();
+
+            ViewData["ProjectDevelopers"] = new List<BTUser>(await _roleService.GetUsersInRoleAsync(nameof(BTRoles.Developer), companyId));
+            ViewData["ProjectSubmitters"] = new List<BTUser>(await _roleService.GetUsersInRoleAsync(nameof(BTRoles.Submitter), companyId));
+            ViewData["ProjectManagers"] = new SelectList(await _roleService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId), nameof(BTUser.Id), nameof(BTUser.FullName), projectManagerId);
+            return View(project);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ManageProjectMembers(int? projectId, string? developerIds, string? submitterIds, string? projectManagerId, string? ticketsToUnassign = null)
+        {
+            int companyId = User.Identity!.GetCompanyId();
+
+            Project? project = await _projectService.GetProjectByIdAsync(projectId!.Value, companyId);
+
+            if (project == null)
+            {
+                return NotFound();
+            }
+
+
+            try
+            {
+                string? currentPMId = (await _projectService.GetProjectManagerAsync(project.Id, companyId))?.Id;
+                string? userId = _userManager.GetUserId(User);
+
+                if (!User.IsInRole(nameof(BTRoles.Admin)) && currentPMId != userId)
+                {
+                    return NotFound();
+                }
+
+                project.Created = DateTime.SpecifyKind(project.Created, DateTimeKind.Utc);
+                project.StartDate = DateTime.SpecifyKind(project.StartDate, DateTimeKind.Utc);
+                project.EndDate = DateTime.SpecifyKind(project.EndDate, DateTimeKind.Utc);
+
+
+                await _projectService.UpdateProjectAsync(project, companyId);
+
+
+                if (User.IsInRole(nameof(BTRoles.Admin)))
+                {
+                    if (projectManagerId != null)
+                    {
+                        BTUser? projectManager = (await _roleService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId)).FirstOrDefault(u => u.Id == projectManagerId);
+                        if (projectManager != null)
+                        {
+                            await _projectService.AddProjectManagerAsync(projectManager.Id, project.Id, companyId);
+                        }
+                    }
+                    else
+                    {
+                        BTUser? projectManager = await _projectService.GetProjectManagerAsync(project.Id, companyId);
+                        if (projectManager != null)
+                        {
+                            await _projectService.RemoveProjectManagerAsync(project.Id, companyId);
+                        }
+                    }
+                }
+
+                foreach (BTUser member in await _projectService.GetProjectMembersByRoleAsync(project.Id, nameof(BTRoles.Developer), companyId))
+                {
+                    project.Members.Remove(member);
+                }
+
+                foreach (BTUser member in await _projectService.GetProjectMembersByRoleAsync(project.Id, nameof(BTRoles.Submitter), companyId))
+                {
+                    project.Members.Remove(member);
+                }
+
+                List<string> devIds = developerIds?.Split(',').ToList() ?? new List<string>();
+                List<string> subIds = submitterIds?.Split(',').ToList() ?? new List<string>();
+
+                foreach (string developerId in devIds)
+                {
+                    BTUser? developer = (await _roleService.GetUsersInRoleAsync(nameof(BTRoles.Developer), companyId)).FirstOrDefault(u => u.Id == developerId);
+                    if (developer != null)
+                    {
+                        project.Members.Add(developer);
+                    }
+                }
+
+                foreach (string submitterId in subIds)
+                {
+                    BTUser? submitter = (await _roleService.GetUsersInRoleAsync(nameof(BTRoles.Submitter), companyId)).FirstOrDefault(u => u.Id == submitterId);
+                    if (submitter != null)
+                    {
+                        project.Members.Add(submitter);
+                    }
+                }
+
+                await _projectService.UpdateProjectAsync(project, companyId);
+                List<int>? ticketIds = new();
+
+                if (ticketsToUnassign is not null)
+                {
+                    ticketIds = (JsonConvert.DeserializeObject<List<Ticket>>(ticketsToUnassign))?.Select(t => t.Id).ToList();
+                }
+
+                if (ticketIds?.Count > 0)
+                {
+                    foreach (Ticket ticket in project.Tickets)
+                    {
+                        if (ticketIds.Contains(ticket.Id))
+                        {
+                            Ticket? oldTicket = await _ticketService.GetTicketAsNoTrackingAsync(ticket.Id, companyId);
+
+                            ticket.DeveloperUser = null;
+                            ticket.DeveloperUserId = null;
+                            await _ticketService.UpdateTicketAsync(ticket, companyId);
+
+                            await _ticketHistoryService.AddHistoryAsync(oldTicket, ticket, userId!);
+                        }
+
+                    }
+                }
+
+
+
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!await ProjectExistsAsync(project.Id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            return RedirectToAction(nameof(Index));
+        }
+
         private async Task<bool> ProjectExistsAsync(int id)
         {
             int companyId = User.Identity!.GetCompanyId();

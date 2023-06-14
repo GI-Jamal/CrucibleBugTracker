@@ -7,12 +7,16 @@
 @inject IBTFileService _FileService
 @inject UserManager<BTUser> _UserManager
 @inject IBTProjectService _ProjectService
+@inject IBTRoleService _RoleService
 
 
 @{
     ViewData["Title"] = "Details";
     BTUser? user = await _UserManager.GetUserAsync(User);
+    int companyId = user!.CompanyId;
     BTUser? projectManager = await _ProjectService.GetProjectManagerAsync(Model.ProjectId, user!.CompanyId);
+    List<string> companyDeveloperIds = (await _RoleService.GetUsersInRoleAsync(nameof(BTRoles.Developer), companyId)).Select(u => u.Id).ToList();
+
 }
 
 
@@ -21,9 +25,9 @@
         min-height: 150px;
     }
 </style>
-<h1>Ticket Details</h1>
 <div>
     <div class="container-fluid">
+        <h1>Ticket Details</h1>
         <div class="row gy-2">
             <div class="col-12">
                 <div class="card">
@@ -75,7 +79,7 @@
                         @if (User.IsInRole(nameof(BTRoles.Admin)) || projectManager?.Id == user.Id)
                         {
                             <div class="ms-auto">
-                                <a class="btn btn-sm btn-secondary" asp-controller="Tickets" asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
+                                <a class="btn btn-sm btn-secondary mr-2" asp-controller="Tickets" asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
                                 @if (Model.Archived)
                                 {
                                     <a role="button" data-toggle="modal" class="btn btn-sm btn-success" data-target="#restoreTicketModal" onclick="populateTicketRestoreModal(@Model.Id, '@Model.Title')">Restore Ticket</a>
@@ -126,29 +130,40 @@
                         <p class="card-text">
                             @Html.Raw(Model.Description)
                         </p>
-                        <div class="text-end">
-                            Created Date: @Model.Created.ToString("MMM dd, yyyy")
+                        <div class="d-flex justify-content-between">
+                            <a asp-controller="Projects" asp-action="Details" asp-route-id="@Model.ProjectId">
+                                Project: @Model.Project?.Name
+                            </a>
+                            <div>
+                                Created Date: @Model.Created.ToString("MMM dd, yyyy")
+                            </div>
                         </div>
                     </div>
                     <div class="card-footer d-flex flex-row justify-content-between pt-3">
-                        <div class="">
+                        <div>
                             <h6 class="card-subtitle text-muted">Submitter: @Model.SubmitterUser?.FullName</h6>
                         </div>
-                        <div class="">
-                            <h6 class="card-subtitle text-muted">Developer: @(@Model.DeveloperUser?.FullName ?? "Unassigned")</h6>
+                        <div>
+                            @if (User.IsInRole(nameof(BTRoles.Admin)) || projectManager?.Id == user.Id)
+                            {
+                                <h6 class="card-subtitle text-primary" id="assignUser" data-toggle="modal" data-target="#assignDevModal" role="button" onclick="populateDevModal('@Model.Id', '@Model.ProjectId', '@Model.DeveloperUserId', '@Model.Title')">Developer: @(@Model.DeveloperUser?.FullName ?? "Unassigned")</h6>
+                            }
+                            else
+                            {
+                                <h6 class="card-subtitle text-muted">Developer: @(@Model.DeveloperUser?.FullName ?? "Unassigned")</h6>
+                            }                            
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-8 col col-cols-2 mt-5 ">
-                <div class="col my-3">
-                    <div class="bg-secondary">
-                        <div class="card m-1 p-2">
+            <div class="col-12 col-lg-8">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card p-2">
                             <div class="card-header">
                                 <h2>Comments</h2>
                             </div>
-                            <div class="card-body" style="overflow-y:auto;height:600px;">
-                                @*Form and Logic for authorized users to add comments*@
+                            <div class="card-body" style="overflow-y:auto;max-height:1000px;">
                                 <ul class="list-group list-group-flush">
                                     @foreach (TicketComment comment in Model.Comments)
                                     {
@@ -183,7 +198,6 @@
                                 Model.DeveloperUserId == user.Id ||
                                 Model.SubmitterUserId == user.Id)
                                 {
-                                    <hr style="margin-top:0px;" />
                                     <div class="row">
                                         <div class="col-12">
                                             <form class="mt-4" asp-controller="TicketComments" asp-action="Create" method="post">
@@ -202,10 +216,8 @@
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="col">
-                    <div class="bg-secondary">
-                        <div class="card m-1 p-2">
+                    <div class="col-12">
+                        <div class="card p-2">
                             <div class="card-header">
                                 <h2>Attachments</h2>
                             </div>
@@ -261,78 +273,72 @@
                         </div>
                     </div>
                 </div>
-
             </div>
-            <div class="col-md-4 col mt-5 ">
+            <div class="col-12 col-lg-4 ">
                 <div class="row">
                     <div class="col-md-12">
-
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="card">
-                                    <div class="card-body" style="overflow-y:auto;height:1000px;">
-                                        <div class="card m-1 p-2">
-                                            <div class="card-header" style="border:none;">
-                                                <h2>History</h2>
-                                                <hr />
-                                            </div>
-                                            <div class="timeline">
-                                                @if (Model.History.Count > 0)
-                                                {
-                                                    @foreach (TicketHistory ticketHistory in Model.History.OrderByDescending(h => h.Created))
-                                                    {
-                                                        <div class="timeline-item">
-                                                            <div>
-                                                                @if (ticketHistory.User?.ImageFileData != null)
-                                                                {
-                                                                    <figure class="avatar avatar-sm">
-                                                                        <img data-bs-toggle="tooltip"
-                                                                             src="@_FileService.ConvertByteArrayToFile(ticketHistory.User?.ImageFileData, ticketHistory.User?.ImageFileType, DefaultImage.BTUserImage)"
-                                                                             loading="lazy"
-                                                                             class="rounded-circle"
-                                                                             alt="avatar">
-                                                                    </figure>
-                                                                }
-                                                                else
-                                                                {
-                                                                    <figure class="avatar avatar-sm mr-3">
-                                                                        <span class="avatar-title bg-info-bright text-info rounded-circle">
-                                                                            @ticketHistory.User?.FirstName?[0]
-                                                                        </span>
-                                                                    </figure>
-                                                                }
-                                                            </div>
-                                                            <div>
-                                                                <h6 class="d-flex justify-content-between mb-4">
-                                                                    <span>
-                                                                        <a href="#" class="link-1">@ticketHistory.User?.FullName</a>
-                                                                    </span>
-                                                                    <span class="text-muted font-weight-normal">@ticketHistory.Created.ToString("MMM dd, yyyy")</span>
-                                                                </h6>
-                                                                <a href="#">
-                                                                    <div class="mb-3 border p-3 border-radius-1">
-                                                                        @ticketHistory.Description.Replace("<p>", "").Replace("</p>", "")
-                                                                    </div>
-                                                                </a>
-                                                            </div>
-                                                        </div>
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    <h5 class="text-center">No history</h5>
-                                                }
-                                            </div>
-                                        </div>
+                        <div class="card">
+                            <div class="card-body" style="overflow-y:auto;max-height:1000px;">
+                                <div class="card m-1 p-2">
+                                    <div class="card-header">
+                                        <h2>History</h2>
                                     </div>
-
+                                    <div class="timeline pt-3">
+                                        @if (Model.History.Count > 0)
+                                        {
+                                            @foreach (TicketHistory ticketHistory in Model.History.OrderByDescending(h => h.Created))
+                                            {
+                                                <div class="timeline-item">
+                                                    <div>
+                                                        @if (ticketHistory.User?.ImageFileData != null)
+                                                        {
+                                                            <figure class="avatar avatar-sm">
+                                                                <img data-bs-toggle="tooltip"
+                                                                     src="@_FileService.ConvertByteArrayToFile(ticketHistory.User?.ImageFileData, ticketHistory.User?.ImageFileType, DefaultImage.BTUserImage)"
+                                                                     loading="lazy"
+                                                                     class="rounded-circle"
+                                                                     alt="avatar">
+                                                            </figure>
+                                                        }
+                                                        else
+                                                        {
+                                                            <figure class="avatar avatar-sm mr-3">
+                                                                <span class="avatar-title bg-info-bright text-info rounded-circle">
+                                                                    @ticketHistory.User?.FirstName?[0]
+                                                                </span>
+                                                            </figure>
+                                                        }
+                                                    </div>
+                                                    <div>
+                                                        <h6 class="d-flex justify-content-between mb-4">
+                                                            <span>
+                                                                <a href="#" class="link-1">@ticketHistory.User?.FullName</a>
+                                                            </span>
+                                                            <span class="text-muted font-weight-normal">@ticketHistory.Created.ToString("MMM dd, yyyy")</span>
+                                                        </h6>
+                                                        <a href="#">
+                                                            <div class="mb-3 border p-3 border-radius-1">
+                                                                @ticketHistory.Description.Replace("<p>", "").Replace("</p>", "")
+                                                            </div>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <h5 class="text-center">No history</h5>
+                                        }
+                                    </div>
                                 </div>
                             </div>
 
                         </div>
                     </div>
+
                 </div>
             </div>
+
         </div>
     </div>
 </div>
@@ -387,9 +393,80 @@
         </div>
     </div>
 </div>
+<div class="modal fade" id="assignDevModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalCenterTitle">Assign Developer</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i class="ti-close"></i>
+                </button>
+            </div>
+            <form asp-action="AssignDev" asp-controller="Tickets" method="post" class="d-flex flex-column">
+                <div class="modal-body pt-1">
+                    <h5 id="modalTicketTitle">Ticket Title</h5>
+                    <input type="hidden" id="modalTicketId" name="ticketId" value="" />
+                    <select class="form-control" name="developerId" id="developerUsers">
+                        <option value="@null">Unassigned</option>
+                    </select>
+                </div>
+                <div class="modal-footer" style="height:inherit">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        Close
+                    </button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 @section scripts {
     <script>
+        let projectMembers = [
+            {
+                projectId: @Model.ProjectId,
+                members: [
+        @foreach (var member in Model.Project?.Members.Where(m => companyDeveloperIds.Contains(m.Id) == true))
+        {
+            <text>
+                        {
+                            name: '@member.FullName',
+                            id: '@member.Id',
+                        },
+            </text>
+        }
+                                                                                                                                                                                                                    ]
+            },
+
+
+        ];
+
+        function getMembers(projectId) {
+            return projectMembers.find(p => p.projectId == projectId).members;
+        }
+        function populateDevModal(iD, projectId, developerId, ticketTitle) {
+            var ticketId = document.getElementById("modalTicketId");
+            ticketId.value = iD;
+
+            var modalTicketTitle = document.getElementById("modalTicketTitle");
+            modalTicketTitle.innerHTML = ticketTitle;
+
+            members = getMembers(projectId);
+
+            var select = document.getElementById("developerUsers");
+            members.forEach(function (member) {
+                var option = document.createElement("option");
+                option.text = member.name;
+                option.value = member.id;
+
+                if (option.value == developerId) {
+                    option.selected = true;
+                }
+
+                select.add(option);
+            });
+        }
         function populateTicketArchiveModal(archiveId, ticketTitle) {
             var ticketId = document.getElementById("archiveTicket");
             ticketId.value = archiveId

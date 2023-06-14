@@ -28,8 +28,9 @@ namespace CrucibleBugTracker.Controllers
         private readonly IBTRoleService _roleService;
         private readonly IBTFileService _fileService;
         private readonly IBTTicketHistoryService _ticketHistoryService;
+        private readonly IBTNotificationService _notificationService;
 
-        public TicketsController(UserManager<BTUser> userManager, IBTTicketService ticketService, IBTProjectService projectService, IBTRoleService roleService, IBTFileService fileService, IBTTicketHistoryService historyService)
+        public TicketsController(UserManager<BTUser> userManager, IBTTicketService ticketService, IBTProjectService projectService, IBTRoleService roleService, IBTFileService fileService, IBTTicketHistoryService historyService, IBTNotificationService notificationService)
         {
             _userManager = userManager;
             _ticketService = ticketService;
@@ -37,6 +38,7 @@ namespace CrucibleBugTracker.Controllers
             _roleService = roleService;
             _fileService = fileService;
             _ticketHistoryService = historyService;
+            _notificationService = notificationService;
         }
 
         // GET: Tickets
@@ -110,6 +112,9 @@ namespace CrucibleBugTracker.Controllers
                 await _ticketService.AddTicketAsync(ticket);
 
                 await _ticketHistoryService.AddHistoryAsync(null, ticket, userId!);
+
+                await _notificationService.NewTicketNotificationAsync(ticket.Id, userId);
+
                 return RedirectToAction(nameof(Index));
             }
 

@@ -30,7 +30,7 @@ namespace CrucibleBugTracker.Services
                         NewValue = string.Empty,
                         Created = DateTime.UtcNow,
                         UserId = userId,
-                        Description = "New Ticket Created"                    
+                        Description = "New ticket created"                    
                     };
 
                     _context.Add(history);

@@ -140,17 +140,19 @@ namespace CrucibleBugTracker.Services
             try
             {
                 Ticket? ticket = await _context.Tickets.Include(t => t.Project)
-                                                   .Include(t => t.DeveloperUser)
-                                                   .Include(t => t.SubmitterUser)
-                                                   .Include(t => t.TicketPriority)
-                                                   .Include(t => t.TicketStatus)
-                                                   .Include(t => t.TicketType)
-                                                   .Include(t => t.History)
-                                                    .ThenInclude(h => h.User)
-                                                   .Include(t => t.Attachments)
-                                                   .Include(t => t.Comments)
-                                                    .ThenInclude(c => c.User)
-                                                   .FirstOrDefaultAsync(t => t.Project!.CompanyId == companyId && t.Id == ticketId);
+                                                       .Include(t => t.DeveloperUser)
+                                                       .Include(t => t.SubmitterUser)
+                                                       .Include(t => t.TicketPriority)
+                                                       .Include(t => t.TicketStatus)                                                       
+                                                       .Include(t => t.Project)
+                                                           .ThenInclude(p => p!.Members)
+                                                       .Include(t => t.TicketType)
+                                                       .Include(t => t.History)
+                                                        .ThenInclude(h => h.User)
+                                                       .Include(t => t.Attachments)
+                                                       .Include(t => t.Comments)
+                                                        .ThenInclude(c => c.User)
+                                                       .FirstOrDefaultAsync(t => t.Project!.CompanyId == companyId && t.Id == ticketId);
                 return ticket;
             }
             catch (Exception)

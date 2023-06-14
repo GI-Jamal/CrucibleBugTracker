@@ -1,7 +1,10 @@
 ﻿@using CrucibleBugTracker.Enums;
 @using Microsoft.AspNetCore.Identity;
+@using CrucibleBugTracker.Services.Interfaces;
 
 @inject SignInManager<BTUser> SignInManager
+@inject IBTNotificationService _NotificationService
+@inject UserManager<BTUser> UserManager
 
 
 @{
@@ -142,6 +145,29 @@
                                             </div>
                                             <div class="dropdown-scroll">
                                                 <ul class="list-group list-group-flush">
+                                                    <li class="px-4 py-2 text-center small text-muted bg-light">Recent</li>
+                                                    @foreach (Notification notification in await _NotificationService.GetNotificationsByUserIdAsync(UserManager.GetUserId(User)))
+                                                    {
+                                                        <li class="px-4 py-3 list-group-item">
+                                                            <a href="#" class="d-flex align-items-center hide-show-toggler">
+                                                                <div class="flex-shrink-0">
+                                                                    <figure class="avatar mr-3">
+                                                                        <span class="avatar-title bg-info-bright text-info rounded-circle">
+                                                                            <i class="ti-lock"></i>
+                                                                        </span>
+                                                                    </figure>
+                                                                </div>
+                                                                <div class="flex-grow-1">
+                                                                    <p class="mb-0 line-height-20 d-flex justify-content-between">
+                                                                        @notification.Message
+                                                                        <i title="Mark as read" data-toggle="tooltip"
+                                                                           class="hide-show-toggler-item fa fa-circle-o font-size-11"></i>
+                                                                    </p>
+                                                                    <span class="text-muted small">@notification.Created.ToString("MMM dd, yyyy")</span>
+                                                                </div>
+                                                            </a>
+                                                        </li>
+                                                    }
                                                     <li class="px-4 py-2 text-center small text-muted bg-light">Today</li>
                                                     <li class="px-4 py-3 list-group-item">
                                                         <a href="#" class="d-flex align-items-center hide-show-toggler">

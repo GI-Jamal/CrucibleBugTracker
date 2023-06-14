@@ -67,6 +67,10 @@ ol {
     content: "Assign"
 }
 
+#assignUser:hover {
+    color: white;
+}
+
 @media (max-width: 991px) {
     #searchBar {
         position: absolute;
