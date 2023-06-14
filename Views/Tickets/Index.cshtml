@@ -12,7 +12,7 @@
 
 @{
     ViewData["Title"] = ViewBag.Title;
-    int companyId = User.Identity!.GetCompanyId(); ;
+    int companyId = User.Identity.GetCompanyId(); ;
     List<string> companyDeveloperIds = (await _RoleService.GetUsersInRoleAsync(nameof(BTRoles.Developer), companyId)).Select(u => u.Id).ToList();
 }
 
@@ -260,7 +260,14 @@
                                             }
                                             else
                                             {
-                                                <a class="btn btn-outline-primary text-start" id="unassignedButton" data-toggle="modal" data-target="#assignDevModal" onclick="populateDevModal(@ticket.Id, @ticket.ProjectId, '@ticket.DeveloperUserId', '@ticket.Title')"><span>Unassigned</span></a>
+                                                if (User.IsInRole(nameof(BTRoles.Admin)) || (await _ProjectService.GetProjectManagerAsync(ticket.ProjectId, companyId))?.Id == _UserManager.GetUserId(User))
+                                                {
+                                                    <a class="btn btn-outline-primary text-start" id="unassignedButton" data-toggle="modal" data-target="#assignDevModal" onclick="populateDevModal(@ticket.Id, @ticket.ProjectId, '@ticket.DeveloperUserId', '@ticket.Title')"><span>Unassigned</span></a>
+                                                }
+                                                else
+                                                {
+                                                    <span>Unassigned</span>
+                                                }
                                             }
                                         </td>
                                         <td class="text-right">
@@ -408,11 +415,11 @@
                             },
                     </text>
                 }
-                                                                                                                                                            ]
+                                                                                                                                                                                                ]
                 },
             </text>
         }
-                                                                                                ];
+                                                                                                                        ];
 
         function getMembers(projectId) {
             return projectMembers.find(p => p.projectId == projectId).members;

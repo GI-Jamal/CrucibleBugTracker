@@ -422,7 +422,15 @@
                                                 }
                                                 else
                                                 {
-                                                    <a class="btn btn-outline-primary text-start" id="unassignedButton" data-toggle="modal" data-target="#assignDevModal" onclick="populateDevModal(@ticket.Id, @ticket.ProjectId, '@ticket.DeveloperUserId', '@ticket.Title')"><span>Unassigned</span></a>
+                                                    if (User.IsInRole(nameof(BTRoles.Admin)) || (await _ProjectService.GetProjectManagerAsync(ticket.ProjectId, companyId))?.Id == _UserManager.GetUserId(User))
+                                                    {
+                                                        <a class="btn btn-outline-primary text-start" id="unassignedButton" data-toggle="modal" data-target="#assignDevModal" onclick="populateDevModal(@ticket.Id, @ticket.ProjectId, '@ticket.DeveloperUserId', '@ticket.Title')"><span>Unassigned</span></a>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span>Unassigned</span>
+                                                    }
+
                                                 }
                                             </td>
                                             <td class="text-right">
@@ -661,7 +669,7 @@
                         },
             </text>
         }
-                                                                                                                                                                                                                                    ]
+                                                                                                                                                                                                                                            ]
             },
 
 

@@ -43,9 +43,12 @@
             <div class="card-body">
                 <div class="d-flex flex-row align-items-baseline justify-content-between">
                     <h5 class="card-title mb-0">@Model.Name</h5>
-                    <a data-toggle="modal" data-target="#companyImageModal" class="btn btn-primary">
-                        <i data-feather="plus" class="mr-2"></i> Change Image
-                    </a>
+                    @if (isUserAdmin)
+                    {
+                        <a data-toggle="modal" data-target="#companyImageModal" class="btn btn-primary">
+                            <i data-feather="plus" class="mr-2"></i> Change Image
+                        </a>
+                    }
                 </div>
                 <hr />
                 <p>@Html.Raw(Model.Description)</p>
@@ -59,7 +62,7 @@
     <div class="col-md-12">
         <div class="card">
             <div class="card-body">
-                <h6 class="card-title">Projects</h6>
+                <h6 class="card-title">All Projects</h6>
                 <div class="table-responsive">
                     <table id="projectsTable" class="table">
                         <thead>
@@ -132,7 +135,16 @@
                                                 }
                                                 else
                                                 {
-                                                    <a class="btn btn-outline-primary text-start" id="unassignedButton" data-toggle="modal" data-target="#assignPMModal"><span>Unassigned</span></a>
+
+                                                    if (isUserAdmin || (await _ProjectService.GetProjectManagerAsync(project.Id, project.CompanyId))?.Id == _UserManager.GetUserId(User))
+                                                    {
+                                                        <a class="btn btn-outline-primary text-start" id="unassignedButton" data-toggle="modal" data-target="#assignPMModal" onclick="populatePMModal(@project.Id, `@await _ProjectService.GetProjectManagerIdAsync(project.Id, companyId)`, '@project.Name')"><span>Unassigned</span></a>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span>Unassigned</span>
+                                                    }
+
                                                 }
                                             }
                                         </td>
@@ -201,7 +213,7 @@
     <div class="col-md-12">
         <div class="card">
             <div class="card-body">
-                <h6 class="card-title">Most recently updated active tickets</h6>
+                <h6 class="card-title">Recent Tickets</h6>
                 <div class="table-responsive text-white">
                     <table id="ticketsTable" class="table">
                         <thead>
@@ -327,7 +339,14 @@
                                             }
                                             else
                                             {
-                                                <a class="btn btn-outline-primary text-start" id="unassignedButton" data-toggle="modal" data-target="#assignDevModal" onclick="populateDevModal(@ticket.Id, @ticket.ProjectId, '@ticket.DeveloperUserId', '@ticket.Title')"><span>Unassigned</span></a>
+                                                if (User.IsInRole(nameof(BTRoles.Admin)) || (await _ProjectService.GetProjectManagerAsync(ticket.ProjectId, companyId))?.Id == _UserManager.GetUserId(User))
+                                                {
+                                                    <a class="btn btn-outline-primary text-start" id="unassignedButton" data-toggle="modal" data-target="#assignDevModal" onclick="populateDevModal(@ticket.Id, @ticket.ProjectId, '@ticket.DeveloperUserId', '@ticket.Title')"><span>Unassigned</span></a>
+                                                }
+                                                else
+                                                {
+                                                    <span>Unassigned</span>
+                                                }
                                             }
                                         </td>
                                         <td class="text-right">
@@ -665,6 +684,7 @@
                             <input name="companyImage" asp-for="ImageFormFile" class="form-control" accept=".png, .jpeg, .jpg, .gif, .svg"
                                    onchange="changeImage(this)" />
                             <span asp-validation-for="ImageFormFile" class="text-danger"></span>
+                            <button class="btn btn-primary mt-2" type="submit" name="removeImage" value="true">Remove Profile Picture</button>
                         </div>
                     </div>
                 </div>
@@ -819,7 +839,7 @@
     </script>
     <script>
         $(document).ready(function () {
-            $('#exampleModalCenter').on('hidden.bs.modal', function () {
+            $('#assignDevModal').on('hidden.bs.modal', function () {
                 $('#developerUsers').empty();
                 $('#developerUsers').append('<option value="@null">Unassigned</option>');
             })

@@ -165,6 +165,28 @@ namespace CrucibleBugTracker.Services
                 throw;
             }
         }
+        public async Task<List<Project>> GetAllUserProjectsAsNoTrackingAsync(string userId)
+        {
+            try
+            {
+                BTUser? user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+                if (user is not null)
+                {
+                    if (await _roleService.IsUserInRole(user, nameof(BTRoles.Admin)))
+                    {
+                        return await GetAllProjectsByCompanyIdAsync(user.CompanyId);
+                    }
+                }
+
+                return await _context.Projects.Include(p => p.Members).Include(p => p.Tickets).Include(p => p.ProjectPriority).Include(p => p.Company).Where(p => p.Members.Any(m => m.Id == userId)).ToListAsync();
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
 
         public async Task<List<Project>> GetArchivedProjectsByCompanyIdAsync(int companyId)
         {

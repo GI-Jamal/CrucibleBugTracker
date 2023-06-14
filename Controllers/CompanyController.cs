@@ -241,7 +241,7 @@ namespace CrucibleBugTracker.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ChangeCompanyImage(IFormFile companyImage)
+        public async Task<IActionResult> ChangeCompanyImage(bool removeImage, IFormFile? companyImage = null)
         {
             if (companyImage != null)
             {
@@ -250,6 +250,17 @@ namespace CrucibleBugTracker.Controllers
 
                 company!.ImageFileData = await _fileService.ConvertFileToByteArrayAsync(companyImage);
                 company!.ImageFileType = companyImage.ContentType;
+
+                await _companyService.UpdateCompanyAsync(company, companyId);
+            }
+
+            if (removeImage)
+            {
+                int companyId = User.Identity!.GetCompanyId();
+                Company? company = await _companyService.GetCompanyInfoAsync(companyId);
+
+                company!.ImageFileData = null;
+                company!.ImageFileType = null;
 
                 await _companyService.UpdateCompanyAsync(company, companyId);
             }

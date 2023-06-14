@@ -196,7 +196,14 @@
                                                 }
                                                 else
                                                 {
-                                                    <a class="btn btn-outline-primary text-start" id="unassignedButton" data-toggle="modal" data-target="#assignPMModal" onclick="populatePMModal(@project.Id, `@await _ProjectService.GetProjectManagerIdAsync(project.Id, companyId)`, '@project.Name')"><span>Unassigned</span></a>
+                                                    if (isUserAdmin || (await _ProjectService.GetProjectManagerAsync(project.Id, project.CompanyId))?.Id == _UserManager.GetUserId(User))
+                                                    {
+                                                        <a class="btn btn-outline-primary text-start" id="unassignedButton" data-toggle="modal" data-target="#assignPMModal" onclick="populatePMModal(@project.Id, `@await _ProjectService.GetProjectManagerIdAsync(project.Id, companyId)`, '@project.Name')"><span>Unassigned</span></a>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span>Unassigned</span>
+                                                    }
                                                 }
                                             }
                                         </td>

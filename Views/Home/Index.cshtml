@@ -1,31 +1,1032 @@
-﻿@{
+﻿@model CrucibleBugTracker.Models.ViewModels.DashboardViewModel
+
+@using CrucibleBugTracker.Extensions;
+@using CrucibleBugTracker.Services.Interfaces
+@using CrucibleBugTracker.Enums
+@using System.Text.Json;
+@using Microsoft.AspNetCore.Identity;
+
+@inject IBTRoleService _RoleService
+@inject IBTFileService _FileService
+@inject IBTProjectService _ProjectService
+@inject UserManager<BTUser> _UserManager
+@inject SignInManager<BTUser> SignInManager
+
+@{
     ViewData["Title"] = "Home Page";
+    bool isUserAdmin = User.IsInRole(nameof(BTRoles.Admin));
+    List<string> companyDeveloperIds = ViewBag.CompanyDeveloperIds;
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-    <button class="btn btn-primary" onclick="testFunction()">Click Me</button>
-    <button class="btn btn-primary" onclick="testFunction2()">Click Me 2</button>
+@if (SignInManager.IsSignedIn(User))
+{
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                </div>
+                <div class="card-body">
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="text-center">
+                        <h6 class="card-title mb-2 text-center">Ticket Assignments/Project</h6>
+                    </div>
+                    <div id="chart"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="row">
+                <div class="col-12 col-lg-6 mb-3 mb-lg-0">
+                    <div class="card h-100 assignProjectUsers">
+                        <div class="card-header">
+                            Admins
+                        </div>
+                        <div class="card-body assignProjectUsersTable">
+                            <ul>
+                                @{
+                                    int adminMemberCount = 0;
+                                    foreach (BTUser member in Model.Members)
+                                    {
+
+                                        if (await _RoleService.IsUserInRole(member, nameof(BTRoles.Admin)))
+                                        {
+                                            <li>
+                                                @if (member.ImageFileData != null)
+                                                {
+                                                    <figure class="avatar avatar-sm">
+                                                        <img src="@_FileService.ConvertByteArrayToFile(member.ImageFileData, member.ImageFileType, DefaultImage.BTUserImage)"
+                                                             class="rounded-circle"
+                                                             alt="avatar">
+                                                    </figure>
+                                                    @member.FullName
+                                                }
+                                                else
+                                                {
+                                                    <figure class="avatar avatar-sm mr-3">
+                                                        <span class="avatar-title bg-info-bright text-info rounded-circle">
+                                                            @member.FirstName?[0]
+                                                        </span>
+                                                    </figure>
+                                                    @member.FullName
+                                                }
+                                            </li>
+                                            <hr />
+
+                                            continue;
+                                        }
+                                        adminMemberCount++;
+
+                                        if (adminMemberCount == Model.Members.Count)
+                                        {
+                                            <h5 class="text-center">No Admins</h5>
+                                        }
+                                    }
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-6">
+                    <div class="card h-100 assignProjectUsers">
+                        <div class="card-header">
+                            Submitters
+                        </div>
+                        <div class="card-body assignProjectUsersTable">
+                            <ul>
+                                @{
+                                    int pmMemberCount = 0;
+                                    foreach (BTUser member in Model.Members)
+                                    {
+                                        if (await _RoleService.IsUserInRole(member, nameof(BTRoles.ProjectManager)))
+                                        {
+                                            <li>
+                                                @if (member.ImageFileData != null)
+                                                {
+                                                    <figure class="avatar avatra-sm">
+                                                        <img src="@_FileService.ConvertByteArrayToFile(member.ImageFileData, member.ImageFileType, DefaultImage.BTUserImage)"
+                                                             class="rounded-circle"
+                                                             alt="avatar">
+                                                    </figure>
+                                                    @member.FullName
+                                                }
+                                                else
+                                                {
+                                                    <figure class="avatar avatar-sm mr-3">
+                                                        <span class="avatar-title bg-info-bright text-info rounded-circle">
+                                                            @member.FirstName?[0]
+                                                        </span>
+                                                    </figure>
+                                                    @member.FullName
+                                                }
+                                            </li>
+                                            <hr />
+
+                                            continue;
+                                        }
+                                        pmMemberCount++;
+
+                                        if (pmMemberCount == Model.Members.Count)
+                                        {
+                                            <h5 class="text-center">No Project Managers</h5>
+                                        }
+                                    }
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12" style="margin-top:1.9rem;">
+            <div class="row">
+                <div class="col-12 col-lg-6 mb-3 mb-lg-0">
+                    <div class="card h-100 assignProjectUsers">
+                        <div class="card-header">
+                            Project Managers
+                        </div>
+                        <div class="card-body assignProjectUsersTable">
+                            <ul>
+                                @{
+                                    int devMemberCount = 0;
+                                    foreach (BTUser member in Model.Members)
+                                    {
+
+                                        if (await _RoleService.IsUserInRole(member, nameof(BTRoles.Developer)))
+                                        {
+                                            <li>
+                                                @if (member.ImageFileData != null)
+                                                {
+                                                    <figure class="avatar avatar-sm">
+                                                        <img src="@_FileService.ConvertByteArrayToFile(member.ImageFileData, member.ImageFileType, DefaultImage.BTUserImage)"
+                                                             class="rounded-circle"
+                                                             alt="avatar">
+                                                    </figure>
+                                                    @member.FullName
+                                                }
+                                                else
+                                                {
+                                                    <figure class="avatar avatar-sm mr-3">
+                                                        <span class="avatar-title bg-info-bright text-info rounded-circle">
+                                                            @member.FirstName?[0]
+                                                        </span>
+                                                    </figure>
+                                                    @member.FullName
+                                                }
+                                            </li>
+                                            <hr />
+
+                                            continue;
+                                        }
+                                        devMemberCount++;
+
+                                        if (devMemberCount == Model.Members.Count)
+                                        {
+                                            <h5 class="text-center">No Developers</h5>
+                                        }
+                                    }
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-6">
+                    <div class="card h-100 assignProjectUsers">
+                        <div class="card-header">
+                            Submitters
+                        </div>
+                        <div class="card-body assignProjectUsersTable">
+                            <ul>
+                                @{
+                                    int subMemberCount = 0;
+                                    foreach (BTUser member in Model.Members)
+                                    {
+                                        if (await _RoleService.IsUserInRole(member, nameof(BTRoles.Submitter)))
+                                        {
+                                            <li>
+                                                @if (member.ImageFileData != null)
+                                                {
+                                                    <figure class="avatar avatra-sm">
+                                                        <img src="@_FileService.ConvertByteArrayToFile(member.ImageFileData, member.ImageFileType, DefaultImage.BTUserImage)"
+                                                             class="rounded-circle"
+                                                             alt="avatar">
+                                                    </figure>
+                                                    @member.FullName
+                                                }
+                                                else
+                                                {
+                                                    <figure class="avatar avatar-sm mr-3">
+                                                        <span class="avatar-title bg-info-bright text-info rounded-circle">
+                                                            @member.FirstName?[0]
+                                                        </span>
+                                                    </figure>
+                                                    @member.FullName
+                                                }
+                                            </li>
+                                            <hr />
+
+                                            continue;
+                                        }
+                                        subMemberCount++;
+
+                                        if (subMemberCount == Model.Members.Count)
+                                        {
+                                            <h5 class="text-center">No Submitters</h5>
+                                        }
+                                    }
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <ul class="nav nav-tabs justify-content-end mb-3" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab"
+               aria-controls="home" aria-selected="true">Projects</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab"
+               aria-controls="profile" aria-selected="false">Tickets</a>
+        </li>
+        @if (isUserAdmin)
+        {
+            <li class="nav-item">
+                <a class="nav-link" id="contact-tab" data-toggle="tab" href="#contact" role="tab"
+                   aria-controls="contact" aria-selected="false">Invites</a>
+            </li>
+        }
+    </ul>
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+            <div class="row" style="margin-top:1.25rem;">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-title">My Recent Projects</h6>
+                            <div class="table-responsive">
+                                <table id="projectsTable" class="table">
+                                    <thead>
+                                        <tr class="text-center">
+                                            <th class="text-start">Project Name</th>
+                                            <th>Start Date</th>
+                                            <th>End Date</th>
+                                            <th>Ticket Count</th>
+                                            <th>Unassigned Ticket Count</th>
+                                            <th>Team Size</th>
+                                            <th>Project Manager</th>
+                                            <th>Status</th>
+                                            <th class="text-right">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{
+                                            foreach (Project project in Model.Projects.OrderBy(p => p.Created).Take(5))
+                                            {
+                                                <tr>
+                                                    <td>
+                                                        <div class="d-flex flex-row">
+                                                            <a class="image-popup" id="lightBoxImg" href="@_FileService.ConvertByteArrayToFile(project.ImageFileData, project.ImageFileType, DefaultImage.ProjectImage)">
+                                                                <img width="40" src="@_FileService.ConvertByteArrayToFile(project.ImageFileData, project.ImageFileType, DefaultImage.ProjectImage)"
+                                                                     class="rounded mr-3" alt="Project Image" loading="lazy">
+                                                            </a>
+                                                            <a asp-controller="Projects" asp-action="Details" asp-route-id="@project.Id" class="d-flex align-items-center">
+                                                                <span>@project.Name</span>
+                                                            </a>
+                                                        </div>
+                                                    </td>
+                                                    <td>@project.StartDate.ToString("MMM dd, yyyy")</td>
+                                                    <td>@project.EndDate.ToString("MMM dd, yyyy")</td>
+                                                    <td class="text-center">@project.Tickets.Count</td>
+                                                    <td class="text-center">@project.Tickets.Count(t => t.DeveloperUserId == null)</td>
+                                                    <td class="text-center">@project.Members.Count</td>
+                                                    <td class="text-center">
+                                                        @{
+                                                            BTUser? projectManager = await _ProjectService.GetProjectManagerAsync(project.Id, project.CompanyId);
+
+                                                            if (projectManager != null)
+                                                            {
+
+                                                                @if (projectManager.ImageFileData != null)
+                                                                {
+                                                                    <figure class="avatar">
+                                                                        <img data-bs-toggle="tooltip"
+                                                                             data-bs-placement="top"
+                                                                             title="@projectManager.FullName"
+                                                                             data-bs-title="@projectManager.FullName"
+                                                                             src="@_FileService.ConvertByteArrayToFile(projectManager.ImageFileData, projectManager.ImageFileType, DefaultImage.BTUserImage)"
+                                                                             loading="lazy"
+                                                                             class="rounded-circle"
+                                                                             alt="avatar">
+                                                                    </figure>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <figure class="avatar mr-3">
+                                                                        <span class="avatar-title bg-info-bright text-info rounded-circle"
+                                                                              data-bs-toggle="tooltip"
+                                                                              data-bs-placement="top"
+                                                                              title="@projectManager.FullName"
+                                                                              data-bs-title="@projectManager.FullName">
+                                                                            @projectManager.FirstName?[0]
+                                                                        </span>
+                                                                    </figure>
+                                                                }
+
+                                                            }
+                                                            else
+                                                            {
+
+                                                                if (isUserAdmin || (await _ProjectService.GetProjectManagerAsync(project.Id, project.CompanyId))?.Id == _UserManager.GetUserId(User))
+                                                                {
+                                                                    <a class="btn btn-outline-primary text-start" id="unassignedButton" data-toggle="modal" data-target="#assignPMModal" onclick="populatePMModal(@project.Id, `@await _ProjectService.GetProjectManagerIdAsync(project.Id, User.Identity!.GetCompanyId())`, '@project.Name')"><span>Unassigned</span></a>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span>Unassigned</span>
+                                                                }
+
+                                                            }
+                                                        }
+                                                    </td>
+                                                    <td class="text-center">
+                                                        @{
+                                                            if (project.Archived)
+                                                            {
+                                                                <span class="badge bg-info">Archived</span>
+                                                            }
+                                                            else if (project.StartDate > DateTime.UtcNow)
+                                                            {
+                                                                <span class="badge bg-primary">Not Started</span>
+                                                            }
+                                                            else if (project.EndDate < DateTime.UtcNow)
+                                                            {
+                                                                <span class="badge bg-danger">Past Due</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="badge bg-secondary">In Progress</span>
+                                                            }
+                                                        }
+                                                    </td>
+                                                    <td class="text-right">
+                                                        <div class="dropdown">
+                                                            <a href="#" data-toggle="dropdown"
+                                                               class="btn btn-floating"
+                                                               aria-haspopup="true" aria-expanded="false">
+                                                                <i class="ti-more-alt"></i>
+                                                            </a>
+                                                            <div class="dropdown-menu dropdown-menu-right">
+                                                                <a asp-controller="Projects" asp-action="Details" asp-route-id="@project.Id" class="dropdown-item">View Details</a>
+                                                                @{
+                                                                    if (isUserAdmin || (await _ProjectService.GetProjectManagerAsync(project.Id, project.CompanyId))?.Id == _UserManager.GetUserId(User))
+                                                                    {
+                                                                        if (isUserAdmin)
+                                                                        {
+                                                                            <a role="button" data-toggle="modal" data-target="#assignPMModal" class="dropdown-item" onclick="populatePMModal(@project.Id, `@await _ProjectService.GetProjectManagerIdAsync(project.Id, User.Identity!.GetCompanyId())`, '@project.Name')">Assign PM</a>
+                                                                        }
+                                                                        <a asp-controller="Projects" asp-action="Edit" asp-route-id="@project.Id" class="dropdown-item">Edit</a>
+                                                                        @if (project.Archived)
+                                                                        {
+                                                                            <a role="button" data-toggle="modal" data-target="#restoreProjectModal" class="dropdown-item text-success" onclick="populateProjectRestoreModal(@project.Id, @project.Tickets.Count(t => t.ArchivedByProject == true), '@project.Name')">Restore</a>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <a role="button" data-toggle="modal" data-target="#archiveProjectModal" class="dropdown-item text-danger" onclick="populateProjectArchiveModal(@project.Id, @project.Tickets.Count(t => t.ArchivedByProject == false && t.Archived == false), '@project.Name')">Archive</a>
+                                                                        }
+                                                                    }
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-title">My Recent Tickets</h6>
+                            <div class="table-responsive text-white">
+                                <table id="ticketsTable" class="table">
+                                    <thead>
+                                        <tr class="text-center">
+                                            <th class="text-start">Ticket Title</th>
+                                            <th class="text-start">Project</th>
+                                            <th>Last Updated Date</th>
+                                            <th>Submitter</th>
+                                            <th>Type</th>
+                                            <th>Status</th>
+                                            <th>Developer</th>
+                                            <th class="text-right">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{
+                                            foreach (Ticket ticket in Model.Tickets.OrderByDescending(t => t.UpdatedDate).ThenBy(t => t.Created).Take(5))
+                                            {
+                                                <tr class="text-center">
+                                                    <td class="text-start">
+                                                        <a asp-controller="Tickets" asp-action="Details" asp-route-id="@ticket.Id">@ticket.Title</a>
+                                                    </td>
+                                                    <td class="text-start"><a asp-controller="Projects" asp-action="Details" asp-route-id="@ticket.ProjectId">@ticket.Project?.Name</a></td>
+                                                    @if (ticket.UpdatedDate == null)
+                                                    {
+                                                        <td>@ticket.Created.ToString("MMM dd, yyyy")</td>
+                                                    }
+                                                    else
+                                                    {
+                                                        <td>@ticket.UpdatedDate.Value.ToString("MMM dd, yyyy")</td>
+                                                    }
+                                                    <td>
+                                                        @if (ticket.SubmitterUser?.ImageFileData != null)
+                                                        {
+                                                            <figure class="avatar">
+                                                                <img data-bs-toggle="tooltip"
+                                                                     data-bs-placement="top"
+                                                                     title="@ticket.SubmitterUser?.FullName"
+                                                                     data-bs-title="@ticket.SubmitterUser?.FullName" src="@_FileService.ConvertByteArrayToFile(ticket.SubmitterUser?.ImageFileData, ticket.SubmitterUser?.ImageFileType, DefaultImage.BTUserImage)" loading="lazy" class="rounded-circle" alt="avatar">
+                                                            </figure>
+                                                        }
+                                                        else
+                                                        {
+                                                            <figure class="avatar">
+                                                                <span class="avatar-title bg-info-bright text-info rounded-circle"
+                                                                      data-bs-toggle="tooltip"
+                                                                      data-bs-placement="top"
+                                                                      title="@ticket.SubmitterUser?.FullName"
+                                                                      data-bs-title="@ticket.SubmitterUser?.FullName">
+                                                                    @ticket.SubmitterUser?.FirstName?[0]
+                                                                </span>
+                                                            </figure>
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        @switch (ticket.TicketType?.Name)
+                                                        {
+                                                            case nameof(BTTicketTypes.NewDevelopment):
+                                                                <span class="badge bg-facebook"><i class="ti-bell"></i>&nbsp;&nbsp;New Development</span>
+                                                                break;
+                                                            case nameof(BTTicketTypes.GeneralTask):
+                                                                <span class="badge bg-dribbble"><i class="fa fa-user"></i>&nbsp;&nbsp;General Task</span>
+                                                                break;
+                                                            case nameof(BTTicketTypes.WorkTask):
+                                                                <span class="badge bg-linkedin"><i class="fa fa-users"></i>&nbsp;&nbsp;Work Task</span>
+                                                                break;
+                                                            case nameof(BTTicketTypes.Enhancement):
+                                                                <span class="badge bg-warning"><i class="fa fa-plus"></i>&nbsp;&nbsp;Enhancement</span>
+                                                                break;
+                                                            case nameof(BTTicketTypes.ChangeRequest):
+                                                                <span class="badge bg-google"><i class="fa fa-info-circle"></i>&nbsp;&nbsp;Change Request</span>
+                                                                break;
+                                                            case nameof(BTTicketTypes.Defect):
+                                                                <span class="badge bg-youtube"><i class="fa fa-warning"></i>&nbsp;&nbsp;Defect</span>
+                                                                break;
+                                                            default:
+                                                                break;
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        @switch (ticket.TicketStatus?.Name)
+                                                        {
+                                                            case nameof(BTTicketStatuses.New):
+                                                                <span class="badge bg-primary">@ticket.TicketStatus.Name</span>
+                                                                break;
+                                                            case nameof(BTTicketStatuses.Development):
+                                                                <span class="badge bg-secondary">@ticket.TicketStatus.Name</span>
+                                                                break;
+                                                            case nameof(BTTicketStatuses.Testing):
+                                                                <span class="badge bg-info">@ticket.TicketStatus.Name</span>
+                                                                break; ;
+                                                            case nameof(BTTicketStatuses.Resolved):
+                                                                <span class="badge bg-sucess">@ticket.TicketStatus.Name</span>
+                                                                break;
+                                                            default:
+                                                                break;
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        @if (ticket.DeveloperUserId != null)
+                                                        {
+                                                            @if (ticket.DeveloperUser?.ImageFileData != null)
+                                                            {
+                                                                <figure class="avatar">
+                                                                    <img data-bs-toggle="tooltip"
+                                                                         data-bs-placement="top"
+                                                                         title="@ticket.DeveloperUser?.FullName"
+                                                                         data-bs-title="@ticket.DeveloperUser?.FullName" src="@_FileService.ConvertByteArrayToFile(ticket.DeveloperUser?.ImageFileData, ticket.DeveloperUser?.ImageFileType, DefaultImage.BTUserImage)" loading="lazy" class="rounded-circle" alt="avatar">
+                                                                </figure>
+                                                            }
+                                                            else
+                                                            {
+                                                                <figure class="avatar">
+                                                                    <span class="avatar-title bg-info-bright text-info rounded-circle"
+                                                                          data-bs-toggle="tooltip"
+                                                                          data-bs-placement="top"
+                                                                          title="@ticket.DeveloperUser?.FullName"
+                                                                          data-bs-title="@ticket.DeveloperUser?.FullName">
+                                                                        @ticket.DeveloperUser?.FirstName?[0]
+                                                                    </span>
+                                                                </figure>
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            if (User.IsInRole(nameof(BTRoles.Admin)) || (await _ProjectService.GetProjectManagerAsync(ticket.ProjectId, User.Identity!.GetCompanyId()))?.Id == _UserManager.GetUserId(User))
+                                                            {
+                                                                <a class="btn btn-outline-primary text-start" id="unassignedButton" data-toggle="modal" data-target="#assignDevModal" onclick="populateDevModal(@ticket.Id, @ticket.ProjectId, '@ticket.DeveloperUserId', '@ticket.Title')"><span>Unassigned</span></a>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span>Unassigned</span>
+                                                            }
+                                                        }
+                                                    </td>
+                                                    <td class="text-right">
+                                                        <div class="dropdown">
+                                                            <a href="#" data-toggle="dropdown"
+                                                               class="btn btn-floating"
+                                                               aria-haspopup="true" aria-expanded="false">
+                                                                <i class="ti-more-alt"></i>
+                                                            </a>
+                                                            <div class="dropdown-menu dropdown-menu-right">
+                                                                <a asp-controller="Tickets" asp-action="Details" asp-route-id="@ticket.Id" class="dropdown-item">View Detail</a>
+                                                                @{
+                                                                    if (User.IsInRole(nameof(BTRoles.Admin)) || (await _ProjectService.GetProjectManagerAsync(ticket.ProjectId, User.Identity!.GetCompanyId()))?.Id == _UserManager.GetUserId(User))
+                                                                    {
+                                                                        <a role="button" data-toggle="modal" data-target="#assignDevModal" class="dropdown-item" onclick="populateDevModal(@ticket.Id, @ticket.ProjectId, '@ticket.DeveloperUserId', '@ticket.Title')">Assign Dev</a>
+                                                                        <a asp-controller="Tickets" asp-action="Edit" asp-route-id="@ticket.Id" class="dropdown-item">Edit</a>
+
+                                                                        @if (ticket.Archived)
+                                                                        {
+                                                                            <a role="button" data-toggle="modal" data-target="#restoreTicketModal" class="dropdown-item text-success" onclick="populateTicketRestoreModal(@ticket.Id, '@ticket.Title')">Restore</a>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <a role="button" data-toggle="modal" data-target="#archiveTicketModal" class="dropdown-item text-danger" onclick="populateTicketArchiveModal(@ticket.Id, '@ticket.Title')">Archive</a>
+                                                                        }
+                                                                    }
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @if (isUserAdmin)
+        {
+            <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-title">Pending company invites</h6>
+                                <div class="table-responsive">
+                                    <table id="invitesTable" class="table">
+                                        <thead>
+                                            <tr class="text-center">
+                                                <th class="text-start">Invitee Name</th>
+                                                <th>Invitee Email</th>
+                                                <th>Invitee Date</th>
+                                                <th>Validity</th>
+                                                <th class="text-right">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @{
+                                                foreach (Invite invite in Model.Company?.Invites)
+                                                {
+                                                    <tr class="text-center">
+                                                        <td>@invite.InviteeFirstName @invite.InviteeLastName</td>
+                                                        <td>@invite.InviteeEmail</td>
+                                                        <td>@invite.InviteDate.ToString("MMM dd, yyyy")</td>
+                                                        <td>
+                                                            @if (invite.IsValid)
+                                                            {
+                                                                <span>
+                                                                    Valid for
+                                                                    <span>
+                                                                        @((int)((invite.InviteDate.AddDays(7) - DateTime.Now).TotalDays))
+                                                                    </span>
+                                                                    more day(s)
+                                                                </span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span>Invalid</span>
+                                                            }
+                                                        </td>
+                                                        <td></td>
+                                                    </tr>
+                                                }
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+}
+else
+{
+
+}
+
+<div class="modal fade" id="assignPMModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalCenterTitle">Assign Project Manager</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i class="ti-close"></i>
+                </button>
+            </div>
+            <form asp-controller="Projects" asp-action="AssignPM" method="post" class="d-flex flex-column">
+                <div class="modal-body pt-1">
+                    <input type="hidden" id="modalProjectId" name="projectId" value="" />
+                    <h5 id="modalProjectName"></h5>
+                    <select class="form-control" asp-items="@ViewBag.ProjectManagers" name="projectManagerId" id="projectManagers">
+                        <option value="@null">Unassigned</option>
+                    </select>
+                </div>
+                <div class="modal-footer" style="height:inherit">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        Close
+                    </button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="restoreProjectModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalCenterTitle">Restore Project</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i class="ti-close"></i>
+                </button>
+            </div>
+            <form asp-action="Restore" asp-controller="Projects" asp-route-id="" method="post" class="d-flex flex-column">
+                <div class="modal-body pt-0">
+                    <input type="hidden" id="restoreProject" name="restoreProjectId" value="" />
+                    <h5 id="restoreProjectName">Project Name</h5>
+                    <span>Are you sure you want to restore this project? This will also restore <span id="ticketsToRestore"></span> ticket(s) that were archived by this project.</span>
+                </div>
+                <div class="modal-footer" style="height:inherit">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        No/Close
+                    </button>
+                    <button type="submit" class="btn btn-primary">Yes/Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="archiveProjectModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalCenterTitle">Archive Project</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i class="ti-close"></i>
+                </button>
+            </div>
+            <form asp-action="Archive" asp-controller="Projects" method="post" class="d-flex flex-column">
+                <div class="modal-body pt-0">
+                    <input type="hidden" id="archiveProject" name="archiveProjectId" value="" />
+                    <h5 id="archiveProjectName">Project Name</h5>
+                    <span>Are you sure you want to archive this Project? This will also archive <span id="ticketsToArchive"></span> ticket(s) not already archived in this project.</span>
+                </div>
+                <div class="modal-footer" style="height:inherit">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        No/Close
+                    </button>
+                    <button type="submit" class="btn btn-primary">Yes/Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="assignDevModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalCenterTitle">Assign Developer</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i class="ti-close"></i>
+                </button>
+            </div>
+            <form asp-action="AssignDev" asp-controller="Tickets" method="post" class="d-flex flex-column">
+                <div class="modal-body pt-1">
+                    <h5 id="modalTicketTitle">Ticket Title</h5>
+                    <input type="hidden" id="modalTicketId" name="ticketId" value="" />
+                    <select class="form-control" name="developerId" id="developerUsers">
+                        <option value="@null">Unassigned</option>
+                    </select>
+                </div>
+                <div class="modal-footer" style="height:inherit">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        Close
+                    </button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="restoreTicketModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalCenterTitle">Restore Ticket</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i class="ti-close"></i>
+                </button>
+            </div>
+            <form asp-action="Restore" asp-controller="Tickets" asp-route-id="" method="post" class="d-flex flex-column">
+                <div class="modal-body pt-0">
+                    <h5 id="restoreTicketTitle">Ticket Title</h5>
+                    <input type="hidden" id="restoreTicket" name="restoreTicketId" value="" />
+                    <span>Are you sure you want to restore this ticket?</span>
+                </div>
+                <div class="modal-footer" style="height:inherit">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        No/Close
+                    </button>
+                    <button type="submit" class="btn btn-primary">Yes/Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="archiveTicketModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalCenterTitle">Archive Ticket</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i class="ti-close"></i>
+                </button>
+            </div>
+            <form asp-action="Archive" asp-controller="Tickets" method="post" class="d-flex flex-column">
+                <div class="modal-body pt-0">
+                    <h5 id="archiveTicketTitle">Ticket Title</h5>
+                    <input type="hidden" id="archiveTicket" name="archiveTicketId" value="" />
+                    <span>Are you sure you want to archive this ticket?</span>
+                </div>
+                <div class="modal-footer" style="height:inherit">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        No/Close
+                    </button>
+                    <button type="submit" class="btn btn-primary">Yes/Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
-    <script>        
-        function testFunction() {
-            swal("Good job!", "You clicked the button!", "success");
+    <script>
+        let projectNames = '@ViewBag.ProjectNames';
+        projectNames = projectNames.replaceAll('&quot;', '"')
+
+        var options = {
+            series: [{
+                name: 'Tickets',
+                data: JSON.parse('@ViewBag.ProjectTicketsCount')
+            }, {
+                name: 'Unassigned Tickets',
+                data: JSON.parse('@ViewBag.UnassignedProjectTicketsCount')
+            }, {
+                name: 'Developers on Project',
+                data: JSON.parse('@ViewBag.ProjectDevelopers')
+            }],
+            chart: {
+                type: 'bar',
+                height: 350
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    columnWidth: '55%',
+                    endingShape: 'rounded'
+                },
+            },
+            dataLabels: {
+                enabled: false
+            },
+            stroke: {
+                show: true,
+                width: 2,
+                colors: ['transparent']
+            },
+            xaxis: {
+                categories: JSON.parse(projectNames)
+            },
+            yaxis: {
+                title: {
+                    text: 'Count'
+                }
+            },
+            fill: {
+                opacity: 1
+            },
+            tooltip: {
+                y: {
+                    formatter: function (val) {
+                        return val
+                    }
+                }
+            }
+        };
+
+        var chart = new ApexCharts(document.querySelector("#chart"), options);
+        chart.render();
+    </script>
+    <script>
+        $(document).ready(function () {
+            $('#ticketsTable').DataTable({
+                "columnDefs": [
+                    { "type": "date", "targets": [2] },
+                    { "orderable": false, "targets": [-1] }
+                ]
+            });
+
+            $('#projectsTable').DataTable({
+                "columnDefs": [
+                    { "type": "date", "targets": [1, 2] },
+                    { "orderable": false, "targets": [-1] }
+                ]
+            });
+
+            $('#invitesTable').DataTable({
+                "columnDefs": [
+                    { "type": "date", "targets": [2] },
+                    { "orderable": false, "targets": [-1] }
+                ]
+            });
+
+            $('#usersTable').DataTable();
+        });
+    </script>
+
+    <script>
+        function populatePMModal(projectId, projectManagerId, projectName) {
+            var project = document.getElementById("modalProjectId");
+            project.value = projectId;
+
+            var modalProjectName = document.getElementById("modalProjectName");
+            modalProjectName.innerHTML = projectName;
+
+            var projectManagers = document.getElementById("projectManagers");
+
+            for (var i = 0; i < projectManagers.options.length; i++) {
+                if (projectManagers.options[i].value == projectManagerId) {
+                    projectManagers.options[i].selected = true;
+                    break;
+                }
+            }
         }
 
-        function testFunction2() {
-            toastr.options = {
-                timeOut: 3000,
-                progressBar: true,
-                showMethod: "slideDown",
-                hideMethod: "slideUp",
-                showDuration: 200,
-                hideDuration: 200
-            };
+        function populateProjectArchiveModal(archiveId, numberOfTickets, projectName) {
+            var ticketId = document.getElementById("archiveProject");
+            ticketId.value = archiveId
 
-            toastr.success('Successfully completed');
+            var ticketsToArchive = document.getElementById("ticketsToArchive");
+            ticketsToArchive.innerHTML = numberOfTickets;
+
+            var archiveProjectName = document.getElementById("archiveProjectName");
+            archiveProjectName.innerHTML = projectName;
         }
+
+        function populateProjectRestoreModal(restoreId, numberOfTickets, projectName) {
+            var ticketId = document.getElementById("restoreProject");
+            ticketId.value = restoreId;
+
+            var ticketsToRestore = document.getElementById("ticketsToRestore");
+            ticketsToRestore.innerHTML = numberOfTickets;
+
+            var restoreProjectName = document.getElementById("restoreProjectName");
+            restoreProjectName.innerHTML = projectName;
+        }
+    </script>
+    <script>
+        @if (Model.Projects != null)
+        {
+            <text>
+                let projectMembers = [
+                @foreach (var project in Model.Projects)
+                {
+                    <text>
+                        {
+                            projectId: @project?.Id,
+                            members: [
+                        @foreach (var member in project!.Members.Where(m => companyDeveloperIds.Contains(m.Id) == true))
+                        {
+                            <text>
+                                    {
+                                        name: '@member.FullName',
+                                        id: '@member.Id',
+                                    },
+                            </text>
+                        }]
+                        },
+                    </text>
+                }];
+            </text>
+        }
+
+
+
+            function getMembers(projectId) {
+                return projectMembers.find(p => p.projectId == projectId).members;
+            }
+
+        function populateDevModal(iD, projectId, developerId, ticketTitle) {
+            var ticketId = document.getElementById("modalTicketId");
+            ticketId.value = iD;
+
+            var modalTicketTitle = document.getElementById("modalTicketTitle");
+            modalTicketTitle.innerHTML = ticketTitle;
+
+            members = getMembers(projectId);
+
+            var select = document.getElementById("developerUsers");
+            members.forEach(function (member) {
+                var option = document.createElement("option");
+                option.text = member.name;
+                option.value = member.id;
+
+                if (option.value == developerId) {
+                    option.selected = true;
+                }
+
+                select.add(option);
+            });
+        }
+
+        function populateTicketArchiveModal(archiveId, ticketTitle) {
+            var ticketId = document.getElementById("archiveTicket");
+            ticketId.value = archiveId
+            var archiveTicketTitle = document.getElementById("archiveTicketTitle");
+            archiveTicketTitle.innerHTML = ticketTitle;
+        }
+
+        function populateTicketRestoreModal(restoreId, ticketTitle) {
+            var ticketId = document.getElementById("restoreTicket");
+            ticketId.value = restoreId;
+            var restoreTicketTitle = document.getElementById("restoreTicketTitle");
+            restoreTicketTitle.innerHTML = ticketTitle;
+        }
+
+        function changeImage(image) {
+            document.getElementById('companyImage').src = window.URL.createObjectURL(image.files[0])
+        }
+    </script>
+    <script>
+        $(document).ready(function () {
+            $('#exampleModalCenter').on('hidden.bs.modal', function () {
+                $('#developerUsers').empty();
+                $('#developerUsers').append('<option value="@null">Unassigned</option>');
+            })
+        });
     </script>
 }

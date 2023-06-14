@@ -35,7 +35,7 @@
                                onchange="document.getElementById('userImage').src = window.URL.createObjectURL(this.files[0])" />
                         <span asp-validation-for="Input.ImageFile" class="text-danger"></span>                        
                     </div>
-                    <a class="btn btn-primary" id="removePicture" onclick="removePicture()">Remove Profile Picture</a>
+                    <button class="btn btn-primary" type="submit" name="Input.RemoveImage" value="true">Remove Profile Picture</button>
                     <p class="small text-muted mt-3">
                         For best results, use an image at least
                         256px by 256px in either .jpg or .png format

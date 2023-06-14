@@ -120,6 +120,12 @@ namespace CrucibleBugTracker.Areas.Identity.Pages.Account.Manage
             {
                 user.ImageFileData = await _fileService.ConvertFileToByteArrayAsync(Input.ImageFile);
                 user.ImageFileType = Input.ImageFile.ContentType;
+            }          
+
+            if (Input.RemoveImage == true)
+            {
+                user.ImageFileData = null;
+                user.ImageFileType = null;
             }
 
             await _userManager.UpdateAsync(user);

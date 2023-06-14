@@ -456,9 +456,6 @@
     <!-- DataTable -->
     <script src="~/vendors/dataTable/datatables.min.js"></script>
 
-    @*<!-- Dashboard scripts -->
-    <script src="~/assets/js/examples/pages/dashboard.js"></script>*@
-
     <!-- Lightbox Javascript -->
     <script src="~/vendors/lightbox/jquery.magnific-popup.min.js"></script>
 
@@ -539,6 +536,16 @@
                         return openerElement.is('img') ? openerElement : openerElement.find('img');
                     }
                 }
+            });
+
+            
+                
+            //$("[data-bs-dismiss|='modal']").on("click", function (this) {
+            //    $('.modal .fade').modal.('hide');
+            //});
+            $('#assignDevModal').on('hidden.bs.modal', function () {
+                $('#developerUsers').empty();
+                $('#developerUsers').append('<option value="@null">Unassigned</option>');
             });
         });
     </script>
