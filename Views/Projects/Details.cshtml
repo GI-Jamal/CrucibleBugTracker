@@ -476,7 +476,7 @@
     <a asp-action="Index">Back to List</a>
 </div>
 
-<div>
+@*<div>
     <dl class="row">
         <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.ImageFormFile)
@@ -485,7 +485,7 @@
             <img src="@_FileService.ConvertByteArrayToFile(Model.ImageFileData, Model.ImageFileType, DefaultImage.ProjectImage)" class="img-fluid" id="projectImage" />
         </dd>
     </dl>
-</div>
+</div>*@
 
 <div class="modal fade" id="restoreProjectModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
