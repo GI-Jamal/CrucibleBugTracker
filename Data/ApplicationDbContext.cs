@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using CrucibleBugTracker.Models;
+using CrucibleBugTracker.Enums;
 
 namespace CrucibleBugTracker.Data
 {
@@ -23,6 +24,5 @@ namespace CrucibleBugTracker.Data
         public virtual DbSet<Company> Companies { get; set; } = default!;
         public virtual DbSet<Invite> Invites { get; set; } = default!;
         public virtual DbSet<Notification> Notifications { get; set; } = default!;
-        public virtual DbSet<NotificationType> NotificationTypes { get; set; } = default!;
     }
 }

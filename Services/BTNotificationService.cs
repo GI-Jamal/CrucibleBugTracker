@@ -52,7 +52,7 @@ namespace CrucibleBugTracker.Services
             {
                 if (notification != null)
                 {
-                    IEnumerable<string> memberIds = (await _rolesService.GetUsersInRoleAsync(nameof(role), companyId!.Value))!.Select(u => u.Id);
+                    IEnumerable<string> memberIds = (await _rolesService.GetUsersInRoleAsync(nameof(BTRoles.Admin), companyId!.Value))!.Select(u => u.Id);
 
                     foreach (string adminId in memberIds)
                     {
@@ -83,6 +83,7 @@ namespace CrucibleBugTracker.Services
                     notifications = await _context.Notifications.Include(n => n.Recipient)
                                                   .Where(n => n.RecipientId == userId || n.SenderId == userId)
                                                   .Include(n => n.Sender)
+                                                  .Include(n => n.Project)
                                                   .ToListAsync();
                 }
 
@@ -106,13 +107,14 @@ namespace CrucibleBugTracker.Services
 
                 Notification? notification = new()
                 {
-                    TicketId = ticket!.Id,
+                    TicketId = ticket!.Id,                    
+                    ProjectId = ticket.ProjectId,
                     Title = "Developer Assigned",
                     Message = $"Ticket: {ticket.Title} was assigned by {btUser?.FullName} ",
                     Created = DateTime.UtcNow,
                     SenderId = senderId,
                     RecipientId = developerId,
-                    NotificationType = new() { Id = 1, Name = nameof(BTNotificationType.Ticket) }
+                    NotificationType = BTNotificationType.Ticket
                 };
 
 
@@ -135,38 +137,22 @@ namespace CrucibleBugTracker.Services
             Ticket? ticket = await _context.Tickets.FindAsync(ticketId);
 
             BTUser? projectManager = await _projectService.GetProjectManagerAsync(ticket!.ProjectId, btUser!.CompanyId);
-            List<BTUser> admins = await _rolesService.GetUsersInRoleAsync(nameof(BTRoles.Admin), btUser.CompanyId);
 
             if (ticket != null && btUser != null)
             {
                 Notification? notification = new()
                 {
                     TicketId = ticket.Id,
+                    ProjectId = ticket.ProjectId,
                     Title = "New Ticket Added",
                     Message = $"New Ticket: {ticket.Title} was created by {btUser.FullName} ",
                     Created = DateTime.UtcNow,
                     SenderId = senderId,
                     RecipientId = projectManager?.Id ?? senderId,
-                    NotificationType = new() { Id = 1, Name = nameof(BTNotificationType.Ticket) }
+                    NotificationType = BTNotificationType.Ticket
                 };
 
-                List<Notification> adminNotifications = new();
-
-                foreach (var admin in admins)
-                {
-                    adminNotifications.Add(new Notification()
-                    {
-                        TicketId = ticket.Id,
-                        Title = "New Ticket Added",
-                        Message = $"New Ticket: {ticket.Title} was created by {btUser.FullName} ",
-                        Created = DateTime.UtcNow,
-                        SenderId = senderId,
-                        RecipientId = admin.Id,
-                        NotificationType = new() { Id = 1, Name = nameof(BTNotificationType.Ticket) }
-                    });
-                }
-
-
+                //List<Notification> adminNotifications = new();
 
                 if (projectManager != null)
                 {
@@ -179,19 +165,19 @@ namespace CrucibleBugTracker.Services
                     await SendEmailNotificationByRoleAsync(btUser.CompanyId, notification, BTRoles.Admin);
                 }
 
-                foreach (Notification adminNotification in adminNotifications)
-                {
-                    if (adminNotification.RecipientId == btUser.Id)
-                    {
-                        await AddNotificationAsync(adminNotification);
-                        await SendEmailNotificationAsync(adminNotification, "New Ticket Added");
-                    }
-                    else
-                    {
-                        await NotificationsByRoleAsync(btUser.CompanyId, adminNotification, BTRoles.Admin);
-                        await SendEmailNotificationByRoleAsync(btUser.CompanyId, adminNotification, BTRoles.Admin);
-                    }
-                }
+                //foreach (Notification adminNotification in adminNotifications)
+                //{
+                //    if (adminNotification.RecipientId == btUser.Id)
+                //    {
+                //        await AddNotificationAsync(adminNotification);
+                //        await SendEmailNotificationAsync(adminNotification, "New Ticket Added");
+                //    }
+                //    else
+                //    {
+                //        await NotificationsByRoleAsync(btUser.CompanyId, adminNotification, BTRoles.Admin);
+                //        await SendEmailNotificationByRoleAsync(btUser.CompanyId, adminNotification, BTRoles.Admin);
+                //    }
+                //}
                 return true;
             }
             return false;
@@ -212,12 +198,13 @@ namespace CrucibleBugTracker.Services
                     Notification? notification = new()
                     {
                         TicketId = ticket.Id,
+                    ProjectId = ticket.ProjectId,
                         Title = "Ticket Updated",
                         Message = $"Ticket: {ticket?.Title} was updated by {btUser?.FullName} ",
                         Created = DateTime.UtcNow,
                         SenderId = senderId,
                         RecipientId = projectManager?.Id ?? senderId,
-                        NotificationType = new() { Id = 1, Name = nameof(BTNotificationType.Ticket) }
+                        NotificationType = BTNotificationType.Ticket
                     };
 
 

@@ -52,7 +52,7 @@ namespace CrucibleBugTracker.Controllers
         // GET: Notifications/Create
         public IActionResult Create()
         {
-            ViewData["NotificationTypeId"] = new SelectList(_context.NotificationTypes, "Id", "Id");
+           
             ViewData["ProjectId"] = new SelectList(_context.Projects, "Id", "Description");
             ViewData["RecipientId"] = new SelectList(_context.Users, "Id", "Id");
             ViewData["SenderId"] = new SelectList(_context.Users, "Id", "Id");
@@ -73,7 +73,7 @@ namespace CrucibleBugTracker.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["NotificationTypeId"] = new SelectList(_context.NotificationTypes, "Id", "Id", notification.NotificationTypeId);
+           
             ViewData["ProjectId"] = new SelectList(_context.Projects, "Id", "Description", notification.ProjectId);
             ViewData["RecipientId"] = new SelectList(_context.Users, "Id", "Id", notification.RecipientId);
             ViewData["SenderId"] = new SelectList(_context.Users, "Id", "Id", notification.SenderId);
@@ -94,7 +94,7 @@ namespace CrucibleBugTracker.Controllers
             {
                 return NotFound();
             }
-            ViewData["NotificationTypeId"] = new SelectList(_context.NotificationTypes, "Id", "Id", notification.NotificationTypeId);
+            
             ViewData["ProjectId"] = new SelectList(_context.Projects, "Id", "Description", notification.ProjectId);
             ViewData["RecipientId"] = new SelectList(_context.Users, "Id", "Id", notification.RecipientId);
             ViewData["SenderId"] = new SelectList(_context.Users, "Id", "Id", notification.SenderId);
@@ -134,7 +134,7 @@ namespace CrucibleBugTracker.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["NotificationTypeId"] = new SelectList(_context.NotificationTypes, "Id", "Id", notification.NotificationTypeId);
+            
             ViewData["ProjectId"] = new SelectList(_context.Projects, "Id", "Description", notification.ProjectId);
             ViewData["RecipientId"] = new SelectList(_context.Users, "Id", "Id", notification.RecipientId);
             ViewData["SenderId"] = new SelectList(_context.Users, "Id", "Id", notification.SenderId);

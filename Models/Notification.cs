@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using CrucibleBugTracker.Enums;
 
 namespace CrucibleBugTracker.Models
 {
@@ -29,8 +30,6 @@ namespace CrucibleBugTracker.Models
         public int ProjectId { get; set; }
         
         public int TicketId { get; set; }
-        
-        public int NotificationTypeId { get; set; }
 
 
         // Navigation Properties
@@ -42,6 +41,6 @@ namespace CrucibleBugTracker.Models
         
         public virtual BTUser? Sender { get; set; }
         
-        public virtual NotificationType? NotificationType { get; set; }
+        public virtual BTNotificationType? NotificationType { get; set; }
     }
 }

@@ -71,7 +71,7 @@ namespace CrucibleBugTracker.Data
             await SeedDefaultProjectPrioritiesAsync(dbContextSvc);
             await SeedDefaultProjectsAsync(dbContextSvc);
             await SeedDefaultTicketsAsync(dbContextSvc, userManagerSvc);
-            await SeedDefaultNotificationTypesAsync(dbContextSvc);
+            //await SeedDefaultNotificationTypesAsync(dbContextSvc);
 
         }
 
@@ -961,29 +961,29 @@ namespace CrucibleBugTracker.Data
             }
         }
 
-        public static async Task SeedDefaultNotificationTypesAsync(ApplicationDbContext context)
-        {
-            try
-            {
-                IList<NotificationType> notificationTypes = new List<NotificationType>() {
-                     new NotificationType() { Name = BTNotificationType.Project.ToString() },
-                     new NotificationType() { Name = BTNotificationType.Ticket.ToString() }
-                };
+        //public static async Task SeedDefaultNotificationTypesAsync(ApplicationDbContext context)
+        //{
+        //    try
+        //    {
+        //        IList<NotificationType> notificationTypes = new List<NotificationType>() {
+        //             new NotificationType() { Name = BTNotificationType.Project.ToString() },
+        //             new NotificationType() { Name = BTNotificationType.Ticket.ToString() }
+        //        };
 
-                var dbNotificationTypes = context.NotificationTypes.Select(c => c.Name).ToList();
-                await context.NotificationTypes.AddRangeAsync(notificationTypes.Where(c => !dbNotificationTypes.Contains(c.Name)));
-                await context.SaveChangesAsync();
+        //        var dbNotificationTypes = context.NotificationTypes.Select(c => c.Name).ToList();
+        //        await context.NotificationTypes.AddRangeAsync(notificationTypes.Where(c => !dbNotificationTypes.Contains(c.Name)));
+        //        await context.SaveChangesAsync();
 
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("*************  ERROR  *************");
-                Console.WriteLine("Error Seeding Notification Types.");
-                Console.WriteLine(ex.Message);
-                Console.WriteLine("***********************************");
-                throw;
-            }
-        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine("*************  ERROR  *************");
+        //        Console.WriteLine("Error Seeding Notification Types.");
+        //        Console.WriteLine(ex.Message);
+        //        Console.WriteLine("***********************************");
+        //        throw;
+        //    }
+        //}
     }
 
 }
