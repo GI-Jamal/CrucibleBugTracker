@@ -113,7 +113,7 @@ namespace CrucibleBugTracker.Controllers
 
                 await _ticketHistoryService.AddHistoryAsync(null, ticket, userId!);
 
-                await _notificationService.NewTicketNotificationAsync(ticket.Id, userId);
+                //await _notificationService.NewTicketNotificationAsync(ticket.Id, userId);
 
                 return RedirectToAction(nameof(Index));
             }
