@@ -69,10 +69,10 @@ namespace CrucibleBugTracker.Controllers
                 ViewData["ProjectManagers"] = new SelectList(await _roleService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId), nameof(BTUser.Id), nameof(BTUser.FullName));
             }
 
-            ViewData["ProjectTicketsCount"] = JsonSerializer.Serialize(viewModel.Projects?.OrderBy(p => p.Created).Select(p => p.Tickets.Count).Take(5).ToList());
-            ViewData["UnassignedProjectTicketsCount"] = JsonSerializer.Serialize(viewModel.Projects?.OrderBy(p => p.Created).Select(p => p.Tickets.Count(t => t.DeveloperUserId == null)).Take(5).ToList());
-            ViewData["ProjectNames"] = JsonSerializer.Serialize(viewModel.Projects?.OrderBy(p => p.Created).Select(p => p.Name).Take(5).ToList());
-            ViewData["ProjectDevelopers"] = JsonSerializer.Serialize(viewModel.Projects?.OrderBy(p => p.Created).Select(p => p.Members.Count(m => developerIds.Contains(m.Id))).Take(5));
+            ViewData["ProjectTicketsCount"] = JsonSerializer.Serialize(viewModel.Projects?.OrderBy(p => p.Created).Select(p => p.Tickets.Count(t => !t.Archived)).Take(3).ToList());
+            ViewData["UnassignedProjectTicketsCount"] = JsonSerializer.Serialize(viewModel.Projects?.OrderBy(p => p.Created).Select(p => p.Tickets.Count(t => t.DeveloperUserId == null && !t.Archived)).Take(3).ToList());
+            ViewData["ProjectNames"] = JsonSerializer.Serialize(viewModel.Projects?.OrderBy(p => p.Created).Select(p => p.Name).Take(3).ToList());
+            ViewData["ProjectDevelopers"] = JsonSerializer.Serialize(viewModel.Projects?.OrderBy(p => p.Created).Select(p => p.Members.Count(m => developerIds.Contains(m.Id))).Take(3));
 
             return View(viewModel);
         }

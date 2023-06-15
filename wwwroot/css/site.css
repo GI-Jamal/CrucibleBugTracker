@@ -81,3 +81,14 @@ ol {
         margin: auto;
     }
 }
+
+
+.logo {
+    max-width: 100px !important;
+}
+
+@media (min-width: 415px) {
+    .logo {
+        max-width: 150px !important;
+    }
+}

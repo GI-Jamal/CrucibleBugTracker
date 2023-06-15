@@ -20,12 +20,40 @@
 
 @if (SignInManager.IsSignedIn(User))
 {
+    <div class="page-header d-md-flex justify-content-between">
+        <div>
+            <h3>Dashboard</h3>
+        </div>
+    </div>
+
     <div class="row">
-        <div class="col-12">
+        <div class="col-6">
             <div class="card">
-                <div class="card-header">
+                <div class="card-header">                    
+                    <h6>User Info</h6>
                 </div>
                 <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-12">Role: @((await _RoleService.GetUserRolesAsync(await _UserManager.GetUserAsync(User))).FirstOrDefault())</div>
+                        <div class="col-12">Project Assignments: @Model.Projects.Count</div>
+                        <div class="col-12">Ticket Submissions: @Model.Tickets.Count(t => t.SubmitterUserId == _UserManager.GetUserId(User))</div>
+                        <div class="col-12">Ticket Assignments: @Model.Tickets.Count(t => t.DeveloperUserId == _UserManager.GetUserId(User))</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="card">
+                <div class="card-header">                    
+                    <h6>Important Tasks</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-12">High priority tickets: @Model.Tickets.Count(t => t.TicketPriority.Name == nameof(BTTicketPriorities.High))</div>
+                        <div class="col-12">High priority projects: @Model.Projects.Count(t => t.ProjectPriority.Name == nameof(BTProjectPriorities.High))</div>
+                        <div class="col-12">Urgent priority projects: @Model.Tickets.Count(t => t.TicketPriority.Name == nameof(BTTicketPriorities.Urgent))</div>
+                        <div class="col-12">Urgent priority projects: @Model.Projects.Count(t => t.ProjectPriority.Name == nameof(BTProjectPriorities.High))</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -664,7 +692,186 @@
 }
 else
 {
+    <div class="row">
+        <div class="col-12">
+            <div class="card p-2">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="text-center">
+                            <h1>Welcome to Orion</h1>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <figure style="max-width:500px;">
+                                <img src="~/img/Features Overview-pana.svg" />
+                            </figure>
+                        </div>
+                        <div class="col-12 col-md-6 d-flex align-items-center">
+                            <div class="d-flex flex-column">
+                                <div>
+                                    <p>
+                                        Shoot for the stars in any project with the Orion.
+                                    </p>
+                                    <p>
+                                        Orion is a web application designed to revolutionize how you manage your projects.
+                                        With its cutting-edge features and intuitive interface, Orion is your all-in-one solution for efficient collaboration,
+                                        seamless communication, and enhanced productivity.
+                                    </p>
+                                    <p>
+                                        To learn more or to see a demo of my application in action, press the learn more button below.
+                                        Or if you want to get begin maximizing your project efficiency right away, click register in the navigation bar to get started!
+                                    </p>
+                                    <p>
+                                        For more information on my project and other projects like this, please check out <a class="text-primary" href="https://jamalgibson-portfolio.netlify.app/">my portfolio</a>, or get in <a class="text-primary" href="https://jamalgibson-portfolio.netlify.app/#contact">contact with me here!</a>
+                                    </p>
+                                </div>
+                                <div class="d-flex justify-content-center mt-2">
+                                    <button class="btn btn-primary" type="button" id="learnMoreButton" data-bs-toggle="collapse" data-bs-target="#collapseSection" aria-expanded="false" aria-controls="collapseExample">
+                                        Learn more
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
+
+    <div class="row">
+        <div class="col-12">
+            <div class="collapse" id="collapseSection">
+                <div class="card p-2">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12 col-md-8">
+                                <figure>
+                                    <img src="~/img/Bugtracker4.png" class="img-fluid" />
+                                </figure>
+                            </div>
+                            <div class="col-12 col-md-4 d-flex align-items-center">
+                                <div class="d-flex flex-column">
+                                    <div class="text-center">
+                                        <h4>Manage your tickets & projects wherever you see them</h4>
+                                    </div>
+                                    <p>
+                                        No more navigating through numerous pages to be able to edit your tickets and projects. If you are an admin or project manager then you can edit ticket and/or project assignments right from the associated tables!
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card p-2">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12 col-md-5 d-flex align-items-center order-last order-md-first">
+                                <div class="d-flex flex-column">
+                                    <div class="text-center">
+                                        <h4>All your information at your fingertips</h4>
+                                    </div>
+                                    <p>
+                                        Our details pages offer an immersive and detailed view of your projects and tickets. Dive deep into your assignment timelines, milestones, and tasks, gaining unparalleled insights into project progress and performance. With real-time updates, you stay informed about the latest developments, enabling you to make data-driven decisions that keep your projects on track.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-7">
+                                <figure>
+                                    <img src="~/img/Bugtracker5.png" class="img-fluid" />
+                                </figure>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card p-2">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12 col-md-7">
+                                <figure>
+                                    <img src="~/img/Bugtracker3.png" class="img-fluid" />
+                                </figure>
+                            </div>
+                            <div class="col-12 col-md-5 d-flex align-items-center">
+                                <div class="d-flex flex-column">
+                                    <div class="text-center">
+                                        <h4>Detailed and descriptive charts to help visualize your progress</h4>
+                                    </div>
+                                    <p>
+                                        Charts bring your project data to life, presenting complex information in a visually appealing and easily digestible format. Gain a comprehensive overview of project progress, resource allocation, and team performance through interactive and intuitive charts. Spot trends, identify patterns, and make informed decisions that drive your projects forward.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card p-2">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12 col-md-5 order-last order-md-first d-flex align-items-center ">
+                                <div class="d-flex flex-column">
+                                    <div class="text-center">
+                                        <h4>No more mistakes with realtime alerts</h4>
+                                    </div>
+                                    <p>
+                                        The Orion project management application makes use of numerous safety checks to ensure you're not making mistakes while managing your project and teams. Get realtime alerts when making changes within your company.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-7">
+                                <figure>
+                                    <img src="~/img/Bugtracker2.png" class="img-fluid" />
+                                </figure>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card p-2">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12 col-md-7">
+                                <figure>
+                                    <img src="~/img/Bugtracker1.png" class="img-fluid" />
+                                </figure>
+                            </div>
+                            <div class="col-12 col-md-5 d-flex align-items-center ">
+                                <div class="d-flex flex-column">
+                                    <div class="text-center">
+                                        <h4>Confirmation of updates to ensure you're aware of every change</h4>
+                                    </div>
+                                    <p>
+                                        It's easy to forget about things about the small details while managing your teams. If you attempt to make changes within your company, Orion will make sure you're informed of any possible effects on project and/or tickets assignments, and team members.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card p-2">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12">
+                                <h6 class="text-center mb-3">
+                                    Select one of the demo logins below to see our application in action.
+                                </h6>
+                                <form asp-area="Identity" asp-page="/Account/Login" id="account" method="post">
+                                    <div class="form-group">
+                                        <div class="row">
+                                            <div class="col-12 d-flex flex-column align-items-center btn-block text-center" style="padding-left:33%;padding-right:33%">
+                                                <button type="submit" style="width:inherit;height:min-content" class="btn btn-primary btn-block" name="demoEmail" value="DemoAdminEmail">Demo Admin</button>
+                                                <button type="submit" style="width:inherit;height:min-content" class="btn btn-primary btn-block" name="demoEmail" value="DemoPMEmail">Demo PM</button>
+                                                <button type="submit" style="width:inherit;height:min-content" class="btn btn-primary btn-block" name="demoEmail" value="DemoDevEmail">Demo Developer</button>
+                                                <button type="submit" style="width:inherit;height:min-content" class="btn btn-primary btn-block" name="demoEmail" value="DemoSubEmail">Demo Submitter</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 }
 
 <div class="modal fade" id="assignPMModal" tabindex="-1" role="dialog" aria-hidden="true">
@@ -905,9 +1112,14 @@ else
             });
 
             $('#usersTable').DataTable();
+
+            $('#learnMoreButton').on("click", function () {
+                $('.content').css("overflow", "auto");
+                $('.content').css("overflow", "hidden");
+
+            });
         });
     </script>
-
     <script>
         function populatePMModal(projectId, projectManagerId, projectName) {
             var project = document.getElementById("modalProjectId");

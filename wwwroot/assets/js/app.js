@@ -447,7 +447,6 @@
 
 
                 $('.layout-wrapper .content-wrapper .content-body .content').niceScroll();
-                /*$('.assignProjectUsers').niceScroll();*/
 
                 setTimeout(function () {
                     $('.card-scroll').niceScroll({
@@ -480,6 +479,9 @@
                 // custom scroll js to fix scroll issue
                 $('.content').on('scroll', function () {
                     $('.content').getNiceScroll().resize();
+                });
+                $('#learnMoreButton').on('click', function () {
+                    $('.content').niceScroll();
                 });
                 $('#assignProjectUsersTable').on('scroll', function () {
                     $('.content').getNiceScroll().resize();

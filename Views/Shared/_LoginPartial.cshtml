@@ -37,7 +37,7 @@
                     <a asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage" class="btn btn-outline-light btn-rounded">Manage Your Account</a>
                 </div>
                 <div class="list-group">
-                    <a href="profile.html" class="list-group-item text-center">View Profile</a>
+                    @*<a href="profile.html" class="list-group-item text-center">View Profile</a>*@
                     <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
                         <button id="logoutButton" type="submit" class="w-100 list-group-item text-danger">Logout</button>
                     </form>                   
