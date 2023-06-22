@@ -35,9 +35,9 @@
                 <div class="card-body">
                     <div class="row g-2">
                         <div class="col-12">Role: @((await _RoleService.GetUserRolesAsync(await _UserManager.GetUserAsync(User))).FirstOrDefault())</div>
-                        <div class="col-12">Project Assignments: @Model.Projects.Count</div>
-                        <div class="col-12">Ticket Submissions: @Model.Tickets.Count(t => t.SubmitterUserId == _UserManager.GetUserId(User))</div>
-                        <div class="col-12">Ticket Assignments: @Model.Tickets.Count(t => t.DeveloperUserId == _UserManager.GetUserId(User))</div>
+                        <div class="col-12">Project Assignments: @Model.Projects?.Count</div>
+                        <div class="col-12">Ticket Submissions: @Model.Tickets?.Count(t => t.SubmitterUserId == _UserManager.GetUserId(User))</div>
+                        <div class="col-12">Ticket Assignments: @Model.Tickets?.Count(t => t.DeveloperUserId == _UserManager.GetUserId(User))</div>
                     </div>
                 </div>
             </div>
@@ -49,10 +49,10 @@
                 </div>
                 <div class="card-body">
                     <div class="row g-2">
-                        <div class="col-12">High priority tickets: @Model.Tickets.Count(t => t.TicketPriority.Name == nameof(BTTicketPriorities.High))</div>
-                        <div class="col-12">High priority projects: @Model.Projects.Count(t => t.ProjectPriority.Name == nameof(BTProjectPriorities.High))</div>
-                        <div class="col-12">Urgent priority projects: @Model.Tickets.Count(t => t.TicketPriority.Name == nameof(BTTicketPriorities.Urgent))</div>
-                        <div class="col-12">Urgent priority projects: @Model.Projects.Count(t => t.ProjectPriority.Name == nameof(BTProjectPriorities.High))</div>
+                        <div class="col-12">High priority tickets: @Model.Tickets?.Count(t => t.TicketPriority?.Name == nameof(BTTicketPriorities.High))</div>
+                        <div class="col-12">High priority projects: @Model.Projects?.Count(t => t.ProjectPriority?.Name == nameof(BTProjectPriorities.High))</div>
+                        <div class="col-12">Urgent priority projects: @Model.Tickets?.Count(t => t.TicketPriority?.Name == nameof(BTTicketPriorities.Urgent))</div>
+                        <div class="col-12">Urgent priority projects: @Model.Projects?.Count(t => t.ProjectPriority?.Name == nameof(BTProjectPriorities.High))</div>
                     </div>
                 </div>
             </div>

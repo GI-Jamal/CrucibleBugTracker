@@ -9,6 +9,7 @@ namespace CrucibleBugTracker.Models
     {
         public int Id { get; set; }
         
+        [StringLength(75, ErrorMessage = "The {0} cannot be more than {1} characters")]
         public string? Description { get; set; }
         
         [DisplayName("File Name")]
