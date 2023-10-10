@@ -480,9 +480,9 @@
                 $('.content').on('scroll', function () {
                     $('.content').getNiceScroll().resize();
                 });
-                $('#learnMoreButton').on('click', function () {
-                    $('.content').niceScroll();
-                });
+                //$('#learnMoreButton').on('click', function () {
+                //    $('.content').niceScroll();
+                //});
                 $('#assignProjectUsersTable').on('scroll', function () {
                     $('.content').getNiceScroll().resize();
                 });

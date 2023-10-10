@@ -334,10 +334,10 @@
                                     @{
                                         if (User.IsInRole(nameof(BTRoles.Admin)))
                                         {
-                                            <li>
-                                                <a asp-controller="Company" asp-action="ManageUserRoles">Manage Users</a>
-                                                <a asp-controller="Invites" asp-action="Create">Invite User</a>
-                                            </li>
+                                                <li>
+                                                    <a asp-controller="Company" asp-action="ManageUserRoles">Manage Users</a>
+                                                    <a asp-controller="Invites" asp-action="Create">Invite User</a>
+                                                </li>
                                         }
                                     }
                                 </ul>
@@ -359,9 +359,9 @@
                                     @{
                                         if (!User.IsInRole(nameof(BTRoles.Admin)))
                                         {
-                                            <li>
-                                                <a asp-controller="Projects" asp-action="MyProjects">My Projects</a>
-                                            </li>
+                                                <li>
+                                                    <a asp-controller="Projects" asp-action="MyProjects">My Projects</a>
+                                                </li>
                                         }
                                     }
                                     <li>
@@ -392,9 +392,9 @@
                                     @{
                                         if (!User.IsInRole(nameof(BTRoles.Admin)))
                                         {
-                                            <li>
-                                                <a asp-controller="Tickets" asp-action="MyTickets">My Tickets</a>
-                                            </li>
+                                                <li>
+                                                    <a asp-controller="Tickets" asp-action="MyTickets">My Tickets</a>
+                                                </li>
                                         }
                                     }
                                     <li>
@@ -416,9 +416,8 @@
             <!-- Content body -->
             <div class="content-body">
                 <!-- Content -->
-                <div class="content ">
+                <div class="content">
                     @RenderBody()
-
                 </div>
                 <!-- ./ Content -->
                 <!-- Footer -->
